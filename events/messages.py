@@ -162,7 +162,7 @@ async def webhook(self, channel) -> discord.Webhook:
       for webhook in await channel.webhooks():
         if webhook.user == self.bot.user:
           return webhook
-      try: await channel.create_webhook(name='resent')
+      try: await channel.create_webhook(name='evict')
       except: pass
 
 @commands.Cog.listener('on_message')
@@ -187,7 +187,7 @@ async def webhook(self, channel) -> discord.Webhook:
       for webhook in await channel.webhooks():
         if webhook.user == self.bot.user:
           return webhook
-      try: await channel.create_webhook(name='resent')
+      try: await channel.create_webhook(name='evict')
       except: pass
 
 @commands.Cog.listener('on_message')
@@ -203,11 +203,11 @@ async def reposter(self, message: Message):
         if (
             message.guild
             and not message.author.bot
-            and message.content.startswith("resent")
+            and message.content.startswith("evict")
         ):
             if re.search(
                 r"\bhttps?:\/\/(?:m|www|vm)\.tiktok\.com\/\S*?\b(?:(?:(?:usr|v|embed|user|video)\/|\?shareId=|\&item_id=)(\d+)|(?=\w{7})(\w*?[A-Z\d]\w*)(?=\s|\/$))\b",
-                message.content[len("resent") + 1 :],
+                message.content[len("evict") + 1 :],
             ):
                 return await self.repost_tiktok(message)
 

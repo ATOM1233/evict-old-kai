@@ -53,10 +53,10 @@ class owner(commands.Cog):
    @commands.is_owner()
    async def restart(self, ctx: commands.Context):
     await ctx.warning("restarting the bot.")
-    os.system("pm2 restart resent")
+    os.system("pm2 restart evict")
 
    @commands.is_owner()
-   @commands.command(aliases=["guilds"], name='servers', description="list all the servers resent is in", brief="bot owner")
+   @commands.command(aliases=["guilds"], name='servers', description="list all the servers evict is in", brief="bot owner")
    async def servers(self, ctx: commands.Context): 
             def key(s): 
               return s.member_count 

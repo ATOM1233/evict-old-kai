@@ -1,13 +1,13 @@
 import discord, asyncpg, typing
 from discord.ext import commands
 from bot.utils import StartUp
-from bot.helpers import ResentContext, HelpCommand
+from bot.helpers import EvictContext, HelpCommand
 from bot.ext import Client
 from bot.database import create_db
 from rivalapi.rivalapi import RivalAPI
 from humanfriendly import format_timespan
 
-class Resent(commands.Bot):
+class Evict(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix="+",allowed_mentions=discord.AllowedMentions(roles=False, everyone=False, users=True, replied_user=False), intents=discord.Intents.all(), owner_ids=[214753146512080907],
                          help_command=HelpCommand())
@@ -20,9 +20,9 @@ class Resent(commands.Bot):
         self.right = "<:right:1227724250165678091>"
         self.goto = "<:filter:1208241278891073547>"
         self.ext = Client(self)
-        self.support_server = 'https://discord.gg/resent'
-        self.commands_url = 'https://resent.dev/commands'
-        self.resent_api = "58ZCTj0fTkai"
+        self.support_server = 'https://discord.gg/evict'
+        self.commands_url = 'https://evict.dev/commands'
+        self.evict_api = "58ZCTj0fTkai"
         self.rival_api = "88d7eac6-df61-4a08-a95d-8904f81cc099"
         self.rival = RivalAPI(self.rival_api)
         self.m_cd=commands.CooldownMapping.from_cooldown(1,5,commands.BucketType.member)
@@ -93,5 +93,5 @@ class Resent(commands.Bot):
         await create_db(self)
         print(f"Connected to Discord API as {self.user}")
 
-    async def get_context(self, message: discord.Message, cls=ResentContext) -> ResentContext:
+    async def get_context(self, message: discord.Message, cls=EvictContext) -> EvictContext:
       return await super().get_context(message, cls=cls)

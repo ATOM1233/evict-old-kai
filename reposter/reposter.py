@@ -32,7 +32,7 @@ class Reposter:
         post.caption = post.caption.replace('\n', ' ')
         embed = discord.Embed(color=bot.color, description=f"[**{post.caption[:100] + '...' if len(post.caption) > 150 else post.caption}**]({post.url})")
         file = None
-        if post.video is not None: file = discord.File(fp=await self.read_file_from_url(post.video.url), filename='resent-instagram.mp4')
+        if post.video is not None: file = discord.File(fp=await self.read_file_from_url(post.video.url), filename='evict-instagram.mp4')
         embed.set_author(name=f"{post.user.full_name} (@{post.user.username})", icon_url=post.user.profile_picture_url, url=f"https://instagram.com/{post.user.username}")
         embed.set_footer(icon_url=message.author.display_avatar.url, text=f"Requested by {message.author}﹒Views: {views}")
         view = discord.ui.View()
@@ -58,7 +58,7 @@ class Reposter:
         tweet = await bot.twitter.tweet_details(int(tweet_id_match.group(1)))
     
         
-        if len(tweet.media.videos) >= 1: file = discord.File(fp=await self.read_file_from_url(tweet.media.videos[0].variants[1].url), filename='resent-twitter.mp4')
+        if len(tweet.media.videos) >= 1: file = discord.File(fp=await self.read_file_from_url(tweet.media.videos[0].variants[1].url), filename='evict-twitter.mp4')
         
         tweet_content = tweet.rawContent
         tweet_content = re.sub(r'http\S+', '', tweet_content)
@@ -96,7 +96,7 @@ class Reposter:
         
         if len(formats) == 0: return print('Could not find any formats')
         
-        file = discord.File(fp=await self.read_file_from_url(formats[0]['url']), filename='resent-youtube.mp4')
+        file = discord.File(fp=await self.read_file_from_url(formats[0]['url']), filename='evict-youtube.mp4')
         embed.set_author(name=f"{info['uploader']} ({info['uploader_id']})", url=info['uploader_url'], icon_url=channel['thumbnails'][-1]['url'])
         embed.set_footer(icon_url=message.author.display_avatar.url, text=f"Requested by {message.author} ﹒ Views: {views} ﹒Likes: {likes}")
         view = discord.ui.View()
@@ -111,7 +111,7 @@ class Reposter:
 
         async with locks[message.guild.id]:  
          
-         url = message.content[len("resent")+1:]
+         url = message.content[len("evict")+1:]
          try: 
           await message.delete()
          except: 
@@ -141,7 +141,7 @@ class Reposter:
             return await ctx.paginator(embeds)
           else:
             video = x["data"]["play"]
-            file = File(fp=await session.getbyte(video), filename="resenttiktok.mp4")
+            file = File(fp=await session.getbyte(video), filename="evicttiktok.mp4")
             embed = Embed(
               color=bot.color,
               description=f"[{x['data']['title']}]({url})" if x['data']['title'] else ""

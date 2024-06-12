@@ -1,4 +1,4 @@
-from bot.bot import Resent
+from bot.bot import Evict
 import os, dotenv, asyncpg
 from discord.ext import commands
 import discord
@@ -6,7 +6,7 @@ import discord
 dotenv.load_dotenv(verbose=True)
 token=os.environ['token']
 
-bot = Resent()
+bot = Evict()
     
 @bot.check
 async def cooldown_check(ctx: commands.Context):
@@ -28,7 +28,7 @@ async def blacklist(ctx: commands.Context):
  if check is not None: 
   if check["state"] == "false": return False 
   else: return True 
- embed = discord.Embed(color=bot.color, description="Do you **agree** to our [privacy policy](https://resent.dev/privacy) and for your data to be used for commands?\n**DISAGREEING** will result in a blacklist from using bot's commands")
+ embed = discord.Embed(color=bot.color, description="Do you **agree** to our [privacy policy](https://evict.cc/privacy) and for your data to be used for commands?\n**DISAGREEING** will result in a blacklist from using bot's commands")
  yes = discord.ui.Button(emoji=bot.yes, style=discord.ButtonStyle.gray)
  no = discord.ui.Button(emoji=bot.no, style=discord.ButtonStyle.gray)
  async def yes_callback(interaction: discord.Interaction): 
@@ -42,7 +42,7 @@ async def blacklist(ctx: commands.Context):
  async def no_callback(interaction: discord.Interaction): 
     if interaction.user != ctx.author: return await interaction.response.send_message(embed=discord.Embed(color=bot.color, description=f"{bot.warning} {interaction.user.mention}: This is not your message"), ephemeral=True)
     await bot.db.execute("INSERT INTO nodata VALUES ($1,$2)", ctx.author.id, "false")                        
-    await interaction.response.edit_message(embed=discord.Embed(color=bot.color, description=f"You got blacklisted from using bot's commands. If this is a mistake, please check our [**support server**](https://discord.gg/resent)"), view=None)
+    await interaction.response.edit_message(embed=discord.Embed(color=bot.color, description=f"You got blacklisted from using bot's commands. If this is a mistake, please check our [**support server**](https://discord.gg/evict)"), view=None)
     return 
 
  no.callback = no_callback

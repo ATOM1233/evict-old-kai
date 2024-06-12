@@ -161,7 +161,7 @@ class information(commands.Cog):
         if twitter: embed.add_field(name="Twitter", value=twitter)
         if company: embed.add_field(name="Company", value=company)
         embed.set_thumbnail(url=avatar_url)
-        embed.set_footer(text='Github', icon_url='https://cdn.resent.dev/github.png')
+        embed.set_footer(text='Github', icon_url='https://cdn.evict.dev/github.png')
         await ctx.reply(embed=embed)
 
     @commands.command(aliases=["firstmsg"], description="get the first message", help="information", usage="<channel>")
@@ -293,7 +293,7 @@ class information(commands.Cog):
       embed = discord.Embed(color=self.bot.color, description="add the bot to your server.")
       embed.set_author(name=self.bot.user.name, icon_url=f"{avatar_url}")
       button1 = Button(label="invite", url=f"https://discord.com/api/oauth2/authorize?client_id={self.bot.user.id}&permissions=8&scope=bot%20applications.commands")
-      button2 = Button(label="support", url="https://discord.gg/resent")
+      button2 = Button(label="support", url="https://discord.gg/evict")
       view = View()
       view.add_item(button1)
       view.add_item(button2)

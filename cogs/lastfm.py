@@ -353,8 +353,8 @@ class lastfm(commands.Cog):
       if not username: 
         return await ctx.lastfm_send(f"{user.mention} does not have a lastfm account")
       params = {'username': username, 'size': size, 'period': period}
-      headers = {"api-key": self.bot.resent_api}
-      x = await self.session.get_json("https://api.resent.dev/lastfm/chart", params=params, headers=headers)
+      headers = {"api-key": self.bot.evict_api}
+      x = await self.session.get_json("https://api.evict.dev/lastfm/chart", params=params, headers=headers)
       if detail := x.get('detail'):
         return await ctx.error(detail)
       image = await self.session.get_bytes(x['image_url'])

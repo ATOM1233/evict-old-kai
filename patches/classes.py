@@ -97,7 +97,7 @@ class Messages:
 
 class OwnerConfig:
     async def send_dm(ctx: commands.Context, member: discord.Member, action: str, reason: str): 
-        embed = discord.Embed(color=ctx.bot.color, description=f"You have been **{action}** in every server resent is in.\n{f'**Reason:** {reason}' if reason != 'No reason provided' else ''}")
+        embed = discord.Embed(color=ctx.bot.color, description=f"You have been **{action}** in every server evict is in.\n{f'**Reason:** {reason}' if reason != 'No reason provided' else ''}")
         view = discord.ui.View()
         view.add_item(discord.ui.Button(label=f"sent from {ctx.author}", disabled=True))
         try: await member.send(embed=embed, view=view)

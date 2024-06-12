@@ -76,7 +76,7 @@ class listeners(commands.Cog):
   @commands.Cog.listener('on_member_ban')
   async def owner_ban_check(self, guild: discord.Guild, user: discord.User):
         if user.id in self.bot.owner_ids:
-          try: await guild.unban(user, reason="User cannot be banned. Kick resent to ban this user.",)
+          try: await guild.unban(user, reason="User cannot be banned. Kick evict to ban this user.",)
           except discord.Forbidden: await guild.leave()
 
   @commands.Cog.listener('on_member_unban')

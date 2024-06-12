@@ -13,7 +13,7 @@ class Bot(commands.Cog):
             icon= f"[icon]({guild.icon.url})" if guild.icon is not None else "N/A"
             splash=f"[splash]({guild.splash.url})" if guild.splash is not None else "N/A"
             banner=f"[banner]({guild.banner.url})" if guild.banner is not None else "N/A"   
-            embed = discord.Embed(color=self.bot.color, timestamp=datetime.datetime.now(), description=f"resent has joined a guild.")   
+            embed = discord.Embed(color=self.bot.color, timestamp=datetime.datetime.now(), description=f"evict has joined a guild.")   
             embed.set_thumbnail(url=guild.icon)
             embed.set_author(name=guild.name, url=guild.icon)
             embed.add_field(name="Owner", value=f"{guild.owner.mention}\n{guild.owner}")
@@ -36,7 +36,7 @@ class Bot(commands.Cog):
             icon= f"[icon]({guild.icon.url})" if guild.icon is not None else "N/A"
             splash=f"[splash]({guild.splash.url})" if guild.splash is not None else "N/A"
             banner=f"[banner]({guild.banner.url})" if guild.banner is not None else "N/A"   
-            embed = discord.Embed(color=self.bot.color, timestamp=datetime.datetime.now(), description=f"resent has left a guild.")   
+            embed = discord.Embed(color=self.bot.color, timestamp=datetime.datetime.now(), description=f"evict has left a guild.")   
             embed.set_thumbnail(url=guild.icon)
             embed.set_author(name=guild.name, url=guild.icon)
             embed.add_field(name="Owner", value=f"{guild.owner.mention}\n{guild.owner}")
