@@ -1,10 +1,17 @@
 from bot.bot import Evict
-import os, dotenv, asyncpg
+import os, dotenv
 from discord.ext import commands
 import discord
 
 dotenv.load_dotenv(verbose=True)
+
 token=os.environ['token']
+
+os.environ["JISHAKU_NO_UNDERSCORE"] = "True"
+os.environ["JISHAKU_NO_DM_TRACEBACK"] = "True"
+os.environ["JISHAKU_HIDE"] = "True"
+os.environ["JISHAKU_FORCE_PAGINATOR"] = "True"
+os.environ["JISHAKU_RETAIN"] = "True"
 
 bot = Evict()
     

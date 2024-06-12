@@ -4,6 +4,11 @@ from discord.ext import commands
 class Bot(commands.Cog): 
     def __init__(self, bot: commands.Bot):
       self.bot = bot
+      
+    @commands.Cog.listener('on_guild_join')
+    async def auth_check(self, guild: discord.Guild):
+        check = await self.bot.db.execute("SELECT * FROM authorize WHERE guild_id = $1", guild.id)
+        if check is None: await guild.leave()
 
     @commands.Cog.listener('on_guild_join')
     async def join_log(self, guild: discord.Guild):

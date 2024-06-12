@@ -1,4 +1,4 @@
-import discord, asyncpg, typing
+import discord, asyncpg, typing, time
 from discord.ext import commands
 from bot.utils import StartUp
 from bot.helpers import EvictContext, HelpCommand
@@ -8,11 +8,12 @@ from rivalapi.rivalapi import RivalAPI
 from humanfriendly import format_timespan
 
 class Evict(commands.Bot):
-    def __init__(self):
-        super().__init__(command_prefix="+",allowed_mentions=discord.AllowedMentions(roles=False, everyone=False, users=True, replied_user=False), intents=discord.Intents.all(), 
+  def __init__(self, db: asyncpg.Pool=None):
+        super().__init__(command_prefix=EvictContext.getprefix, allowed_mentions=discord.AllowedMentions(roles=False, everyone=False, users=True, replied_user=False), intents=discord.Intents.all(), 
                          owner_ids=[214753146512080907, 598125772754124823],
                          help_command=HelpCommand())
         
+        self.db = db
         self.color = 0xffffff
         self.yes = "<:approved:1209081187679862784>"
         self.no = "<:false:1209081189269512253>"
@@ -31,11 +32,12 @@ class Evict(commands.Bot):
         self.m_cd2=commands.CooldownMapping.from_cooldown(1,10,commands.BucketType.member)
         self.global_cd = commands.CooldownMapping.from_cooldown(2, 3, commands.BucketType.member)
         self.proxy_url = "http://38gt3f7lsejwhm4:5xarwv0int6boz5@rp.proxyscrape.com:6060"
+        self.uptime = time.time()
         
-    async def create_db_pool(self):
+  async def create_db_pool(self):
         self.db = await asyncpg.create_pool(port="5432", database="testing", user="postgres", host="localhost", password="admin")
       
-    async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
+  async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
       if isinstance(error, commands.CommandNotFound): return 
       if isinstance(error, commands.NotOwner): pass
       if isinstance(error, commands.CheckFailure): 
@@ -62,17 +64,20 @@ class Evict(commands.Bot):
       if isinstance(error, commands.GuildNotFound): return await ctx.warning(f"I was unable to find that **server** or the **ID** is invalid")
       if isinstance(error, commands.BadInviteArgument): return await ctx.warning(f"Invalid **invite code** given")
         
-    async def channel_ratelimit(self,message:discord.Message) -> typing.Optional[int]:
+  async def channel_ratelimit(self,message:discord.Message) -> typing.Optional[int]:
       cd=self.c_cd
       bucket=cd.get_bucket(message)
       return bucket.update_rate_limit()
 
-    async def member_ratelimit(self,message:discord.Message) -> typing.Optional[int]:
+  async def on_message_edit(self, before, after):
+        if before.content != after.content: await self.process_commands(after)
+
+  async def member_ratelimit(self,message:discord.Message) -> typing.Optional[int]:
         cd=self.m_cd
         bucket=cd.get_bucket(message)
         return bucket.update_rate_limit()
       
-    async def on_message(self, message: discord.Message): 
+  async def on_message(self, message: discord.Message): 
       
         channel_rl=await self.channel_ratelimit(message)
         member_rl=await self.member_ratelimit(message)
@@ -86,7 +91,7 @@ class Evict(commands.Bot):
         if message.content == "<@{}>".format(self.user.id): return await message.reply(content="prefixes: " + " ".join(f"`{g}`" for g in await self.prefixes(message)))
         await self.process_commands(message) 
     
-    async def setup_hook(self):
+  async def setup_hook(self):
         print("Attempting To Start")
         await self.load_extension('jishaku')
         await StartUp.loadcogs(self)
@@ -94,5 +99,5 @@ class Evict(commands.Bot):
         await create_db(self)
         print(f"Connected to Discord API as {self.user}")
 
-    async def get_context(self, message: discord.Message, cls=EvictContext) -> EvictContext:
+  async def get_context(self, message: discord.Message, cls=EvictContext) -> EvictContext:
       return await super().get_context(message, cls=cls)

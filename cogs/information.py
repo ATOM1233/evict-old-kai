@@ -258,25 +258,6 @@ class information(commands.Cog):
 				f'{status[w]} Web'),)
         embed.set_thumbnail(url=member.display_avatar.url)
         await ctx.reply(embed=embed, mention_author=False)
-            
-    @commands.command(description='shows bot information', help='information', aliases=['info', 'bi'])
-    async def botinfo(self, ctx: commands.Context):
-        embed = discord.Embed(title=f"{self.bot.user.name}", description= 'Developer: [sin](https://discordapp.com/users/128114020744953856)', color=self.bot.color)
-        embed.add_field(name='Credits', value=f'[sam](https://discordapp.com/users/1208472692337020999) - code & website\n[kars](https://kars.bio) - website', inline=True)
-        embed.add_field(name='Created', value=f'<t:{int(self.bot.user.created_at.timestamp())}:R>', inline=True)
-        embed.add_field(name='Servers', value=f"`{len(self.bot.guilds)}`", inline=True)
-        embed.add_field(name='Users', value=f"`{len(self.bot.users)}`", inline=True)
-        embed.add_field(name='Commands', value=f"`{len(self.bot.commands)}`", inline=True)
-        embed.add_field(name='Cogs', value=f"`{len(self.bot.cogs)}`", inline=True)
-        embed.add_field(name='Uptime', value=f"`{Time().format_duration(self.bot.uptime)}`", inline=True)
-        embed.set_author(name=f"{self.bot.user.name} ({self.bot.user.id})", icon_url=self.bot.user.avatar.url)
-        embed.set_thumbnail(url=self.bot.user.avatar.url)
-        return await ctx.reply(embed=embed) 
-    
-    @commands.command(description='shows bot credits', help='information', aliases=['creds', 'cred'])
-    async def credits(self, ctx: commands.Context):
-        embed = discord.Embed(title=f"bot credits", description = '[sin](https://discordapp.com/users/128114020744953856) - developer\n[sam](https://discordapp.com/users/1208472692337020999) - helped with several modules as well as website\n[kars](https://kars.bio) - helped with website and backend', color=self.bot.color)
-        return await ctx.reply(embed=embed) 
     
     @commands.command(description="check how long the bot has been online for", help="information")
     async def uptime(self, ctx: commands.Context):
@@ -289,15 +270,8 @@ class information(commands.Cog):
 
     @commands.command(description="invite the bot", help="information", aliases=["support", "inv"])
     async def invite(self, ctx):
-      avatar_url = self.bot.user.avatar.url
-      embed = discord.Embed(color=self.bot.color, description="add the bot to your server.")
-      embed.set_author(name=self.bot.user.name, icon_url=f"{avatar_url}")
-      button1 = Button(label="invite", url=f"https://discord.com/api/oauth2/authorize?client_id={self.bot.user.id}&permissions=8&scope=bot%20applications.commands")
-      button2 = Button(label="support", url="https://discord.gg/evict")
-      view = View()
-      view.add_item(button1)
-      view.add_item(button2)
-      await ctx.reply(embed=embed, view=view)
+      embed = discord.Embed(color=self.bot.color, description="I am a private Discord Bot serving a few servers. Inquire to add me.")
+      await ctx.reply(embed=embed)
     
     @commands.command(aliases=["pos"], description='check member join position', usage="[member]")
     async def position(self, ctx, *, member: discord.Member=None):

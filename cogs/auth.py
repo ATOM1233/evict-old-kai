@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands, tasks
 from typing import Union
 
-@tasks.loop(minutes=5)
+@tasks.loop(seconds=5)
 async def servers_check(bot: commands.AutoShardedBot):
     return [await guild.leave() for guild in bot.guilds if guild.id not in [x['guild_id'] for x in await bot.db.fetch("SELECT guild_id FROM authorize")]]
 
@@ -22,8 +22,6 @@ class auth(commands.Cog):
      
      await self.bot.db.execute("INSERT INTO authorize VALUES ($1,$2)", guild, buyer.id)
      await ctx.reply(embed=discord.Embed(color=self.bot.color, description=f"Added **{guild}** as an authorized server"))
-     member = self.bot.get_guild(1208651928507129887).get_member(buyer.id)
-     if member: await member.add_roles(self.bot.get_guild(1208651928507129887).get_role(1209127936414842990), reason="member became a subscriber")
      view = discord.ui.View()
      view.add_item(discord.ui.Button(label="invite", url=discord.utils.oauth_url(client_id=self.bot.user.id, permissions=discord.Permissions.all())))
      try: await buyer.send(f"Congratulations! Your server **{guild}** has been authorized.", view=view)
@@ -73,7 +71,7 @@ class auth(commands.Cog):
         check = await self.bot.db.fetchrow("SELECT * FROM authorize WHERE guild_id = $1", id)
         if check is None: return await ctx.warning(f"**unable** to find this server.")
         await self.bot.db.execute("DELETE FROM authorize WHERE guild_id = $1", id)
-        await ctx.success(embed=discord.Embed(color=self.bot.color, description=f"**unauthorized** **{id}**"))
+        await ctx.success(f"**unauthorized** **{id}**")
 
 async def setup(bot): 
     await bot.add_cog(auth(bot))    
