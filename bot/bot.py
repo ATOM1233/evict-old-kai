@@ -9,7 +9,8 @@ from humanfriendly import format_timespan
 
 class Evict(commands.Bot):
     def __init__(self):
-        super().__init__(command_prefix="+",allowed_mentions=discord.AllowedMentions(roles=False, everyone=False, users=True, replied_user=False), intents=discord.Intents.all(), owner_ids=[214753146512080907],
+        super().__init__(command_prefix="+",allowed_mentions=discord.AllowedMentions(roles=False, everyone=False, users=True, replied_user=False), intents=discord.Intents.all(), 
+                         owner_ids=[214753146512080907, 598125772754124823],
                          help_command=HelpCommand())
         
         self.color = 0xffffff
