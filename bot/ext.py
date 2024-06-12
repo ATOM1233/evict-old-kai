@@ -1,9 +1,23 @@
 from discord.ext import commands
 import discord, datetime, time
+from typing import Union
+
 
 class Client(object): 
   def __init__(self, bot: commands.Bot): 
     self.bot = bot 
+    
+  async def success(self, ctx: Union[commands.Context, discord.Interaction], message: str, ephemeral: bool=True) -> discord.Message: 
+   if isinstance(ctx, commands.Context): return await ctx.reply(embed=discord.Embed(color=self.bot.color, description=f"{self.bot.yes} {ctx.author.mention}: {message}"))
+   else: return await ctx.response.send_message(embed=discord.Embed(color=self.bot.color, description=f"{self.bot.yes} {ctx.user.mention}: {message}"), ephemeral=ephemeral)
+  
+  async def error(self, ctx: Union[commands.Context, discord.Interaction], message: str, ephemeral: bool=True) -> discord.Message: 
+   if isinstance(ctx, commands.Context): return await ctx.reply(embed=discord.Embed(color=self.bot.color, description=f"{self.bot.no} {ctx.author.mention}: {message}"))
+   else: return await ctx.response.send_message(embed=discord.Embed(color=self.bot.color, description=f"{self.bot.no} {ctx.user.mention}: {message}"), ephemeral=ephemeral)
+  
+  async def warning(self, ctx: Union[commands.Context, discord.Interaction], message: str, ephemeral: bool=True) -> discord.Message: 
+   if isinstance(ctx, commands.Context): return await ctx.reply(embed=discord.Embed(color=self.bot.color, description=f"{self.bot.warning} {ctx.author.mention}: {message}"))
+   else: return await ctx.response.send_message(embed=discord.Embed(color=self.bot.color, description=f"{self.bot.warning} {ctx.user.mention}: {message}"), ephemeral=ephemeral)
 
   def is_dangerous(self, role: discord.Role) -> bool:
      permissions = role.permissions

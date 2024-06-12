@@ -6,6 +6,7 @@ from bot.ext import Client
 from bot.database import create_db
 from rivalapi.rivalapi import RivalAPI
 from humanfriendly import format_timespan
+from cogs.voicemaster import vmbuttons
 
 class Evict(commands.Bot):
   def __init__(self, db: asyncpg.Pool=None):
@@ -93,6 +94,7 @@ class Evict(commands.Bot):
     
   async def setup_hook(self):
         print("Attempting To Start")
+        self.add_view(vmbuttons())
         await self.load_extension('jishaku')
         await StartUp.loadcogs(self)
         await self.create_db_pool()

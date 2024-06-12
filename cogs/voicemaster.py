@@ -17,7 +17,7 @@ manemoji = "<:info:1209076695240544337>"
 async def check_owner(ctx: commands.Context):
             check = await ctx.bot.db.fetchrow("SELECT * FROM vcs WHERE voice = $1 AND user_id = $2", ctx.author.voice.channel.id, ctx.author.id)
             if check is None: 
-             await ctx.bot.ext.send_warning(ctx, "You are not the owner of this voice channel")
+             await ctx.bot.ext.warning(ctx, "You are not the owner of this voice channel")
              return True                
 
 async def check_voice(ctx: commands.Context):
@@ -27,20 +27,20 @@ async def check_voice(ctx: commands.Context):
              voicechannel = ctx.guild.get_channel(channeid)
              category = voicechannel.category 
              if ctx.author.voice is None:
-                await ctx.bot.ext.send_warning(ctx, "You are not in a voice channel")
+                await ctx.bot.ext.warning(ctx, "You are not in a voice channel")
                 return True
              elif ctx.author.voice is not None:
                 if ctx.author.voice.channel.category != category:
-                    await ctx.bot.ext.send_warning(ctx, "You are not in a voice channel created by the bot")
+                    await ctx.bot.ext.warning(ctx, "You are not in a voice channel created by the bot")
                     return True
 
 async def check_vc(interaction: discord.Interaction, category: discord.CategoryChannel): 
   if interaction.user.voice is None:
-    await interaction.client.ext.send_warning(interaction, "You are not in a voice channel", ephemeral=True)
+    await interaction.client.ext.warning(interaction, "You are not in a voice channel", ephemeral=True)
     return False
   elif interaction.user.voice is not None:
       if interaction.user.voice.channel.category != category:
-         await interaction.client.ext.send_warning(interaction, "You are not in a voice channel created by the bot", ephemeral=True)
+         await interaction.client.ext.warning(interaction, "You are not in a voice channel created by the bot", ephemeral=True)
          return False
       return True   
 
@@ -81,7 +81,7 @@ class vmbuttons(discord.ui.View):
              if await check_vc(interaction, category) is False: return 
              che = await interaction.client.db.fetchrow("SELECT * FROM vcs WHERE voice = $1 AND user_id = $2", interaction.user.voice.channel.id, interaction.user.id)
              if che is None:
-                return await interaction.client.ext.send_warning(interaction, "you don't own this voice channel".capitalize(), ephemeral=True)
+                return await interaction.client.ext.warning(interaction, "you don't own this voice channel".capitalize(), ephemeral=True)
              elif che is not None:
               await interaction.user.voice.channel.set_permissions(interaction.guild.default_role, connect=False)
               await interaction.client.ext.send_success(interaction, f"locked <#{interaction.user.voice.channel.id}>", ephemeral=True)   
@@ -96,7 +96,7 @@ class vmbuttons(discord.ui.View):
              if await check_vc(interaction, category) is False: return 
              che = await interaction.client.db.fetchrow("SELECT * FROM vcs WHERE voice = $1 AND user_id = $2", interaction.user.voice.channel.id, interaction.user.id)
              if che is None:
-                return await interaction.client.ext.send_warning(interaction, "you don't own this voice channel".capitalize(), ephemeral=True)
+                return await interaction.client.ext.warning(interaction, "you don't own this voice channel".capitalize(), ephemeral=True)
              elif che is not None:
               await interaction.user.voice.channel.set_permissions(interaction.guild.default_role, connect=True)
               await interaction.client.ext.send_success(interaction, f"unlocked <#{interaction.user.voice.channel.id}>", ephemeral=True)
@@ -111,7 +111,7 @@ class vmbuttons(discord.ui.View):
              if await check_vc(interaction, category) is False: return 
              che = await interaction.client.db.fetchrow("SELECT * FROM vcs WHERE voice = $1 AND user_id = $2", interaction.user.voice.channel.id, interaction.user.id)
              if che is None:
-                return await interaction.client.ext.send_warning(interaction, "you don't own this voice channel".capitalize(), ephemeral=True)
+                return await interaction.client.ext.warning(interaction, "you don't own this voice channel".capitalize(), ephemeral=True)
              elif che is not None:
               await interaction.user.voice.channel.set_permissions(interaction.guild.default_role, view_channel=True)
               await interaction.client.ext.send_success(interaction, f"revealed <#{interaction.user.voice.channel.id}>", ephemeral=True)
@@ -126,7 +126,7 @@ class vmbuttons(discord.ui.View):
              if await check_vc(interaction, category) is False: return 
              che = await interaction.client.db.fetchrow("SELECT * FROM vcs WHERE voice = $1 AND user_id = $2", interaction.user.voice.channel.id, interaction.user.id)
              if che is None:
-                return await interaction.client.ext.send_warning(interaction, "you don't own this voice channel".capitalize(), ephemeral=True)
+                return await interaction.client.ext.warning(interaction, "you don't own this voice channel".capitalize(), ephemeral=True)
              elif che is not None:
               await interaction.user.voice.channel.set_permissions(interaction.guild.default_role, view_channel=False)
               await interaction.client.ext.send_success(interaction, f"hidden <#{interaction.user.voice.channel.id}>", ephemeral=True)  
@@ -141,7 +141,7 @@ class vmbuttons(discord.ui.View):
              if await check_vc(interaction, category) is False: return 
              che = await interaction.client.db.fetchrow("SELECT * FROM vcs WHERE voice = $1 AND user_id = $2", interaction.user.voice.channel.id, interaction.user.id)
              if che is None:
-                return await interaction.client.ext.send_warning(interaction, "you don't own this voice channel".capitalize(), ephemeral=True)
+                return await interaction.client.ext.warning(interaction, "you don't own this voice channel".capitalize(), ephemeral=True)
              elif che is not None:
                 rename = vcModal()
                 await interaction.response.send_modal(rename)
@@ -156,10 +156,10 @@ class vmbuttons(discord.ui.View):
              if await check_vc(interaction, category) is False: return 
              che = await interaction.client.db.fetchrow("SELECT * FROM vcs WHERE voice = $1 AND user_id = $2", interaction.user.voice.channel.id, interaction.user.id)
              if che is None:
-                return await interaction.client.ext.send_warning(interaction, "you don't own this voice channel".capitalize(), ephemeral=True)
+                return await interaction.client.ext.warning(interaction, "you don't own this voice channel".capitalize(), ephemeral=True)
              elif che is not None:
               limit = interaction.user.voice.channel.user_limit
-              if limit == 99: return await interaction.client.ext.send_warning(interaction, f"I can't increase the limit for <#{interaction.user.voice.channel.id}>", ephemeral=True)              
+              if limit == 99: return await interaction.client.ext.warning(interaction, f"I can't increase the limit for <#{interaction.user.voice.channel.id}>", ephemeral=True)              
               res = limit + 1
               await interaction.user.voice.channel.edit(user_limit=res)
               await interaction.client.ext.send_success(interaction, f"increased <#{interaction.user.voice.channel.id}> limit to **{res}** members", ephemeral=True)
@@ -174,10 +174,10 @@ class vmbuttons(discord.ui.View):
              if await check_vc(interaction, category) is False: return 
              che = await interaction.client.db.fetchrow("SELECT * FROM vcs WHERE voice = $1 AND user_id = $2", interaction.user.voice.channel.id, interaction.user.id)
              if che is None:
-                return await interaction.client.ext.send_warning(interaction, "you don't own this voice channel".capitalize(), ephemeral=True)
+                return await interaction.client.ext.warning(interaction, "you don't own this voice channel".capitalize(), ephemeral=True)
              elif che is not None:
               limit = interaction.user.voice.channel.user_limit
-              if limit == 0: return await interaction.client.ext.send_warning(interaction, f"I can't decrease the limit for <#{interaction.user.voice.channel.id}>", ephemeral=True)              
+              if limit == 0: return await interaction.client.ext.warning(interaction, f"I can't decrease the limit for <#{interaction.user.voice.channel.id}>", ephemeral=True)              
               res = limit - 1
               await interaction.user.voice.channel.edit(user_limit=res)
               await interaction.client.ext.send_success(interaction, f"decreased <#{interaction.user.voice.channel.id}> limit to **{res}** members", ephemeral=True)
@@ -193,8 +193,8 @@ class vmbuttons(discord.ui.View):
              che = await interaction.client.db.fetchrow("SELECT * FROM vcs WHERE voice = $1", interaction.user.voice.channel.id)             
              memberid = che["user_id"]   
              member = interaction.guild.get_member(memberid)
-             if member.id == interaction.user.id: return await interaction.client.ext.send_warning(interaction, "You are already the owner of this voice channel", ephemeral=True)
-             if member in interaction.user.voice.channel.members: return await interaction.client.ext.send_warning(interaction, "The owner is still in the voice channel", ephemeral=True)
+             if member.id == interaction.user.id: return await interaction.client.ext.warning(interaction, "You are already the owner of this voice channel", ephemeral=True)
+             if member in interaction.user.voice.channel.members: return await interaction.client.ext.warning(interaction, "The owner is still in the voice channel", ephemeral=True)
              else:
                     await interaction.client.db.execute(f"UPDATE vcs SET user_id = $1 WHERE voice = $2", interaction.user.id, interaction.user.voice.channel.id)
                     return await interaction.client.ext.send_success(interaction, "You are the new owner of this voice channel", ephemeral=True)     
@@ -202,7 +202,7 @@ class vmbuttons(discord.ui.View):
     @discord.ui.button(label="", emoji=manemoji, style=discord.ButtonStyle.gray, custom_id="persistent_view:info")
     async def info(self, interaction: discord.Interaction, button: discord.ui.Button):
          check = await interaction.client.db.fetchrow("SELECT * FROM voicemaster WHERE guild_id = $1", interaction.guild.id) 
-         if not interaction.user.voice: return await interaction.client.ext.send_warning(interaction, "You are not in a voice channel", ephemeral=True)
+         if not interaction.user.voice: return await interaction.client.ext.warning(interaction, "You are not in a voice channel", ephemeral=True)
          if check is not None:     
              che = await interaction.client.db.fetchrow("SELECT * FROM vcs WHERE voice = $1", interaction.user.voice.channel.id)
              if che is not None:
@@ -222,7 +222,7 @@ class vmbuttons(discord.ui.View):
             category = voicechannel.category 
             if await check_vc(interaction, category) is False: return 
             che = await interaction.client.db.fetchrow("SELECT * FROM vcs WHERE voice = $1 AND user_id = $2", interaction.user.voice.channel.id, interaction.user.id)
-            if che is None: return await interaction.client.ext.send_warning(interaction, "you don't own this voice channel".capitalize(), ephemeral=True)
+            if che is None: return await interaction.client.ext.warning(interaction, "you don't own this voice channel".capitalize(), ephemeral=True)
             if len(interaction.user.voice.channel.members) == 1: return await interaction.response.send_message(embed=discord.Embed(color=interaction.client.color, description=f"{interaction.client.warning} {interaction.user.mention}: You are the only person in the voice channel"), ephemeral=True)
             em = discord.Embed(color=interaction.client.color, title="VoiceMaster Moderation Menu", description="Moderate your voice channel using the menu below")
             options = [ 
