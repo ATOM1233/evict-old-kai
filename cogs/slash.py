@@ -147,7 +147,7 @@ class confessModal(Modal, title="confess here"):
           channel = interaction.guild.get_channel(check['channel_id']) 
           count = check['confession']+1
           links = ["https://", "http://", ".com", ".ro", ".gg", ".xyz", ".cf", ".org", ".ru", ".it", ".de"]
-          if any(link in self.children[0].value for link in links): return await interaction.client.ext.send_warning(interaction, "i can't send links. those things can be dangerous !!".capitalize(), ephemeral=True)
+          if any(link in self.children[0].value for link in links): return await interaction.client.ext.warning(interaction, "i can't send links. those things can be dangerous !!".capitalize(), ephemeral=True)
           embed = discord.Embed(color=interaction.client.color, description=f"{interaction.user.mention}: sent your confession in {channel.mention}")
           await interaction.response.send_message(embed=embed, ephemeral=True)
           e = discord.Embed(color=interaction.client.color, description=f"{self.name.value}", timestamp=datetime.datetime.now())
@@ -156,7 +156,7 @@ class confessModal(Modal, title="confess here"):
           await channel.send(embed=e)
           await interaction.client.db.execute("UPDATE confess SET confession = $1 WHERE guild_id = $2", count, interaction.guild.id) 
           await interaction.client.db.execute("INSERT INTO confess_members VALUES ($1,$2,$3)", interaction.guild.id, interaction.user.id, count)
-       except Exception as e: return await interaction.client.ext.send_error(interaction, f"Couldn't send your confession - {e}")
+       except Exception as e: return await interaction.client.ext.error(interaction, f"Couldn't send your confession - {e}")
 
 class Cog(commands.Cog):
  def __init__(self, bot: commands.AutoShardedBot):
@@ -180,10 +180,10 @@ class Cog(commands.Cog):
  @app_commands.command(name="confess", description="anonymously confess your thoughts")
  async def confess(self , ctx: discord.Interaction):
     re = await ctx.client.db.fetchrow("SELECT * FROM confess_mute WHERE guild_id = $1 AND user_id = $2", ctx.guild.id, ctx.user.id)
-    if re: await ctx.client.ext.send_error(ctx, "you are **muted** from sending confessions in this server", ephemeral=True)
+    if re: await ctx.client.ext.error(ctx, "you are **muted** from sending confessions in this server", ephemeral=True)
     check = await self.bot.db.fetchrow("SELECT channel_id FROM confess WHERE guild_id = {}".format(ctx.guild.id))
     if check: return await ctx.response.send_modal(confessModal())
-    return await self.bot.ext.send_error(ctx, "confessions aren't enabled in this server", ephemeral=True)   
+    return await self.bot.ext.error(ctx, "confessions aren't enabled in this server", ephemeral=True)   
 
 async def setup(bot) -> None:
     await bot.add_cog(Cog(bot))    

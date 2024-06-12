@@ -16,12 +16,12 @@ class Evict(commands.Bot):
         
         self.db = db
         self.color = 0xffffff
-        self.yes = "<:approved:1209081187679862784>"
-        self.no = "<:false:1209081189269512253>"
-        self.warning = "<:warning:1209081190418743326>"
-        self.left = "<:left:1227724412967714907>"
-        self.right = "<:right:1227724250165678091>"
-        self.goto = "<:filter:1208241278891073547>"
+        self.yes = "<:approved:1250418891373412374>"
+        self.no = "<:false:1250429646000881789>"
+        self.warning = "<:warning:1250418903079718912>"
+        self.left = "<:left:1250428984693362792>"
+        self.right = "<:right:1250418914072989855>"
+        self.goto = "<:filter:1250429945998479431>"
         self.ext = Client(self)
         self.support_server = 'https://discord.gg/evict'
         self.commands_url = 'https://evict.dev/commands'

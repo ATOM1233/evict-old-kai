@@ -140,12 +140,12 @@ class emoji(commands.Cog):
          button1 = discord.ui.Button(emoji="<:check:1208233844751474708>")
          button2 = discord.ui.Button(emoji="<:stop:1208240063691886642>")
          async def button1_callback(interaction: discord.Interaction): 
-          if ctx.author.id != interaction.user.id: return await self.bot.ext.send_warning(interaction, "You are not the author of this embed")
+          if ctx.author.id != interaction.user.id: return await self.bot.ext.warning(interaction, "You are not the author of this embed")
           await s.delete()
           return await interaction.response.edit_message(embed=discord.Embed(color=self.bot.color, description=f"{self.bot.yes} {interaction.user.mention}: Deleted sticker"), view=None)   
          
          async def button2_callback(interaction: discord.Interaction): 
-           if ctx.author.id != interaction.user.id: return await self.bot.ext.send_warning(interaction, "You are not the author of this embed")
+           if ctx.author.id != interaction.user.id: return await self.bot.ext.warning(interaction, "You are not the author of this embed")
            return await interaction.response.edit_message(embed=discord.Embed(color=self.bot.color, description=f"{interaction.user.mention}"))
          
          button1.callback = button1_callback
@@ -183,7 +183,7 @@ class emoji(commands.Cog):
         button2 = discord.ui.Button(label="", style=discord.ButtonStyle.gray, emoji="<:stop:1208240063691886642>")
         
         async def button1_callback(interaction: discord.Interaction): 
-          if interaction.user != ctx.author: return await self.bot.ext.send_warning(interaction, "you cant use this button", ephemeral=True)
+          if interaction.user != ctx.author: return await self.bot.ext.warning(interaction, "you cant use this button", ephemeral=True)
           try:
            url = message.stickers[0].url
            name = message.stickers[0].name
@@ -204,7 +204,7 @@ class emoji(commands.Cog):
         button1.callback = button1_callback 
 
         async def button2_callback(interaction: discord.Interaction): 
-          if interaction.user != ctx.author: return await self.bot.ext.send_warning(interaction, "You can't use this button", ephemeral=True)            
+          if interaction.user != ctx.author: return await self.bot.ext.warning(interaction, "You can't use this button", ephemeral=True)            
           return await interaction.response.edit_message(embed=discord.Embed(color=self.bot.color, description=f"{interaction.user.mention}: Cancelled sticker steal"), view=None)
 
         button2.callback = button2_callback 

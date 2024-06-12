@@ -64,8 +64,8 @@ class vcModal(Modal, title="rename your voice channel"):
         name = self.name.value
         try: 
            await interaction.user.voice.channel.edit(name=name)   
-           await interaction.client.ext.send_success(interaction, f"voice channel renamed to **{name}**", ephemeral=True)
-        except Exception as er: await interaction.client.send_error(interaction, f"an error occured -> {er}", ephemeral=True)
+           await interaction.client.ext.success(interaction, f"voice channel renamed to **{name}**", ephemeral=True)
+        except Exception as er: await interaction.client.error(interaction, f"an error occured -> {er}", ephemeral=True)
 
 class vmbuttons(discord.ui.View):
     def __init__(self):
@@ -84,7 +84,7 @@ class vmbuttons(discord.ui.View):
                 return await interaction.client.ext.warning(interaction, "you don't own this voice channel".capitalize(), ephemeral=True)
              elif che is not None:
               await interaction.user.voice.channel.set_permissions(interaction.guild.default_role, connect=False)
-              await interaction.client.ext.send_success(interaction, f"locked <#{interaction.user.voice.channel.id}>", ephemeral=True)   
+              await interaction.client.ext.success(interaction, f"locked <#{interaction.user.voice.channel.id}>", ephemeral=True)   
 
     @discord.ui.button(label="", emoji=unlockemoji, style=discord.ButtonStyle.gray, custom_id="persistent_view:unlock")
     async def unlock(self, interaction: discord.Interaction, button: discord.ui.Button):   
@@ -99,7 +99,7 @@ class vmbuttons(discord.ui.View):
                 return await interaction.client.ext.warning(interaction, "you don't own this voice channel".capitalize(), ephemeral=True)
              elif che is not None:
               await interaction.user.voice.channel.set_permissions(interaction.guild.default_role, connect=True)
-              await interaction.client.ext.send_success(interaction, f"unlocked <#{interaction.user.voice.channel.id}>", ephemeral=True)
+              await interaction.client.ext.success(interaction, f"unlocked <#{interaction.user.voice.channel.id}>", ephemeral=True)
 
     @discord.ui.button(label="", emoji=unghostemoji, style=discord.ButtonStyle.gray, custom_id="persistent_view:reveal")
     async def reveal(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -114,7 +114,7 @@ class vmbuttons(discord.ui.View):
                 return await interaction.client.ext.warning(interaction, "you don't own this voice channel".capitalize(), ephemeral=True)
              elif che is not None:
               await interaction.user.voice.channel.set_permissions(interaction.guild.default_role, view_channel=True)
-              await interaction.client.ext.send_success(interaction, f"revealed <#{interaction.user.voice.channel.id}>", ephemeral=True)
+              await interaction.client.ext.success(interaction, f"revealed <#{interaction.user.voice.channel.id}>", ephemeral=True)
       
     @discord.ui.button(label="", emoji=ghostemoji, style=discord.ButtonStyle.gray, custom_id="persistent_view:hide")
     async def hide(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -129,7 +129,7 @@ class vmbuttons(discord.ui.View):
                 return await interaction.client.ext.warning(interaction, "you don't own this voice channel".capitalize(), ephemeral=True)
              elif che is not None:
               await interaction.user.voice.channel.set_permissions(interaction.guild.default_role, view_channel=False)
-              await interaction.client.ext.send_success(interaction, f"hidden <#{interaction.user.voice.channel.id}>", ephemeral=True)  
+              await interaction.client.ext.success(interaction, f"hidden <#{interaction.user.voice.channel.id}>", ephemeral=True)  
 
     @discord.ui.button(label="", emoji=channelemoji, style=discord.ButtonStyle.gray, custom_id="persistent_view:rename")
     async def rename(self, interaction: discord.Interaction, button: discord.ui.Button): 
@@ -162,7 +162,7 @@ class vmbuttons(discord.ui.View):
               if limit == 99: return await interaction.client.ext.warning(interaction, f"I can't increase the limit for <#{interaction.user.voice.channel.id}>", ephemeral=True)              
               res = limit + 1
               await interaction.user.voice.channel.edit(user_limit=res)
-              await interaction.client.ext.send_success(interaction, f"increased <#{interaction.user.voice.channel.id}> limit to **{res}** members", ephemeral=True)
+              await interaction.client.ext.success(interaction, f"increased <#{interaction.user.voice.channel.id}> limit to **{res}** members", ephemeral=True)
 
     @discord.ui.button(label="", emoji=minusemoji, style=discord.ButtonStyle.gray, custom_id="persistent_view:decrease")
     async def decrease(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -180,7 +180,7 @@ class vmbuttons(discord.ui.View):
               if limit == 0: return await interaction.client.ext.warning(interaction, f"I can't decrease the limit for <#{interaction.user.voice.channel.id}>", ephemeral=True)              
               res = limit - 1
               await interaction.user.voice.channel.edit(user_limit=res)
-              await interaction.client.ext.send_success(interaction, f"decreased <#{interaction.user.voice.channel.id}> limit to **{res}** members", ephemeral=True)
+              await interaction.client.ext.success(interaction, f"decreased <#{interaction.user.voice.channel.id}> limit to **{res}** members", ephemeral=True)
     
     @discord.ui.button(label="", emoji=claimemoji, style=discord.ButtonStyle.gray, custom_id="persistent_view:claim")
     async def claim(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -197,7 +197,7 @@ class vmbuttons(discord.ui.View):
              if member in interaction.user.voice.channel.members: return await interaction.client.ext.warning(interaction, "The owner is still in the voice channel", ephemeral=True)
              else:
                     await interaction.client.db.execute(f"UPDATE vcs SET user_id = $1 WHERE voice = $2", interaction.user.id, interaction.user.voice.channel.id)
-                    return await interaction.client.ext.send_success(interaction, "You are the new owner of this voice channel", ephemeral=True)     
+                    return await interaction.client.ext.success(interaction, "You are the new owner of this voice channel", ephemeral=True)     
     
     @discord.ui.button(label="", emoji=manemoji, style=discord.ButtonStyle.gray, custom_id="persistent_view:info")
     async def info(self, interaction: discord.Interaction, button: discord.ui.Button):

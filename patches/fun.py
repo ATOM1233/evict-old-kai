@@ -1,4 +1,4 @@
-import random, discord, aiohttp
+import random, discord, aiohttp, datetime
 from typing import List
 from discord.ext import commands
 
@@ -28,7 +28,7 @@ class RockPaperScissors(discord.ui.View):
     super().__init__(timeout=10)
 
   async def action(self, interaction: discord.Interaction, selection: str): 
-        if interaction.user.id != self.ctx.author.id: return await interaction.client.ext.send_warning(interaction, "This is not your game", ephemeral=True)
+        if interaction.user.id != self.ctx.author.id: return await interaction.client.ext.warning(interaction, "This is not your game", ephemeral=True)
         botselection = random.choice(["rock", "paper, scissors"])
 
         def getwinner(): 
@@ -168,3 +168,68 @@ class TicTacToe(discord.ui.View):
         for item in self.children: 
             item.disabled = True 
         await self.message.edit(view=self)   
+        
+        
+class MarryView(discord.ui.View): 
+   def __init__(self, ctx: commands.Context, member: discord.Member): 
+    super().__init__() 
+    self.ctx = ctx 
+    self.member = member
+    self.status = False 
+
+   @discord.ui.button(emoji="<:check:1083455835189022791>")
+   async def yes(self, interaction: discord.Interaction, button: discord.ui.Button): 
+    if interaction.user == self.ctx.author: return await interaction.client.ext.warning(interaction, "you can't accept your own marriage".capitalize(), ephemeral=True)
+    elif interaction.user != self.member: return await self.ctx.bot.ext.warning(interaction, "you are not the author of this embed".capitalize(), ephemeral=True)
+    else:   
+      await interaction.client.db.execute("INSERT INTO marry VALUES ($1, $2, $3)", self.ctx.author.id, self.member.id, datetime.datetime.now().timestamp())                   
+      embe = discord.Embed(color=interaction.client.color, description=f"<a:milk_love:1208459088069922937> **{self.ctx.author}** succesfully married with **{self.member}**")
+      await interaction.response.edit_message(content=None, embed=embe, view=None)
+      self.status = True              
+
+   @discord.ui.button(emoji="<:stop:1083455877450834041>")
+   async def no(self, interaction: discord.Interaction, button: discord.ui.Button): 
+     if interaction.user == self.ctx.author: return await self.ctx.bot.ext.warning(interaction, "you can't reject your own marriage".capitalize(), ephemeral=True)
+     elif interaction.user != self.member: return await self.ctx.bot.ext.warning(interaction, "you are not the author of this embed".capitalize(), ephemeral=True)
+     else:                         
+        embe = discord.Embed(color=interaction.client.color, description=f"**{self.ctx.author}** i'm sorry, but **{self.member}** is probably not the right person for you")
+        await interaction.response.edit_message(content=None, embed=embe, view=None)
+        self.status = True 
+   
+   async def on_timeout(self):
+     if self.status == False:
+      embed = discord.Embed(color=0xd3d3d3, description=f"**{self.member}** didn't reply in time :(")  
+      try: await self.message.edit(content=None, embed=embed, view=None)  
+      except: pass 
+
+class DiaryModal(discord.ui.Modal, title="Create a diary page"): 
+  titl = discord.ui.TextInput(label="Your diary title", placeholder="Give your diary page a short name", style=discord.TextStyle.short)
+  text = discord.ui.TextInput(label="Your diary text", placeholder="Share your feelings or thoughts here", max_length=2000, style=discord.TextStyle.long)
+  
+  async def on_submit(self, interaction: discord.Interaction): 
+   now = datetime.datetime.now()
+   date = f"{now.month}/{now.day}/{str(now.year)[2:]}"
+   await interaction.client.db.execute("INSERT INTO diary VALUES ($1,$2,$3,$4)", interaction.user.id, self.text.value, self.titl.value, date) 
+   embed = discord.Embed(color=interaction.client.color, description=f"> {interaction.client.yes} {interaction.user.mention}: Added a diary page for today")
+   return await interaction.response.edit_message(embed=embed, view=None)
+  
+  async def on_error(self, interaction: discord.Interaction, error: Exception): 
+   embed = discord.Embed(color=interaction.client.color, description=f"> {interaction.client.no} {interaction.user.mention}: Unable to create the diary")
+   return await interaction.response.edit_message(embed=embed, view=None) 
+  
+  
+class Joint: 
+ 
+  def check_joint():
+   async def predicate(ctx: commands.Context): 
+    check = await ctx.bot.db.fetchrow("SELECT * FROM joint WHERE guild_id = $1", ctx.guild.id)
+    if not check: await ctx.bot.ext.error(ctx, f"This server **doesn't** have a **joint**. Use `{ctx.clean_prefix}joint toggle` to get one")    
+    return check is not None    
+   return commands.check(predicate)
+  
+  def joint_owner(): 
+   async def predicate(ctx: commands.Context): 
+    check = await ctx.bot.db.fetchrow("SELECT * FROM joint WHERE guild_id = $1", ctx.guild.id)
+    if check["holder"] != ctx.author.id: await ctx.warning( f"You don't have the **joint**. Steal it from <@{check['holder']}>")
+    return check["holder"] == ctx.author.id
+   return commands.check(predicate) 

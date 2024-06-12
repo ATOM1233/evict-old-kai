@@ -36,9 +36,9 @@ class TicketTopic(discord.ui.Modal, title="Add a ticket topic"):
 
   async def on_submit(self, interaction: discord.Interaction):
       check = await interaction.client.db.fetchrow('SELECT * FROM ticket_topics WHERE guild_id = $1 AND name = $2', interaction.guild.id, self.name.value)
-      if check is not None: return await interaction.client.ext.send_warning(interaction, f"A topic with the name **{self.name.value}** already exists", ephemeral=True)
+      if check is not None: return await interaction.client.ext.warning(interaction, f"A topic with the name **{self.name.value}** already exists", ephemeral=True)
       await interaction.client.db.execute("INSERT INTO ticket_topics VALUES ($1,$2,$3)", interaction.guild.id, self.name.value, self.description.value)
-      return await interaction.client.ext.send_success(interaction, f"Added new ticket topic **{self.name.value}**", ephemeral=True)
+      return await interaction.client.ext.success(interaction, f"Added new ticket topic **{self.name.value}**", ephemeral=True)
 
 class CreateTicket(discord.ui.View): 
     def __init__(self): 
@@ -47,7 +47,7 @@ class CreateTicket(discord.ui.View):
     @discord.ui.button(label='Create', emoji="🎫", style=discord.ButtonStyle.gray, custom_id='persistent_view:create')
     async def create(self, interaction: discord.Interaction, button: discord.ui.Button):      
         check = await interaction.client.db.fetchrow("SELECT * FROM tickets WHERE guild_id = $1", interaction.guild.id)
-        if check is None: return await interaction.client.ext.send_warning(interaction, "Ticket module was disabled", ephemeral=True)
+        if check is None: return await interaction.client.ext.warning(interaction, "Ticket module was disabled", ephemeral=True)
         re = await interaction.client.db.fetchrow("SELECT * FROM opened_tickets WHERE guild_id = $1 AND user_id = $2", interaction.guild.id, interaction.user.id)
         if re is not None: return await interaction.response.send_message(embed=discord.Embed(color=int(check['color']) if check[4] is not None else interaction.client.color, description=f"{interaction.client.warning} {interaction.user.mention}: You already have a ticket opened"), ephemeral=True)
         results = await interaction.client.db.fetch("SELECT * FROM ticket_topics WHERE guild_id = $1", interaction.guild.id)
@@ -184,20 +184,20 @@ class tickets(commands.Cog):
         button2 = discord.ui.Button(label="remove topic", style=discord.ButtonStyle.red, disabled=len(results) == 0)
 
         async def button1_callback(interaction: discord.Interaction): 
-          if interaction.user != ctx.author: return await interaction.client.ext.send_warning(interaction, "You are not the author of this message", ephemeral=True)
+          if interaction.user != ctx.author: return await interaction.client.ext.warning(interaction, "You are not the author of this message", ephemeral=True)
           add = TicketTopic()
           return await interaction.response.send_modal(add)
 
         async def button2_callback(interaction: discord.Interaction): 
-          if interaction.user != ctx.author: return await interaction.client.ext.send_warning(interaction, "You are not the author of this message", ephemeral=True)
+          if interaction.user != ctx.author: return await interaction.client.ext.warning(interaction, "You are not the author of this message", ephemeral=True)
           e = discord.Embed(color=self.bot.color, description=f"🔍 Select a topic to delete")
           options = []
           for result in results: options.append(discord.SelectOption(label=result[1], description=result[2]))
           select = discord.ui.Select(options=options, placeholder="select a topic...")
           async def select_callback(inter: discord.Interaction):
-            if inter.user != ctx.author: return await interaction.client.ext.send_warning(interaction, "You are not the author of this message", ephemeral=True)
+            if inter.user != ctx.author: return await interaction.client.ext.warning(interaction, "You are not the author of this message", ephemeral=True)
             await self.bot.db.execute("DELETE FROM ticket_topics WHERE guild_id = $1 AND name = $2", inter.guild.id, select.values[0])
-            await self.bot.ext.send_success(inter, f"Removed **{select.values[0]}** topic", ephemeral=True)
+            await self.bot.ext.success(inter, f"Removed **{select.values[0]}** topic", ephemeral=True)
 
           select.callback = select_callback 
           v = discord.ui.View()

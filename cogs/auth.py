@@ -56,13 +56,13 @@ class auth(commands.Cog):
       l+=1
       if l == 10:
        messages.append(mes)
-       number.append(discord.Embed(color=self.bot.color, title=f"purchased servers ({len(results)})", description=messages[i]))
+       number.append(discord.Embed(color=self.bot.color, title=f"owned servers ({len(results)})", description=messages[i]))
        i+=1
        mes = ""
        l=0
     
      messages.append(mes)
-     number.append(discord.Embed(color=self.bot.color, title=f"purchased servers ({len(results)})", description=messages[i]))
+     number.append(discord.Embed(color=self.bot.color, title=f"owned servers ({len(results)})", description=messages[i]))
      await ctx.paginator(number) 
 
     @commands.command()

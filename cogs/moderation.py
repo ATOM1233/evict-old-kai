@@ -24,7 +24,7 @@ class ClearMod(discord.ui.View):
 
   @discord.ui.button(emoji="<:check:1208233844751474708>")
   async def yes(self, interaction: discord.Interaction, button: discord.ui.Button):
-   if interaction.user.id != self.ctx.author.id: return await interaction.client.ext.send_warning(interaction, "You are not the author of this embed")
+   if interaction.user.id != self.ctx.author.id: return await interaction.client.ext.warning(interaction, "You are not the author of this embed")
    check = await interaction.client.db.fetchrow("SELECT * FROM mod WHERE guild_id = $1", interaction.guild.id)     
    channelid = check["channel_id"]
    roleid = check["role_id"]
@@ -44,7 +44,7 @@ class ClearMod(discord.ui.View):
   
   @discord.ui.button(emoji="<:stop:1188946367750606959>")
   async def no(self, interaction: discord.Interaction, button: discord.ui.Button): 
-    if interaction.user.id != self.ctx.author.id: return await interaction.client.ext.send_warning(interaction, "You are not the author of this embed")
+    if interaction.user.id != self.ctx.author.id: return await interaction.client.ext.warning(interaction, "You are not the author of this embed")
     await interaction.response.edit_message(embed=discord.Embed(color=interaction.client.color, description="aborting action"), view=None)
     self.status = True
 
@@ -118,7 +118,7 @@ class moderation(commands.Cog):
 
    async def yes_callback(interaction: discord.Interaction): 
     
-    if not interaction.user: return await self.bot.ext.send_warning(interaction, "You are not the **author** of this embed", ephemeral=True)
+    if not interaction.user: return await self.bot.ext.warning(interaction, "You are not the **author** of this embed", ephemeral=True)
     c = await interaction.channel.clone(reason=f'channel nuke requested by {ctx.author}')
     
     if guild.system_channel and guild.system_channel.id == channel.id:
@@ -135,7 +135,7 @@ class moderation(commands.Cog):
     await c.send('first')
    
    async def no_callback(interaction: discord.Interaction): 
-    if not interaction.user: return await self.bot.ext.send_warning(interaction, "You are not the **author** of this embed", ephemeral=True)
+    if not interaction.user: return await self.bot.ext.warning(interaction, "You are not the **author** of this embed", ephemeral=True)
     await interaction.response.edit_message(embed=discord.Embed(color=self.bot.color, description="aborting action"), view=None)
    
    yes.callback = yes_callback
