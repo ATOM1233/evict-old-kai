@@ -59,19 +59,19 @@ class listeners(commands.Cog):
             try: await guild.ban(user, reason=f"hardbanned by {await self.bot.fetch_user(check['author'])}")
             except discord.Forbidden: return
    
-  @commands.Cog.listener('on_member_remove')
+  """@commands.Cog.listener('on_member_remove')
   async def booster_left(self, member: discord.Member): 
       if member.guild.id == 1208651928507129887:
          if member.guild.premium_subscriber_role in member.roles: 
             check = await self.bot.db.fetchrow("SELECT * FROM donor WHERE user_id = {}".format(member.id))
-            if check is not None: await self.bot.db.execute("DELETE FROM donor WHERE user_id = {}".format(member.id))                 
+            if check is not None: await self.bot.db.execute("DELETE FROM donor WHERE user_id = {}".format(member.id))        
 
   @commands.Cog.listener('on_member_update')
   async def booster_unboosted(self, before: discord.Member, after: discord.Member): 
     if before.guild.id == 1208651928507129887:
        if before.guild.premium_subscriber_role in before.roles and not before.guild.premium_subscriber_role in after.roles:
          check = await self.bot.db.fetchrow("SELECT * FROM donor WHERE user_id = {}".format(before.id))
-         if check is not None: return await self.bot.db.execute("DELETE FROM donor WHERE user_id = {}".format(before.id))   
+         if check is not None: return await self.bot.db.execute("DELETE FROM donor WHERE user_id = {}".format(before.id))"""
   
   @commands.Cog.listener('on_member_ban')
   async def owner_ban_check(self, guild: discord.Guild, user: discord.User):
@@ -79,7 +79,7 @@ class listeners(commands.Cog):
           try: await guild.unban(user, reason="User cannot be banned. Kick evict to ban this user.",)
           except discord.Forbidden: await guild.leave()
 
-  @commands.Cog.listener('on_member_unban')
+  """@commands.Cog.listener('on_member_unban')
   async def globalban_check1(self, guild: discord.Guild, user: discord.User):
     check = await self.bot.db.fetchrow("SELECT * FROM globalban WHERE banned = {}".format(user.id)) 
     if check is not None: 
@@ -98,7 +98,7 @@ class listeners(commands.Cog):
         try:
             await guild.ban(member, reason=f"{member} cannot be unbanned. globalban enforced for this user.")
         except (discord.HTTPException, discord.Forbidden):
-            pass
+            pass"""
 
   @commands.Cog.listener('on_member_join')
   async def autokick_check(self, member: discord.User):

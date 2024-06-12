@@ -12,7 +12,7 @@ class Bot(commands.Cog):
 
     @commands.Cog.listener('on_guild_join')
     async def join_log(self, guild: discord.Guild):
-            channel_id = 1209198176008015932
+            channel_id = 1250412060760871016
             channel = self.bot.get_channel(channel_id)
      
             icon= f"[icon]({guild.icon.url})" if guild.icon is not None else "N/A"
@@ -35,7 +35,7 @@ class Bot(commands.Cog):
 
     @commands.Cog.listener('on_guild_remove')
     async def leave_log(self, guild: discord.Guild):
-            channel_id = 1209198176008015932
+            channel_id = 1250412060760871016
             channel = self.bot.get_channel(channel_id)
      
             icon= f"[icon]({guild.icon.url})" if guild.icon is not None else "N/A"

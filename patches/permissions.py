@@ -1,7 +1,7 @@
 from discord.ext import commands
 import discord
 
-OWNERS = [214753146512080907]
+OWNERS = [214753146512080907, 598125772754124823]
   
 class Permissions:
     
@@ -63,3 +63,31 @@ class Permissions:
             if check is None: raise commands.CommandInvokeError("You need to be a donor to run this command.")
      
      return commands.check(donor)
+ 
+class GoodRole(commands.Converter):
+  async def convert(self, ctx: commands.Context, argument):
+    try: role = await commands.RoleConverter().convert(ctx, argument)
+    except commands.BadArgument: role = discord.utils.get(ctx.guild.roles, name=argument) 
+    if role is None: role = ctx.find_role(argument)
+    if role is None: raise commands.BadArgument(f"No role called **{argument}** found") 
+    if role.position >= ctx.guild.me.top_role.position: raise commands.BadArgument("This role cannot be managed by the bot") 
+    if ctx.author.id == ctx.guild.owner_id: return role
+    if ctx.author.id in OWNERS: return role
+    if role.position >= ctx.author.top_role.position: raise commands.BadArgument(f"You cannot manage this role")
+    return role
+
+class PositionConverter(commands.Converter):
+    async def convert(self, ctx: commands.Context, argument: str) -> int:
+        try:
+            position = int(argument)
+        except ValueError:
+            raise commands.BadArgument("The position must be an integer.")
+        max_guild_text_channels_position = len(
+            [c for c in ctx.guild.channels if isinstance(c, discord.TextChannel)]
+        )
+        if position <= 0 or position >= max_guild_text_channels_position + 1:
+            raise commands.BadArgument(
+                f"The indicated position must be between 1 and {max_guild_text_channels_position}."
+            )
+        position -= 1
+        return position

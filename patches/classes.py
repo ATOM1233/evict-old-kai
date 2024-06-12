@@ -1,5 +1,6 @@
 import datetime, discord, emoji, re
 from discord.ext import commands
+from bot.helpers import EvictContext
 
 class TimeConverter(object): 
     def convert_datetime(self, date: datetime.datetime=None):
@@ -127,3 +128,37 @@ class Time:
             parts.append(f"{seconds} {'second' if seconds == 1 else 'seconds'}")
 
         return ", ".join(parts)
+      
+class ValidWebhookCode(commands.Converter):
+  async def convert(self, ctx: EvictContext, argument: str):
+   check = await ctx.bot.db.fetchrow("SELECT * FROM webhook WHERE guild_id = $1 AND code = $2", ctx.guild.id, argument)
+   if not check:
+    raise commands.BadArgument("There is no webhook associated with this code")
+   return argument
+ 
+class Mod: 
+
+  def is_mod_configured(): 
+   async def predicate(ctx: commands.Context): 
+    check = await ctx.bot.db.fetchrow("SELECT * FROM mod WHERE guild_id = $1", ctx.guild.id)
+    if not check: 
+     await ctx.warning( f"Moderation isn't **enabled** in this server. Enable it using `{ctx.clean_prefix}setmod` command")
+     return False
+    return True
+   return commands.check(predicate)
+
+  async def check_role_position(ctx: commands.Context, role: discord.Role) -> bool: 
+   if (role.position >= ctx.author.top_role.position and ctx.author.id != ctx.guild.owner_id) or not role.is_assignable(): 
+    await ctx.warning( "I cannot manage this role for you")
+    return False 
+   return True
+
+  async def check_hieracy(ctx: commands.Context, member: discord.Member) -> bool: 
+   if member.id == ctx.bot.user.id: 
+    if ctx.command.name != "nickname":
+     await ctx.reply("leave me alone <:mmangry:1081633006923546684>") 
+     return False
+   if (ctx.author.top_role.position <= member.top_role.position and ctx.guild.owner_id != ctx.author.id) or ctx.guild.me.top_role <= member.top_role or (member.id == ctx.guild.owner_id and ctx.author.id != member.id): 
+    await ctx.warning( "You can't do this action on **{}**".format(member))
+    return False  
+   return True 
