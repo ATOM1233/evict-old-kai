@@ -2,17 +2,17 @@ import discord
 from discord.ext import commands, tasks
 from typing import Union
 
-"""@tasks.loop(seconds=5)
+@tasks.loop(seconds=5)
 async def servers_check(bot: commands.Bot):
-    return [await guild.leave() for guild in bot.guilds if guild.id not in [x['guild_id'] for x in await bot.db.fetch("SELECT guild_id FROM authorize")]]"""
+    return [await guild.leave() for guild in bot.guilds if guild.id not in [x['guild_id'] for x in await bot.db.fetch("SELECT guild_id FROM authorize")]]
 
 class auth(commands.Cog): 
     def __init__(self, bot: commands.Bot): 
         self.bot = bot
 
-    """@commands.Cog.listener()
+    @commands.Cog.listener()
     async def on_ready(self): 
-        servers_check.start(self.bot)"""
+        servers_check.start(self.bot)
 
     @commands.command()
     @commands.is_owner()

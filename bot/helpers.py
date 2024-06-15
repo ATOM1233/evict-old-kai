@@ -95,7 +95,7 @@ class HelpCommand(commands.HelpCommand):
    super().__init__(**kwargs)
 
   async def send_bot_help(self, ctx: commands.Context) -> None:
-    return await self.context.send(f'{self.context.author.mention}: check <https://evict.dev/commands> for list of commands')
+    return await self.context.send(f'{self.context.author.mention}: check <https://evict.cc/commands> for list of commands')
   
   async def send_command_help(self, command: commands.Command):
     commandname = f"{str(command.parent)} {command.name}" if str(command.parent) != "None" else command.name
