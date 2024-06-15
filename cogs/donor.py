@@ -249,6 +249,7 @@ class donor(commands.Cog):
   @commands.command(name='impersonate', aliases=['mock'], description='send a message as another user', brief='manage webhooks', usage='[user] [message]')
   async def impersonate(self, ctx, member: discord.Member, *, content):
       if member.id in self.bot.owner_ids: return await ctx.warning("You **cannot** mock a bot owner.")
+      if member.id == ctx.bot.user.id: return await ctx.warning("You **cannot** mock me.")
       try:
           webhook = await ctx.channel.create_webhook(name=member.display_name, reason=f'{ctx.author} used mock command')
           await ctx.message.delete()

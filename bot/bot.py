@@ -7,12 +7,18 @@ from bot.database import create_db
 from rivalapi.rivalapi import RivalAPI
 from humanfriendly import format_timespan
 from cogs.voicemaster import vmbuttons
+from bot.dynamicrolebutton import DynamicRoleButton
+from cogs.ticket import CreateTicket, DeleteTicket
+from cogs.giveaway import GiveawayView
+from discord.gateway import DiscordWebSocket
+
+DiscordWebSocket.identify = StartUp.identify
 
 class Evict(commands.Bot):
   def __init__(self, db: asyncpg.Pool=None):
         super().__init__(command_prefix=EvictContext.getprefix, allowed_mentions=discord.AllowedMentions(roles=False, everyone=False, users=True, replied_user=False), intents=discord.Intents.all(), 
                          owner_ids=[214753146512080907, 598125772754124823],
-                         help_command=HelpCommand())
+                         help_command=HelpCommand(), strip_after_prefix=True, activity=discord.CustomActivity(name="🔗 evict.cc"))
         
         self.db = db
         self.color = 0xffffff
@@ -24,7 +30,7 @@ class Evict(commands.Bot):
         self.goto = "<:filter:1250429945998479431>"
         self.ext = Client(self)
         self.support_server = 'https://discord.gg/evict'
-        self.commands_url = 'https://evict.dev/commands'
+        self.commands_url = 'https://evict.cc/commands'
         self.evict_api = "58ZCTj0fTkai"
         self.rival_api = "88d7eac6-df61-4a08-a95d-8904f81cc099"
         self.rival = RivalAPI(self.rival_api)
@@ -93,13 +99,15 @@ class Evict(commands.Bot):
         await self.process_commands(message) 
     
   async def setup_hook(self):
-        print("Attempting To Start")
         self.add_view(vmbuttons())
+        self.add_dynamic_items(DynamicRoleButton)
+        self.add_view(CreateTicket())
+        self.add_view(DeleteTicket())
+        self.add_view(GiveawayView())
         await self.load_extension('jishaku')
         await StartUp.loadcogs(self)
         await self.create_db_pool()
         await create_db(self)
-        print(f"Connected to Discord API as {self.user}")
 
   async def get_context(self, message: discord.Message, cls=EvictContext) -> EvictContext:
       return await super().get_context(message, cls=cls)
