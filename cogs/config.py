@@ -14,7 +14,7 @@ class config(Cog):
         self.bot = bot 
         self.perms = ["administrator", "manage_guild", "manage_roles", "manage_channels", "manage_messages", "manage_nicknames", "manage_expressions", "ban_members", "kick_members", "moderate_members"]
     
-    @command(name="createembed", aliases=['ce'], help="config", description="create embed", usage="[code]")
+    @command(name="createembed", aliases=['ce'], description="create embed", usage="[code]")
     async def createembed(self, ctx: Context,  *, code: EmbedScript):
      await ctx.send(**code)
 
@@ -22,7 +22,7 @@ class config(Cog):
     async def embed(self, ctx): 
      await ctx.create_pages() 
   
-    @embed.command(help="config", description="shows variables for the embed")
+    @embed.command(description="shows variables for the embed")
     async def variables(self, ctx: Context): 
      embed1 = Embed(color=self.bot.color, title="user related variables")
      embed1.description = """
@@ -89,7 +89,7 @@ class config(Cog):
 
      await ctx.paginator([embed1, embed2, embed3, embed4, embed6, embed5])
 
-    @embed.command(help="config", description="create an embed", usage="[code]")
+    @embed.command(description="create an embed", usage="[code]")
     async def create(self, ctx: Context, *, name: EmbedScript): 
      return await ctx.send(**name)
 
@@ -97,7 +97,7 @@ class config(Cog):
     async def mediaonly(self, ctx: Context):
      await ctx.create_pages()
 
-    @mediaonly.command(name="add", description="delete messages that are not images", help="config", usage="[channel]", brief="manage_guild")
+    @mediaonly.command(name="add", description="delete messages that are not images", usage="[channel]", brief="manage_guild")
     @commands.has_permissions(manage_guild=True)
     async def mediaonly_add(self, ctx: Context, *, channel: TextChannel):
         check = await self.bot.db.fetchrow("SELECT * FROM mediaonly WHERE guild_id = $1 AND channel_id = $2", ctx.guild.id, channel.id)
@@ -106,7 +106,7 @@ class config(Cog):
           await self.bot.db.execute("INSERT INTO mediaonly VALUES ($1,$2)", ctx.guild.id, channel.id)
           return await ctx.success(f"added {channel.mention} as a mediaonly channel")
 
-    @mediaonly.command(name="remove", description="unset media only", help="config", usage="[channel]", brief="manage_guild") 
+    @mediaonly.command(name="remove", description="unset media only", usage="[channel]", brief="manage_guild") 
     @commands.has_permissions(manage_guild=True)
     async def mediaonly_remove(self, ctx: Context, *, channel: TextChannel=None):
      if channel is not None: 
@@ -150,7 +150,7 @@ class config(Cog):
     async def pingonjoin(self, ctx): 
       await ctx.create_pages()
 
-    @pingonjoin.command(name="add", description="ping new members when they join your server", help="config", usage="[channel]", brief="manage_guild")
+    @pingonjoin.command(name="add", description="ping new members when they join your server", usage="[channel]", brief="manage_guild")
     @commands.has_permissions(manage_guild=True)
     async def poj_add(self, ctx: Context, *, channel: TextChannel): 
         check = await self.bot.db.fetchrow("SELECT * FROM pingonjoin WHERE guild_id = $1 AND channel_id = $2", ctx.guild.id, channel.id)
@@ -158,7 +158,7 @@ class config(Cog):
         elif check is None: await self.bot.db.execute("INSERT INTO pingonjoin VALUES ($1,$2)", channel.id, ctx.guild.id)
         return await ctx.success(f"I will ping new members in {channel.mention}")  
     
-    @pingonjoin.command(name="remove", description="remove a pingonjoin channel", help="config", usage="<channel>", brief="manage_guild")
+    @pingonjoin.command(name="remove", description="remove a pingonjoin channel", usage="<channel>", brief="manage_guild")
     @commands.has_permissions(manage_guild=True)
     async def poj_remove(self, ctx: Context, *, channel: TextChannel=None): 
       if channel is not None: 
@@ -201,7 +201,7 @@ class config(Cog):
     async def starboard(self, ctx): 
       await ctx.create_pages()
 
-    @starboard.command(help="config", description="modify the starboard count", brief="manage guild", usage="[count]", aliases=["amount"])
+    @starboard.command(description="modify the starboard count", brief="manage guild", usage="[count]", aliases=["amount"])
     @commands.has_permissions(manage_guild=True)
     async def count(self, ctx: Context, count: int): 
       if count < 1: return await ctx.warning("Count can't be **less** than 1")
@@ -210,7 +210,7 @@ class config(Cog):
       else: await self.bot.db.execute("UPDATE starboard SET count = $1 WHERE guild_id = $2", count, ctx.guild.id)
       await ctx.success(f"Starboard **count** set to **{count}**")  
     
-    @starboard.command(name="channel", help="config", description="configure the starboard channel", brief="manage guild", usage="[channel]")
+    @starboard.command(name="channel", description="configure the starboard channel", brief="manage guild", usage="[channel]")
     @commands.has_permissions(manage_guild=True)
     async def starboard_channel(self, ctx: Context, *, channel: TextChannel): 
       check = await self.bot.db.fetchrow("SELECT * FROM starboard WHERE guild_id = $1", ctx.guild.id)
@@ -218,7 +218,7 @@ class config(Cog):
       else: await self.bot.db.execute("UPDATE starboard SET channel_id = $1 WHERE guild_id = $2", channel.id, ctx.guild.id)
       await ctx.success(f"Starboard **channel** set to {channel.mention}")
 
-    @starboard.command(name="remove", help="config", description="remove starboard", brief="manage guild", aliases=["disable"])
+    @starboard.command(name="remove", description="remove starboard", brief="manage guild", aliases=["disable"])
     @commands.has_permissions(manage_guild=True)
     async def starboard_remove(self, ctx: Context): 
      check = await self.bot.db.fetchrow("SELECT * FROM starboard WHERE guild_id = $1", ctx.guild.id)
@@ -227,7 +227,7 @@ class config(Cog):
      await self.bot.db.execute("DELETE FROM starboardmes WHERE guild_id = $1", ctx.guild.id)
      await ctx.success("Disabled starboard **succesfully**")
 
-    @starboard.command(help="config", description="check starboard stats", aliases=["settings", "status"])
+    @starboard.command(description="check starboard stats", aliases=["settings", "status"])
     async def stats(self, ctx: Context): 
      check = await self.bot.db.fetchrow("SELECT * FROM starboard WHERE guild_id = $1", ctx.guild.id)
      if check is None: return await ctx.warning("Starboard is not **enabled**") 
@@ -237,7 +237,7 @@ class config(Cog):
      if check["emoji_text"]: embed.add_field(name="emoji", value=check["emoji_text"])
      await ctx.reply(embed=embed)
 
-    @starboard.command(name="emoji", help="config", description="configure the starboard emoji", brief="manage guild", usage="[emoji]")
+    @starboard.command(name="emoji", description="configure the starboard emoji", brief="manage guild", usage="[emoji]")
     async def starboard_emoji(self, ctx: Context, emoji: Union[PartialEmoji, str]): 
      check = await self.bot.db.fetchrow("SELECT * FROM starboard WHERE guild_id = $1", ctx.guild.id)
      emoji_id = emoji.id if isinstance(emoji, PartialEmoji) else ord(str(emoji)) 
@@ -251,7 +251,7 @@ class config(Cog):
     async def autorole(self, ctx): 
       await ctx.create_pages()
 
-    @autorole.command(name="add", description="give a role to the new members that join the server", help="config", usage="[role]", brief="manage_guild")
+    @autorole.command(name="add", description="give a role to the new members that join the server", usage="[role]", brief="manage_guild")
     @commands.has_permissions(manage_guild=True)
     async def autorole_add(self, ctx: Context, *, role: Union[Role, str]): 
       if isinstance(role, str): 
@@ -264,7 +264,7 @@ class config(Cog):
       await self.bot.db.execute("INSERT INTO autorole VALUES ($1,$2)", role.id, ctx.guild.id)      
       return await ctx.success(f"Added {role.mention} as autorole")
     
-    @autorole.command(name="remove", description="remove a role from autoroles", help="config", usage="<role>", brief="manage_guild")
+    @autorole.command(name="remove", description="remove a role from autoroles", usage="<role>", brief="manage_guild")
     @commands.has_permissions(manage_guild=True)
     async def autorole_remove(self, ctx: Context, *, role: Union[Role, str]=None): 
       if isinstance(role, str): 
@@ -310,46 +310,46 @@ class config(Cog):
     async def invoke(self, ctx): 
      await ctx.create_pages()
   
-    @invoke.command(name="variables", help="config", description="check invoke variables")
+    @invoke.command(name="variables", description="check invoke variables")
     async def embed_variables(self, ctx: Context): 
      await ctx.invoke(self.bot.get_command('embed variables'))
     
-    @invoke.command(name="unban", help="config", description='add a custom unban message', brief="manage guild", usage="[--embed embed name | message]\nexample 1: -invoke unban --embed test\nexample 2: -invoke unban {user.mention} unbanned {member.mention}")
+    @invoke.command(name="unban", description='add a custom unban message', brief="manage guild", usage="[--embed embed name | message]\nexample 1: -invoke unban --embed test\nexample 2: -invoke unban {user.mention} unbanned {member.mention}")
     @commands.has_permissions(manage_guild=True)
     async def invoke_unban(self, ctx: Context, *, code: str):
       await InvokeClass.invoke_cmds(ctx, ctx.guild.me, code)
 
-    @invoke.command(name="ban", help="config", description="add a custom ban command", brief="manage guild", usage="[--embed embed name | message]\nexample 1: -invoke ban --embed test\nexample 2: -invoke ban {user.mention} banned {member.mention}")
+    @invoke.command(name="ban", description="add a custom ban command", brief="manage guild", usage="[--embed embed name | message]\nexample 1: -invoke ban --embed test\nexample 2: -invoke ban {user.mention} banned {member.mention}")
     @commands.has_permissions(manage_guild=True)
     async def invoke_ban(self, ctx: Context, *, code: str):
       await InvokeClass.invoke_cmds(ctx, ctx.guild.me, code) 
 
-    @invoke.command(name="kick", help="config", description="add a custom kick command", brief="manage guild", usage="[--embed embed name | message]\nexample 1: -invoke kick --embed test\nexample 2: -invoke kick {user.mention} kicked {member.mention}")
+    @invoke.command(name="kick", description="add a custom kick command", brief="manage guild", usage="[--embed embed name | message]\nexample 1: -invoke kick --embed test\nexample 2: -invoke kick {user.mention} kicked {member.mention}")
     @commands.has_permissions(manage_guild=True)
     async def invoke_kick(self, ctx: Context, *, code: str):
      await InvokeClass.invoke_cmds(ctx, ctx.guild.me, code)  
 
-    @invoke.command(name="mute", help="config", description="add a custom mute command", brief="manage guild", usage="[--embed embed name | message]\nexample 1: -invoke mute --embed test\nexample 2: -invoke mute {user.mention} muted {member.mention}")
+    @invoke.command(name="mute", description="add a custom mute command", brief="manage guild", usage="[--embed embed name | message]\nexample 1: -invoke mute --embed test\nexample 2: -invoke mute {user.mention} muted {member.mention}")
     @commands.has_permissions(manage_guild=True)
     async def invoke_mute(self, ctx: Context, *, code: str):
      await InvokeClass.invoke_cmds(ctx, ctx.guild.me, code)    
   
-    @invoke.command(name="unmute", help="config", description="add a custom unmute command", brief="manage guild", usage="[--embed embed name | message]\nexample 1: -invoke unmute --embed test\nexample 2: -invoke unmute {user.mention} unmuted {member.mention}")
+    @invoke.command(name="unmute", description="add a custom unmute command", brief="manage guild", usage="[--embed embed name | message]\nexample 1: -invoke unmute --embed test\nexample 2: -invoke unmute {user.mention} unmuted {member.mention}")
     @commands.has_permissions(manage_guild=True)
     async def invoke_unmute(self, ctx: Context, *, code: str):
      await InvokeClass.invoke_cmds(ctx, ctx.guild.me, code)
   
-    @invoke.command(name="warn", help="config", description="add a custom warn command", brief="manage guild", usage="[--embed embed name | message]\nexample 1: -invoke warn --embed test\nexample 2: -invoke warn {user.mention} warned {member.mention}")
+    @invoke.command(name="warn", description="add a custom warn command", brief="manage guild", usage="[--embed embed name | message]\nexample 1: -invoke warn --embed test\nexample 2: -invoke warn {user.mention} warned {member.mention}")
     @commands.has_permissions(manage_guild=True)
     async def invoke_warn(self, ctx: Context, *, code: str):
      await InvokeClass.invoke_cmds(ctx, ctx.guild.me, code)
     
-    @invoke.command(name="jail", help="config", description="add a custom jail command", brief="manage guild", usage="[--embed embed name | message]\nexample 1: -invoke jail --embed test\nexample 2: -invoke jail {user.mention} jailed {member.mention}")
+    @invoke.command(name="jail", description="add a custom jail command", brief="manage guild", usage="[--embed embed name | message]\nexample 1: -invoke jail --embed test\nexample 2: -invoke jail {user.mention} jailed {member.mention}")
     @commands.has_permissions(manage_guild=True)
     async def invoke_jail(self, ctx: Context, *, code: str): 
      await InvokeClass.invoke_cmds(ctx, ctx.guild.me, code) 
     
-    @invoke.command(name="unjail", help="config", description="add a custom unjail command", brief="manage guild", usage="[--embed embed name | message]\nexample 1: -invoke unjail --embed test\nexample 2: -invoke unjail {user.mention} unjailed {member.mention}")
+    @invoke.command(name="unjail", description="add a custom unjail command", brief="manage guild", usage="[--embed embed name | message]\nexample 1: -invoke unjail --embed test\nexample 2: -invoke unjail {user.mention} unjailed {member.mention}")
     @commands.has_permissions(manage_guild=True)
     async def invoke_unjail(self, ctx: Context, *, code: str): 
      await InvokeClass.invoke_cmds(ctx, ctx.guild.me, code) 
@@ -358,7 +358,7 @@ class config(Cog):
     async def bumpreminder(self, ctx): 
      await ctx.create_pages() 
     
-    @bumpreminder.command(name="add", help="config", description="reminder to bump your server via disboard", brief="manage guild")
+    @bumpreminder.command(name="add", description="reminder to bump your server via disboard", brief="manage guild")
     @commands.has_permissions(manage_guild=True)
     async def bumpreminder_add(self, ctx: Context):
        check = await self.bot.db.fetchrow("SELECT * FROM bumps WHERE guild_id = {}".format(ctx.guild.id)) 
@@ -366,7 +366,7 @@ class config(Cog):
        await self.bot.db.execute("INSERT INTO bumps VALUES ($1, $2)", ctx.guild.id, "true")
        return await ctx.success("bump reminder is now enabled".capitalize())
     
-    @bumpreminder.command(name="remove", help="config", description="remove bump reminder", brief="manage guild")
+    @bumpreminder.command(name="remove", description="remove bump reminder", brief="manage guild")
     @commands.has_permissions(manage_guild=True)
     async def bumpreminder_remove(self, ctx: Context):  
        check = await self.bot.db.fetchrow("SELECT * FROM bumps WHERE guild_id = {}".format(ctx.guild.id)) 
@@ -374,7 +374,7 @@ class config(Cog):
        await self.bot.db.execute("DELETE FROM bumps WHERE guild_id = {}".format(ctx.guild.id))
        return await ctx.success("bump reminder is now disabled".capitalize())  
     
-    @command(aliases=["disablecmd"], description="disable a command", help="config", brief='administrator', usage="[command name]")  
+    @command(aliases=["disablecmd"], description="disable a command", brief='administrator', usage="[command name]")  
     @commands.has_permissions(administrator=True)       
     async def disablecommand(self, ctx: Context, *, cmd: str): 
      found_command = self.bot.get_command(cmd)
@@ -429,7 +429,7 @@ class config(Cog):
       await self.bot.db.execute("DELETE FROM confess_mute WHERE guild_id = $1 AND user_id = $2", ctx.guild.id, member_id)
       return await ctx.success(f"Unmuted the author of confession #{number}") 
     
-    @confessions.command(name="add", description="set confession channel", help="config", usage="[channel]", brief="manage_guild")
+    @confessions.command(name="add", description="set confession channel", usage="[channel]", brief="manage_guild")
     @commands.has_permissions(manage_guild=True)
     async def confessions_add(self, ctx: Context, *, channel: TextChannel): 
        check = await self.bot.db.fetchrow("SELECT * FROM confess WHERE guild_id = {}".format(ctx.guild.id)) 
@@ -437,7 +437,7 @@ class config(Cog):
        elif check is None: await self.bot.db.execute("INSERT INTO confess VALUES ($1,$2,$3)", ctx.guild.id, channel.id, 0)
        return await ctx.success(f"confession channel set to {channel.mention}".capitalize())
     
-    @confessions.command(name="remove", description="remove confession channel", help="config", brief="manage_guild")
+    @confessions.command(name="remove", description="remove confession channel", brief="manage_guild")
     @commands.has_permissions(manage_guild=True)
     async def confessions_remove(self, ctx: Context): 
        check = await self.bot.db.fetchrow("SELECT channel_id FROM confess WHERE guild_id = {}".format(ctx.guild.id)) 
@@ -456,7 +456,7 @@ class config(Cog):
         return await ctx.reply(embed=embed)
        return await ctx.warning("Confessions aren't **enabled** in this server")
     
-    @commands.command(description="changes the guild prefix", usage="[prefix]", help="config", brief="manage guild")
+    @commands.command(description="changes the guild prefix", usage="[prefix]", brief="manage guild")
     @commands.has_permissions(manage_guild=True)
     async def prefix(self, ctx: Context, prefix: str):      
        if len(prefix) > 3: return await ctx.error("Uh oh! The prefix is too long")
@@ -484,7 +484,7 @@ class config(Cog):
     async def fakepermissions(self, ctx):
       await ctx.create_pages()
 
-    @fakepermissions.command(description="edit fake permissions for a role", help="config", usage="[role]", brief="server owner")
+    @fakepermissions.command(description="edit fake permissions for a role", usage="[role]", brief="server owner")
     @Permissions.server_owner()
     async def edit(self, ctx: Context, *, role: Union[Role, str]=None): 
      if isinstance(role, str): 
@@ -519,7 +519,7 @@ class config(Cog):
       else: await self.bot.db.execute("UPDATE fake_permissions SET permissions = $1 WHERE guild_id = $2 AND role_id = $3", ["permissions"], ctx.guild.id, role.id)  
       await ctx.success('fakepermissions have been updated.')
 
-    @fakepermissions.command(name="list", description="list the permissions of a specific role", help="config", usage="[role]")
+    @fakepermissions.command(name="list", description="list the permissions of a specific role", usage="[role]")
     async def fakeperms_list(self, ctx: Context, *, role: Union[Role, str]): 
      if isinstance(role, str): 
         role = ctx.find_role(role)
@@ -538,7 +538,7 @@ class config(Cog):
       embed = Embed(color=self.bot.color, description="\n".join([f"`{perms.index(perm)+1}` {perm}" for perm in perms])).set_author(icon_url=self.bot.user.display_avatar.url, name="fakepermissions perms list")
       await ctx.reply(embed=embed)  
     
-    @command(help="config", description="react to a message using the bot", brief="manage messages", usage="[message id / message link] [emoji]")
+    @command(description="react to a message using the bot", brief="manage messages", usage="[message id / message link] [emoji]")
     @commands.has_permissions(manage_messages=True) 
     async def react(self, ctx: Context, link: str, reaction: str):
      try: mes = await ctx.channel.fetch_message(int(link))
@@ -561,7 +561,7 @@ class config(Cog):
       return await ctx.reply(view=v)  
      except: return await ctx.warning("Unable to add the reaction to that message") 
     
-    @commands.group(invoke_without_command=True, name="counter", help="config", description="create stats counters for your server")
+    @commands.group(invoke_without_command=True, name="counter", description="create stats counters for your server")
     async def counter(self, ctx): 
       await ctx.create_pages()
     
@@ -581,7 +581,7 @@ class config(Cog):
       """
       await ctx.paginator([embed1, embed2])
 
-    @counter.command(name="list", help="config", description="check a list of the active server counters")
+    @counter.command(name="list", description="check a list of the active server counters")
     async def counter_list(self, ctx: Context): 
           i=0
           k=1
@@ -606,7 +606,7 @@ class config(Cog):
           number.append(Embed(color=self.bot.color, title=f"server counters ({len(results)})", description=messages[i]))
           return await ctx.paginator(number) 
 
-    @counter.command(name="remove", help="config", description="remove a counter from the server", brief="manage guild", usage="[counter type]")
+    @counter.command(name="remove", description="remove a counter from the server", brief="manage guild", usage="[counter type]")
     @commands.has_permissions(manage_guild=True)
     async def counter_remove(self, ctx: Context, countertype: str): 
      if not countertype in ["members", "voice", "boosters", "humans", "bots"]: return await ctx.warning(f"**{countertype}** is not an **available** counter") 
@@ -617,11 +617,11 @@ class config(Cog):
      await self.bot.db.execute("DELETE FROM counters WHERE guild_id = $1 AND module = $2", ctx.guild.id, countertype)
      return await ctx.success(f"Removed **{countertype}** counter")
     
-    @counter.group(invoke_without_command=True, name="add", help="config", description="add a counter to the server", brief="manage guild")
+    @counter.group(invoke_without_command=True, name="add", description="add a counter to the server", brief="manage guild")
     async def counter_add(self, ctx): 
       await ctx.create_pages()
 
-    @counter_add.command(name="members", help="config", description="add a counter for member count", brief="manage guild", usage="[channel type] <channel name>\nexample: ;counter add members voice {target} Members")
+    @counter_add.command(name="members", description="add a counter for member count", brief="manage guild", usage="[channel type] <channel name>\nexample: ;counter add members voice {target} Members")
     @commands.has_permissions(manage_guild=True)
     async def counter_add_members(self, ctx: Context, channeltype: str, *, message: str="{target}"): 
      if not channeltype in ["voice", "text", "stage"]: return await ctx.warning(f"**{channeltype}** is not a **valid** channel type")     
@@ -637,7 +637,7 @@ class config(Cog):
      await self.bot.db.execute("INSERT INTO counters VALUES ($1,$2,$3,$4,$5)", ctx.guild.id, channeltype, channel.id, message, ctx.command.name)
      await ctx.success(f"Created **member** counter -> {channel.mention}")  
 
-    @counter_add.command(name="humans", help="config", description="add a counter for humans", brief="manage guild", usage="[channel type] <channel name>\nexample: ;counter add humans voice {target} humans")
+    @counter_add.command(name="humans", description="add a counter for humans", brief="manage guild", usage="[channel type] <channel name>\nexample: ;counter add humans voice {target} humans")
     @commands.has_permissions(manage_guild=True)
     async def counter_add_humans(self, ctx: Context, channeltype: str, *, message: str="{target}"): 
      if not channeltype in ["voice", "text", "stage"]: return await ctx.warning(f"**{channeltype}** is not a **valid** channel type")     
@@ -653,7 +653,7 @@ class config(Cog):
      await self.bot.db.execute("INSERT INTO counters VALUES ($1,$2,$3,$4,$5)", ctx.guild.id, channeltype, channel.id, message, ctx.command.name)
      await ctx.success(f"Created **humans** counter -> {channel.mention}")  
 
-    @counter_add.command(name="bots", help="config", description="add a counter for bots", brief="manage guild", usage="[channel type] <channel name>\nexample: ;counter add bots voice {target} bots")
+    @counter_add.command(name="bots", description="add a counter for bots", brief="manage guild", usage="[channel type] <channel name>\nexample: ;counter add bots voice {target} bots")
     @commands.has_permissions(manage_guild=True)
     async def counter_add_bots(self, ctx: Context, channeltype: str, *, message: str="{target}"): 
      if not channeltype in ["voice", "text", "stage"]: return await ctx.warning(f"**{channeltype}** is not a **valid** channel type")     
@@ -669,7 +669,7 @@ class config(Cog):
      await self.bot.db.execute("INSERT INTO counters VALUES ($1,$2,$3,$4,$5)", ctx.guild.id, channeltype, channel.id, message, ctx.command.name)
      await ctx.success(f"Created **bots** counter -> {channel.mention}")  
 
-    @counter_add.command(name="voice", help="config", description="add a counter for voice members", brief="manage guild", usage="[channel type] <channel name>\nexample: ;counter add voice stage {target} in vc")         
+    @counter_add.command(name="voice", description="add a counter for voice members", brief="manage guild", usage="[channel type] <channel name>\nexample: ;counter add voice stage {target} in vc")         
     @commands.has_permissions(manage_guild=True)
     async def counter_add_voice(self, ctx: Context, channeltype: str, *, message: str="{target}"): 
      if not channeltype in ["voice", "text", "stage"]: return await ctx.warning(f"**{channeltype}** is not a **valid** channel type")     
@@ -685,7 +685,7 @@ class config(Cog):
      await self.bot.db.execute("INSERT INTO counters VALUES ($1,$2,$3,$4,$5)", ctx.guild.id, channeltype, channel.id, message, ctx.command.name)
      await ctx.success(f"Created **voice** counter -> {channel.mention}")  
 
-    @counter_add.command(name="boosters", help="config", description="add a counter for boosters", brief="manage guild", usage="[channel type] <channel name>\nexample: ;counter add boosters voice {target} boosters") 
+    @counter_add.command(name="boosters", description="add a counter for boosters", brief="manage guild", usage="[channel type] <channel name>\nexample: ;counter add boosters voice {target} boosters") 
     @commands.has_permissions(manage_guild=True)
     async def counter_add_boosters(self, ctx: Context, channeltype: str, *, message: str="{target}"): 
      if not channeltype in ["voice", "text", "stage"]: return await ctx.warning(f"**{channeltype}** is not a **valid** channel type")     

@@ -85,7 +85,7 @@ class leveling(commands.Cog):
    self.bot = bot 
    self._cd = commands.CooldownMapping.from_cooldown(3, 5, commands.BucketType.member) 
 
-  @commands.command(description="check any members rank", help="config", usage="[member]")
+  @commands.command(description="check any members rank", usage="[member]")
   async def rank(self, ctx, member: discord.Member=None): 
     if member is None: member = ctx.author
     check = await self.bot.db.fetchrow("SELECT * FROM levelsetup WHERE guild_id = {}".format(ctx.guild.id)) 
@@ -102,11 +102,11 @@ class leveling(commands.Cog):
   async def level(self, ctx): 
      await ctx.create_pages()
 
-  @level.group(invoke_without_command=True, help="config", description="manage the rewards for each level")
+  @level.group(invoke_without_command=True, description="manage the rewards for each level")
   async def rewards(self, ctx: commands.Context): 
     await ctx.create_pages()
 
-  @rewards.command(description="add a level reward", help="config", usage="[level] [role]", brief="manage guild")
+  @rewards.command(description="add a level reward", usage="[level] [role]", brief="manage guild")
   @Permissions.has_permission(manage_guild=True) 
   async def add(self, ctx: commands.Context, level: int, *, role: discord.Role): 
     if self.bot.ext.is_dangerous(role): return await ctx.warning('You cannot make a level role a role with dangerous permissions.')
@@ -115,7 +115,7 @@ class leveling(commands.Cog):
     await self.bot.db.execute("INSERT INTO levelroles VALUES ($1,$2,$3)", ctx.guild.id, level, role.id) 
     await ctx.success(f"added {role.mention} for level **{level}** reward")
 
-  @rewards.command(description="remove a level reward", help="config", usage="[level]", brief="manage guild")
+  @rewards.command(description="remove a level reward", usage="[level]", brief="manage guild")
   @Permissions.has_permission(manage_guild=True) 
   async def remove(self, ctx: commands.Context, level: int=None): 
     check = await self.bot.db.fetchrow("SELECT level FROM levelroles WHERE guild_id = {} AND level = {}".format(ctx.guild.id, level))
@@ -123,7 +123,7 @@ class leveling(commands.Cog):
     await self.bot.db.execute("DELETE FROM levelroles WHERE guild_id = $1 AND level = $2", (ctx.guild.id, level))  
     await ctx.success(f"Removed level **{level}** reward")
   
-  @rewards.command(name="reset", description="reset all level rewards", help="config", brief="administrator")
+  @rewards.command(name="reset", description="reset all level rewards", brief="administrator")
   @Permissions.has_permission(administrator=True) 
   async def rewards_reset(self, ctx: commands.Context): 
    results = await self.bot.db.fetch("SELECT * FROM levelroles WHERE guild_id = {}".format(ctx.guild.id))
@@ -131,7 +131,7 @@ class leveling(commands.Cog):
    await self.bot.db.execute("DELETE FROM levelroles WHERE guild_id = $1", ctx.guild.id)
    return await ctx.success("reset **all** level rewards") 
 
-  @rewards.command(description="return a list of role rewards", help="config")
+  @rewards.command(description="return a list of role rewards")
   async def list(self, ctx: commands.Context): 
       results = await self.bot.db.fetch("SELECT * FROM levelroles WHERE guild_id = {}".format(ctx.guild.id))
       if len(results) == 0: return await ctx.error("there are no role rewards in this server")
@@ -165,7 +165,7 @@ class leveling(commands.Cog):
       number.append(embed)
       await ctx.paginator(number)
 
-  @level.command(name="reset", description="reset levels for a member, leave blank for everyone", help="config", brief="administrator", usage="<member>")
+  @level.command(name="reset", description="reset levels for a member, leave blank for everyone", brief="administrator", usage="<member>")
   @Permissions.has_permission(administrator=True) 
   async def level_reset(self, ctx: commands.Context, *, member: discord.Member=None):
     check = await self.bot.db.fetchrow("SELECT * FROM levelsetup WHERE guild_id = {}".format(ctx.guild.id))        
@@ -177,7 +177,7 @@ class leveling(commands.Cog):
      await self.bot.db.execute("DELETE FROM levels WHERE guild_id = $1 AND author_id = $2", ctx.guild.id, member.id)
      return await ctx.success(f"reset levels for **{member}**") 
 
-  @level.command(aliases=["lb"], description="check level leaderboard", help="config")
+  @level.command(aliases=["lb"], description="check level leaderboard")
   async def leaderboard(self, ctx: commands.Context):
     await ctx.channel.typing() 
     results = await self.bot.db.fetch("SELECT * FROM levels WHERE guild_id = {}".format(ctx.guild.id))
@@ -206,7 +206,7 @@ class leveling(commands.Cog):
     embed.set_author(name = f"level leaderboard", icon_url = ctx.guild.icon.url or None)
     await ctx.send(embed=embed)     
          
-  @level.command(description="enable leveling system, or disable it", help="config", brief="manage guild")
+  @level.command(description="enable leveling system, or disable it", brief="manage guild")
   @Permissions.has_permission(manage_guild=True) 
   async def toggle(self, ctx: commands.Context): 
       check = await self.bot.db.fetchrow("SELECT * FROM levelsetup WHERE guild_id = {}".format(ctx.guild.id))        
@@ -217,7 +217,7 @@ class leveling(commands.Cog):
         await self.bot.db.execute("DELETE FROM levelsetup WHERE guild_id = {}".format(ctx.guild.id)) 
         return await ctx.success("disabled leveling system")
   
-  @level.command(description="set where the level up message should be sent", help="config", usage="[destination]\ndestinations: channel, dms, off", brief="manage guild")
+  @level.command(description="set where the level up message should be sent", usage="[destination]\ndestinations: channel, dms, off", brief="manage guild")
   @Permissions.has_permission(manage_guild=True) 
   async def levelup(self, ctx: commands.Context, destination: str): 
       if not destination in ["dms", "channel", "off"]: return await ctx.warning("wrong destination passed")
@@ -226,7 +226,7 @@ class leveling(commands.Cog):
       await self.bot.db.execute("UPDATE levelsetup SET destination = $1 WHERE guild_id = $2", destination, ctx.guild.id)
       return await ctx.success(f"level up message destination: **{destination}**")
       
-  @level.command(description="set a channel to send level up messages", help="config", usage="[channel]", brief="manage guild")
+  @level.command(description="set a channel to send level up messages", usage="[channel]", brief="manage guild")
   @Permissions.has_permission(manage_guild=True) 
   async def channel(self, ctx: commands.Context, *, channel: discord.TextChannel): 
       check = await self.bot.db.fetch("SELECT * FROM levelsetup WHERE guild_id = {}".format(ctx.guild.id))  

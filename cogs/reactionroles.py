@@ -14,7 +14,7 @@ class reactionroles(commands.Cog):
   async def reactionrole(self, ctx): 
    await ctx.create_pages()
   
-  @reactionrole.command(name="add", description="add a reactionrole to a message", help="config", brief="manage roles", usage="[message id] [channel] [emoji] [role]")
+  @reactionrole.command(name="add", description="add a reactionrole to a message", brief="manage roles", usage="[message id] [channel] [emoji] [role]")
   @Permissions.has_permission(manage_roles=True)
   async def rr_add(self, ctx: commands.Context, messageid: int, channel: discord.TextChannel, emoji: Union[discord.Emoji, str], *, role: Union[discord.Role, str]): 
    try: message = await channel.fetch_message(messageid)
@@ -32,7 +32,7 @@ class reactionroles(commands.Cog):
     return await ctx.success(f"Added reaction role {emoji} for {role.mention}")
    except: return await ctx.error("Unable to add reaction role for this role")
 
-  @reactionrole.command(name="remove", description="remove a reactionrole from a message", help="config", brief="manage roles", usage="[message id] [channel] [emoji]")
+  @reactionrole.command(name="remove", description="remove a reactionrole from a message", brief="manage roles", usage="[message id] [channel] [emoji]")
   @Permissions.has_permission(manage_roles=True)
   async def rr_remove(self, ctx: commands.Context, messageid: int, channel: discord.TextChannel, emoji: Union[discord.Emoji, str]): 
    check = await self.bot.db.fetchrow("SELECT * FROM reactionrole WHERE guild_id = $1 AND message_id = $2 AND channel_id = $3 AND emoji_id = $4", ctx.guild.id, messageid, channel.id, emoji.id if isinstance(emoji, discord.Emoji) else ord(str(emoji)))
@@ -40,7 +40,7 @@ class reactionroles(commands.Cog):
    await self.bot.db.execute("DELETE FROM reactionrole WHERE guild_id = $1 AND message_id = $2 AND channel_id = $3 AND emoji_id = $4", ctx.guild.id, messageid, channel.id, emoji.id if isinstance(emoji, discord.Emoji) else ord(str(emoji))) 
    await ctx.success("Cleared reactionrole") 
   
-  @reactionrole.command(name="removeall", description="remove all reaction roles from the server", help="config", brief="manage roles", usage="<channel>")
+  @reactionrole.command(name="removeall", description="remove all reaction roles from the server", brief="manage roles", usage="<channel>")
   @Permissions.has_permission(manage_roles=True)
   async def rr_removeall(self, ctx: commands.Context, *, channel: discord.TextChannel=None): 
     results = await self.bot.db.fetch("SELECT * FROM reactionrole WHERE guild_id = $1", ctx.guild.id)
@@ -51,7 +51,7 @@ class reactionroles(commands.Cog):
     for c in ctx.guild.channels: await self.removerr(c)
     return await ctx.success("Removed reactionrole for **all** channels")  
 
-  @reactionrole.command(name="list", description="list all the reaction roles from the server", help="config") 
+  @reactionrole.command(name="list", description="list all the reaction roles from the server") 
   async def rr_list(self, ctx: commands.Context):
    results = await self.bot.db.fetch("SELECT * FROM reactionrole WHERE guild_id = $1", ctx.guild.id)
    if len(results) == 0: return await ctx.warning("No **reactionroles** found")

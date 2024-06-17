@@ -222,7 +222,7 @@ class fun(commands.Cog):
       embed.add_field(name='followers:', value=f'{data.followers}', inline=True)
       embed.add_field(name='following:', value=f'{data.following}', inline=True)
       embed.add_field(name='posts:', value=f'{data.posts}', inline=True)
-      embed.set_thumbnail(url=data.avatar)
+      # embed.set_thumbnail(url=data.avatar)
       embed.set_footer(text='Instagram', icon_url='https://cdn.resent.dev/instagram.png')
       await ctx.reply(embed=embed)
 

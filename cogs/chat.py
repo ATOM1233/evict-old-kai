@@ -23,7 +23,7 @@ class chat(commands.Cog):
         if not results: return await ctx.warning(f"No **autoresponders** are set.")
         return await ctx.paginate([f"{result['key']} - {result['response']}" for result in results], f"autoresponders ({len(results)})", {"name": ctx.guild.name, "icon_url": ctx.guild.icon})  
 
-  @autoresponder.command(name='delete', description='delete an autoresponder', help="chat", brief="manage guild", aliases=['del', 'remove', 'rm'], usage="trigger")
+  @autoresponder.command(name='delete', description='delete an autoresponder', brief="manage guild", aliases=['del', 'remove', 'rm'], usage="trigger")
   @Permissions.has_permission(manage_guild=True) 
   async def delete(self, ctx: commands.Context, *, toggle: str):
         key = await ctx.bot.db.fetch("SELECT * FROM autoresponses WHERE guild_id = $1 AND key = $2", ctx.guild.id, toggle.lstrip())
@@ -31,7 +31,7 @@ class chat(commands.Cog):
         await ctx.bot.db.execute("DELETE FROM autoresponses WHERE guild_id = $1 AND key = $2", ctx.guild.id, toggle)
         return await ctx.warning(f'Successfully **deleted** the autoresponse for `{toggle}`')
     
-  @autoresponder.command(name='add', description='create an autoresponder', help="chat", brief="manage guild", aliases=['set'], usage="[trigger], [response]")
+  @autoresponder.command(name='add', description='create an autoresponder', brief="manage guild", aliases=['set'], usage="[trigger], [response]")
   @Permissions.has_permission(manage_guild=True) 
   async def add(self, ctx: commands.Context, *, message: str):
         autoresponse = message.split(',', 1)
@@ -48,7 +48,7 @@ class chat(commands.Cog):
   async def autoreact(self, ctx): 
     await ctx.create_pages()
 
-  @autoreact.command(name="add", help="chat", description="make the bot react with emojis on your message", brief="manage guild", usage="[content], [emojis]")     
+  @autoreact.command(name="add", description="make the bot react with emojis on your message", brief="manage guild", usage="[content], [emojis]")     
   @Permissions.has_permission(manage_guild=True) 
   async def autoreact_add(self, ctx: commands.Context, *, content: str):
    con = content.split(",")
@@ -69,7 +69,7 @@ class chat(commands.Cog):
    await self.bot.db.execute("DELETE FROM autoreact WHERE guild_id = $1 AND trigger = $2", ctx.guild.id, content)
    return await ctx.warning(f"Deleted autoreaction with the content **{content}**")
 
-  @autoreact.command(name="list", help="chat", description="return a list of autoreactions in this server")
+  @autoreact.command(name="list", description="return a list of autoreactions in this server")
   async def autoreact_list(self, ctx: commands.Context): 
       check = await self.bot.db.fetch("SELECT * FROM autoreact WHERE guild_id = $1", ctx.guild.id)  
       if len(check) == 0: return await ctx.warning("this server has no **autoreactions**")

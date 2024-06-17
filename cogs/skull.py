@@ -13,7 +13,7 @@ class skull(commands.Cog):
     async def skull(self, ctx): 
         await ctx.create_pages()
 
-    @skull.command(help="config", description="modify the skullboard count", brief="manage guild", usage="[count]", aliases=["amount"])
+    @skull.command(description="modify the skullboard count", brief="manage guild", usage="[count]", aliases=["amount"])
     @Permissions.has_permission(manage_guild=True)
     async def count(self, ctx: Context, count: int): 
       if count < 1: return await ctx.warning("Count can't be **less** than 1")
@@ -22,7 +22,7 @@ class skull(commands.Cog):
       else: await self.bot.db.execute("UPDATE skullboard SET count = $1 WHERE guild_id = $2", count, ctx.guild.id)
       await ctx.success(f"Skull **count** set to **{count}**")  
 
-    @skull.command(name="channel", help="config", description="configure the skullboard channel", brief="manage guild", usage="[channel]")
+    @skull.command(name="channel", description="configure the skullboard channel", brief="manage guild", usage="[channel]")
     @Permissions.has_permission(manage_guild=True)
     async def skull_channel(self, ctx: Context, *, channel: TextChannel): 
       check = await self.bot.db.fetchrow("SELECT * FROM skullboard WHERE guild_id = $1", ctx.guild.id)
@@ -30,7 +30,7 @@ class skull(commands.Cog):
       else: await self.bot.db.execute("UPDATE skullboard SET channel_id = $1 WHERE guild_id = $2", channel.id, ctx.guild.id)
       await ctx.success(f"skullboard **channel** set to {channel.mention}")
 
-    @skull.command(name="remove", help="config", description="remove skullboard", brief="manage guild", aliases=["disable"])
+    @skull.command(name="remove", description="remove skullboard", brief="manage guild", aliases=["disable"])
     @Permissions.has_permission(manage_guild=True)
     async def skull_remove(self, ctx: Context): 
      check = await self.bot.db.fetchrow("SELECT * FROM skullboard WHERE guild_id = $1", ctx.guild.id)
@@ -39,7 +39,7 @@ class skull(commands.Cog):
      await self.bot.db.execute("DELETE FROM skullboardmes WHERE guild_id = $1", ctx.guild.id)
      await ctx.success("Disabled skullboard **succesfully**")
 
-    @skull.command(name='stats', help="config", description="check skullboard stats", aliases=["settings", "status"])
+    @skull.command(name='stats', description="check skullboard stats", aliases=["settings", "status"])
     @Permissions.has_permission(manage_guild=True)
     async def skull_stats(self, ctx: Context): 
      check = await self.bot.db.fetchrow("SELECT * FROM skullboard WHERE guild_id = $1", ctx.guild.id)
@@ -50,7 +50,7 @@ class skull(commands.Cog):
      if check["emoji_text"]: embed.add_field(name="emoji", value=check["emoji_text"])
      await ctx.reply(embed=embed)
 
-    @skull.command(name="emoji", help="config", description="configure the skullboard emoji", brief="manage guild", usage="[emoji]")
+    @skull.command(name="emoji", description="configure the skullboard emoji", brief="manage guild", usage="[emoji]")
     async def skull_emoji(self, ctx: Context, emoji: Union[PartialEmoji, str]): 
      check = await self.bot.db.fetchrow("SELECT * FROM skullboard WHERE guild_id = $1", ctx.guild.id)
      emoji_id = emoji.id if isinstance(emoji, PartialEmoji) else ord(str(emoji)) 

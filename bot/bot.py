@@ -21,7 +21,8 @@ class Evict(commands.Bot):
                          help_command=HelpCommand(), strip_after_prefix=True, activity=discord.CustomActivity(name="🔗 evict.cc"))
         
         self.db = db
-        self.color = 0xffffff
+        self.color = 0xCCCCFF
+        self.error_color= 0xFFFFED
         self.yes = "<:approved:1250418891373412374>"
         self.no = "<:false:1250429646000881789>"
         self.warning = "<:warning:1250418903079718912>"

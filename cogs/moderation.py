@@ -100,7 +100,7 @@ class moderation(commands.Cog):
    return await ctx.success("Enabled **moderation** for this server") 
 
   @Mod.is_mod_configured()
-  @commands.command(description="clone a channel", help="moderation", brief="manage channels")
+  @commands.command(description="clone a channel", brief="manage channels")
   @Permissions.has_permission(manage_channels=True)
   @commands.cooldown(1, 30, commands.BucketType.guild)
   async def nuke(self, ctx: commands.Context, channel: discord.TextChannel = None): 
@@ -197,7 +197,7 @@ class moderation(commands.Cog):
         return await ctx.success('**unmuted** **all** members.')
     
   @Mod.is_mod_configured()
-  @commands.command(description="kick members from your server", help="moderation", brief="kick members", usage="[member] <reason>")
+  @commands.command(description="kick members from your server", brief="kick members", usage="[member] <reason>")
   @Permissions.has_permission(kick_members=True)
   async def kick(self, ctx: commands.Context, target: discord.Member, *, reason: str='No Reason Provided'):
     if not Permissions.check_hierarchy(self.bot, ctx.author, target): return await ctx.warning(f"You cannot kick*{target.mention}")
@@ -206,7 +206,7 @@ class moderation(commands.Cog):
     if not await InvokeClass.invoke_send(ctx, target, reason): await ctx.success(f"**{target}** has been kicked | {reason}")
 
   @Mod.is_mod_configured()
-  @commands.command(description="ban members from your server", help="moderation", brief="ban members", usage="[member] <reason>")
+  @commands.command(description="ban members from your server", brief="ban members", usage="[member] <reason>")
   @Permissions.has_permission(ban_members=True)
   async def ban(self, ctx: commands.Context, target: Union[discord.Member, discord.User], *, reason: str='No Reason Provided'):
       check = await self.bot.db.fetchrow("SELECT * FROM globalban WHERE banned = $1", target.id) 
@@ -217,7 +217,7 @@ class moderation(commands.Cog):
       if not await InvokeClass.invoke_send(ctx, target, reason): await ctx.success(f"**{target}** has been banned | {reason}")
   
   @Mod.is_mod_configured()
-  @commands.command(description="timeout members from your server", help="moderation", brief="moderate members", usage="[member] <reason>")
+  @commands.command(description="timeout members from your server", brief="moderate members", usage="[member] <reason>")
   @commands.has_permissions(moderate_members=True)
   async def mute(self, ctx: commands.Context, member: discord.Member, time: ValidTime=int, *, reason: str="No reason provided"): 
       if isinstance(member, discord.Member) and not Permissions.check_hierarchy(self.bot, ctx.author, member): return await ctx.warning(f"You cannot mute*{member.mention}")
@@ -228,7 +228,7 @@ class moderation(commands.Cog):
       if not await InvokeClass.invoke_send(ctx, member, reason): await ctx.success(f"**{member}** has been muted for {humanfriendly.format_timespan(time)} | {reason}")
   
   @Mod.is_mod_configured()
-  @commands.command(description="unban an user", help="moderation", usage="[member] [reason]")
+  @commands.command(description="unban an user", usage="[member] [reason]")
   @Permissions.has_permission(ban_members=True)
   async def unban(self, ctx: commands.Context, member: discord.User, *, reason: str="No reason provided"):
     check = await self.bot.db.fetchrow("SELECT * FROM globalban WHERE banned = $1", member.id) 
@@ -240,7 +240,7 @@ class moderation(commands.Cog):
     except discord.NotFound: return await ctx.warning( f"couldn't find ban for **{member}**") 
   
   @Mod.is_mod_configured()
-  @commands.command(description="ban an user then immediately unban them", help="moderation", usage="[member] [reason]")
+  @commands.command(description="ban an user then immediately unban them", usage="[member] [reason]")
   @Permissions.has_permission(ban_members=True)
   async def softban(self, ctx: commands.Context, member: discord.Member, *, reason: str="No reason provided"): 
     if isinstance(member, discord.Member) and not Permissions.check_hierarchy(self.bot, ctx.author, member): return await ctx.warning(f"You cannot softban*{member.mention}")
@@ -250,7 +250,7 @@ class moderation(commands.Cog):
     await ctx.success(f"Softbanned **{member}**")
 
   @Mod.is_mod_configured()
-  @commands.command(description="unmute a member in your server", help="moderation", brief="moderate members", usage="[member] <reason>", aliases=["untimeout"])
+  @commands.command(description="unmute a member in your server", brief="moderate members", usage="[member] <reason>", aliases=["untimeout"])
   @Permissions.has_permission(moderate_members=True)
   async def unmute(self, ctx: commands.Context, member: discord.Member, * , reason: str="No reason provided"): 
     if isinstance(member, discord.Member) and not Permissions.check_hierarchy(self.bot, ctx.author, member): return await ctx.warning(f"You cannot unmute*{member.mention}")
@@ -287,7 +287,7 @@ class moderation(commands.Cog):
   
   @Mod.is_mod_configured()
   @commands.cooldown(1, 3, commands.BucketType.guild)
-  @mata_clear.command(help="moderation", description="clear messages that contain a certain word", usage="[word]", brief="manage messages")
+  @mata_clear.command(description="clear messages that contain a certain word", usage="[word]", brief="manage messages")
   async def contains(self, ctx: commands.Context, *, word: str): 
    messages = [message async for message in ctx.channel.history(limit=300) if word in message.content]
    if len(messages) == 0: return await ctx.warning(f"No messages containing **{word}** in this channel")
@@ -295,7 +295,7 @@ class moderation(commands.Cog):
   
   @Mod.is_mod_configured()
   @commands.cooldown(1, 3, commands.BucketType.guild)
-  @commands.command(aliases=['p'], description="bulk delete messages", help="moderation", brief="manage messages", usage="[messages]")  
+  @commands.command(aliases=['p'], description="bulk delete messages", brief="manage messages", usage="[messages]")  
   @Permissions.has_permission(manage_messages=True) 
   async def purge(self, ctx: commands.Context, amount: int, *, member: discord.Member=None):
    if member is None: 
@@ -309,7 +309,7 @@ class moderation(commands.Cog):
   
   @Mod.is_mod_configured()
   @commands.cooldown(1, 3, commands.BucketType.guild)
-  @commands.command(description="bulk delete messages sent by bots", help="moderation", brief="manage messages", usage="[amount]", aliases=["bc", "botclear"])
+  @commands.command(description="bulk delete messages sent by bots", brief="manage messages", usage="[amount]", aliases=["bc", "botclear"])
   @Permissions.has_permission(manage_messages=True) 
   async def botpurge(self, ctx: commands.Context, amount: int=100):    
      mes = [] 
@@ -343,7 +343,7 @@ class moderation(commands.Cog):
        await ModConfig.sendlogs(self.bot, "warn", ctx.author, member, reason)
 
   @Mod.is_mod_configured()
-  @commands.command(name='warnclear', description="clear all warns from an user", help="moderation", usage="[member]", brief="manage messages")
+  @commands.command(name='warnclear', description="clear all warns from an user", usage="[member]", brief="manage messages")
   @Permissions.has_permission(manage_messages=True) 
   async def warnclear(self, ctx: commands.Context, *, member: discord.Member): 
       check = await self.bot.db.fetch("SELECT * FROM warns WHERE guild_id = $1 AND user_id = $2", ctx.guild.id, member.id)   
@@ -352,7 +352,7 @@ class moderation(commands.Cog):
       await ctx.success(f"Removed **{member.name}'s** warns")
 
   @Mod.is_mod_configured()
-  @commands.command(name='warnlist', aliases=['warns'], description="shows all warns of an user", help="moderation", usage="[member]")
+  @commands.command(name='warnlist', aliases=['warns'], description="shows all warns of an user", usage="[member]")
   @Permissions.has_permission(manage_messages=True) 
   async def warnlist(self, ctx: commands.Context, *, member: discord.Member): 
       check = await self.bot.db.fetch("SELECT * FROM warns WHERE guild_id = $1 AND user_id = $2", ctx.guild.id, member.id)  
@@ -380,7 +380,7 @@ class moderation(commands.Cog):
       await ctx.paginator(number)
 
   @Mod.is_mod_configured()
-  @commands.command(description="jail a member", usage="[member]", help="moderation", brief="manage channels")
+  @commands.command(description="jail a member", usage="[member]", brief="manage channels")
   @Permissions.has_permission(manage_channels=True) 
   async def jail(self, ctx: commands.Context, member: discord.Member, *, reason: str="No reason provided"):
       if isinstance(member, discord.Member) and not Permissions.check_hierarchy(self.bot, ctx.author, member): return await ctx.warning(f"You cannot jail*{member.mention}")
@@ -404,7 +404,7 @@ class moderation(commands.Cog):
       except: return await ctx.error( f"There was a problem jailing **{member}**")
 
   @Mod.is_mod_configured()
-  @commands.command(description="unjail a member", usage="[member] [reason]", help="moderation", brief="manage channels")
+  @commands.command(description="unjail a member", usage="[member] [reason]", brief="manage channels")
   @Permissions.has_permission(manage_channels=True) 
   async def unjail(self, ctx: commands.Context, member: discord.Member, *, reason: str="No reason provided"):   
       check = await self.bot.db.fetchrow("SELECT * FROM jail WHERE guild_id = $1 AND user_id = $2", ctx.guild.id, member.id)      
@@ -417,7 +417,7 @@ class moderation(commands.Cog):
       if not await InvokeClass.invoke_send(ctx, member, reason): await ctx.success(f"Unjailed **{member}**")
       await ModConfig.sendlogs(self.bot, "unjail", ctx.author, member, reason)
   
-  @commands.command(aliases=["sm"], description="add slowmode to a channel", help="moderation", usage="[seconds] <channel>", brief="manage channelss")  
+  @commands.command(aliases=["sm"], description="add slowmode to a channel", usage="[seconds] <channel>", brief="manage channelss")  
   @Permissions.has_permission(manage_channels=True) 
   async def slowmode(self, ctx: commands.Context, seconds: str, channel: discord.TextChannel=None):
     chan = channel or ctx.channel
@@ -426,7 +426,7 @@ class moderation(commands.Cog):
     return await ctx.success(f"Slowmode for {channel.mention} set to **{humanfriendly.format_timespan(tim)}**")
 
   @Mod.is_mod_configured()
-  @commands.command(description="lock a channel", help="moderation", usage="<channel>", brief="manage channels")
+  @commands.command(description="lock a channel", usage="<channel>", brief="manage channels")
   @Permissions.has_permission(manage_channels=True) 
   async def lock(self, ctx: commands.Context, channel : discord.TextChannel=None):
     channel = channel or ctx.channel
@@ -436,7 +436,7 @@ class moderation(commands.Cog):
     return await ctx.success(f"Locked {channel.mention}")
 
   @Mod.is_mod_configured()
-  @commands.command(description="unlock a channel", help="moderation", usage="<channel>", brief="manage channels")
+  @commands.command(description="unlock a channel", usage="<channel>", brief="manage channels")
   @Permissions.has_permission(manage_channels=True) 
   async def unlock(self, ctx: commands.Context, channel : discord.TextChannel=None):
     channel = channel or ctx.channel
@@ -446,7 +446,7 @@ class moderation(commands.Cog):
     return await ctx.success(f"Unlocked {channel.mention}")       
     
   @Mod.is_mod_configured()
-  @commands.group(invoke_without_command=True, description="manage roles in your server", help="moderation", aliases=['r'])
+  @commands.group(invoke_without_command=True, description="manage roles in your server", aliases=['r'])
   @Permissions.has_permission(manage_roles=True) 
   async def role(self, ctx: commands.Context, user: discord.Member=None, *, role : GoodRole=None):
     if role == None or user == None: return await ctx.create_pages()
@@ -459,7 +459,7 @@ class moderation(commands.Cog):
       return await ctx.success(f"Added {role.mention} to **{user.name}**")
 
   @Mod.is_mod_configured()
-  @role.command(description="add a role to an user", help="moderation", usage="[user] [role]", name="add", brief="manage roles")
+  @role.command(description="add a role to an user", usage="[user] [role]", name="add", brief="manage roles")
   @Permissions.has_permission(manage_roles=True) 
   async def role_add(self, ctx: commands.Context, user: discord.Member, *, role: GoodRole):
     if role.is_premium_subscriber(): return await ctx.warning('I cant assign integrated roles to users.')
@@ -468,7 +468,7 @@ class moderation(commands.Cog):
     return await ctx.success(f"Added {role.mention} to **{user.name}**")
    
   @Mod.is_mod_configured()
-  @role.command(name="remove", help="moderation", brief="manage roles", description="remove a role from a member")
+  @role.command(name="remove", brief="manage roles", description="remove a role from a member")
   @Permissions.has_permission(manage_roles=True) 
   async def role_remove(self, ctx: commands.Context, user: discord.Member, *, role: GoodRole):
     if role.is_premium_subscriber(): return await ctx.warning('I cant remove integrated roles from users.')
@@ -477,14 +477,14 @@ class moderation(commands.Cog):
     return await ctx.success(f"Removed {role.mention} from **{user.name}**")
 
   @Mod.is_mod_configured()
-  @role.command(description="create a role", help="moderation", usage="[name]", brief="manage roles")
+  @role.command(description="create a role", usage="[name]", brief="manage roles")
   @Permissions.has_permission(manage_roles=True) 
   async def create(self, ctx: commands.Context, *, name: str): 
     role = await ctx.guild.create_role(name=name, reason=f"created by {ctx.author}")
     return await ctx.success(f"**created** role {role.mention}") 
    
   @Mod.is_mod_configured()
-  @role.command(description="delete a role", help="moderation", usage="[role]", brief="manage roles")
+  @role.command(description="delete a role", usage="[role]", brief="manage roles")
   @Permissions.has_permission(manage_roles=True) 
   async def delete(self, ctx: commands.Context, *, role: GoodRole): 
       await role.delete(reason=f'deleted by {ctx.author}')
@@ -495,7 +495,7 @@ class moderation(commands.Cog):
     return await ctx.create_pages()
   
   @Mod.is_mod_configured()
-  @rolehumans.command(name="remove", description="remove a role from all members in this server", help="moderation", usage='[role]', brief="manage_roles")
+  @rolehumans.command(name="remove", description="remove a role from all members in this server", usage='[role]', brief="manage_roles")
   @Permissions.has_permission(manage_roles=True) 
   async def rolehumansremove(self, ctx: commands.Context, *, role: GoodRole):
       if self.bot.ext.is_dangerous(role): return await ctx.warning('I cant remove roles from users that have dangerous permissions.')
@@ -511,7 +511,7 @@ class moderation(commands.Cog):
       except Exception: await message.edit(embed=discord.Embed(color=self.bot.color, description=f"{self.bot.no} {ctx.author.mention}: Unable to remove {role.mention} from all humans"))  
   
   @Mod.is_mod_configured()
-  @rolehumans.command(name="add", description="add a role to all humans in this server", help="moderation", usage='[role]', brief="manage_roles")  
+  @rolehumans.command(name="add", description="add a role to all humans in this server", usage='[role]', brief="manage_roles")  
   @Permissions.has_permission(manage_roles=True) 
   async def rolehumansadd(self, ctx: commands.Context, *, role: GoodRole):  
     if self.bot.ext.is_dangerous(role): return await ctx.warning('I cant assign roles to users that have dangerous permissions.')
@@ -531,7 +531,7 @@ class moderation(commands.Cog):
     return await ctx.create_pages()
   
   @Mod.is_mod_configured()
-  @rolebots.command(name="remove", description="remove a role from all bots in this server", help="moderation", usage='[role]', brief="manage_roles")
+  @rolebots.command(name="remove", description="remove a role from all bots in this server", usage='[role]', brief="manage_roles")
   @Permissions.has_permission(manage_roles=True) 
   async def rolebotsremove(self, ctx: commands.Context, *, role: GoodRole):
       if self.bot.ext.is_dangerous(role): return await ctx.warning('I cant remove roles from bots that have dangerous permissions.')
@@ -547,7 +547,7 @@ class moderation(commands.Cog):
       except Exception: await message.edit(embed=discord.Embed(color=self.bot.color, description=f"{self.bot.no} {ctx.author.mention}: Unable to remove {role.mention} from all bots"))  
   
   @Mod.is_mod_configured()
-  @rolebots.command(name="add", description="add a role to all bots in this server", help="moderation", usage='[role]', brief="manage_roles")  
+  @rolebots.command(name="add", description="add a role to all bots in this server", usage='[role]', brief="manage_roles")  
   @Permissions.has_permission(manage_roles=True) 
   async def rolebotsadd(self, ctx: commands.Context, *, role: GoodRole):  
     if self.bot.ext.is_dangerous(role): return await ctx.warning('I cant remove roles from users that have dangerous permissions.')
@@ -567,7 +567,7 @@ class moderation(commands.Cog):
     return await ctx.create_pages()
   
   @Mod.is_mod_configured()
-  @roleall.command(name="remove", description="remove a role from all members in this server", help="moderation", usage='[role]', brief="manage_roles")
+  @roleall.command(name="remove", description="remove a role from all members in this server", usage='[role]', brief="manage_roles")
   @Permissions.has_permission(manage_roles=True) 
   async def roleallremove(self, ctx: commands.Context, *, role: GoodRole):
       if role.is_premium_subscriber(): return await ctx.warning('I cant remove integrated roles from users.')
@@ -582,7 +582,7 @@ class moderation(commands.Cog):
       except Exception: await message.edit(embed=discord.Embed(color=self.bot.color, description=f"{self.bot.no} {ctx.author.mention}: Unable to remove {role.mention} from all members"))  
   
   @Mod.is_mod_configured()
-  @roleall.command(name="add", description="add a role to all members in this server", help="moderation", usage='[role]', brief="manage_roles")  
+  @roleall.command(name="add", description="add a role to all members in this server", usage='[role]', brief="manage_roles")  
   @Permissions.has_permission(manage_roles=True) 
   async def rolealladd(self, ctx: commands.Context, *, role: GoodRole):  
     if self.bot.ext.is_dangerous(role): return await ctx.warning('I cant assign roles to users that have dangerous permissions.')
@@ -602,7 +602,7 @@ class moderation(commands.Cog):
     return await ctx.create_pages()    
   
   @Mod.is_mod_configured()
-  @autokick.command(name='add', description='add a user to be automatically kicked', help="moderation", brief="manage guild", usage="[user]")
+  @autokick.command(name='add', description='add a user to be automatically kicked', brief="manage guild", usage="[user]")
   @Permissions.has_permission(manage_guild=True)
   async def autokick_add(self, ctx: commands.Context, *, member: Union[discord.Member, discord.User]): 
       if isinstance(member, discord.Member) and not Permissions.check_hierarchy(self.bot, ctx.author, member): return await ctx.warning(f"You cannot autokick*{member.mention}")
@@ -615,7 +615,7 @@ class moderation(commands.Cog):
       await ctx.success(f'added **{member}** to autokick list.')
 
   @Mod.is_mod_configured()
-  @autokick.command(name='remove', description='remove a user from being automatically kicked', help="moderation", brief="manage guild", usage="[user]")
+  @autokick.command(name='remove', description='remove a user from being automatically kicked', brief="manage guild", usage="[user]")
   @Permissions.has_permission(manage_guild=True)
   async def autokick_remove(self, ctx: commands.Context, *, member: discord.User): 
     check = await self.bot.db.fetchrow("SELECT * FROM globalban WHERE banned = $1", member.id) 
@@ -657,7 +657,7 @@ class moderation(commands.Cog):
     return await ctx.create_pages()  
 
   @Mod.is_mod_configured()
-  @private.command(name='unwhitelist', description='unwhitelist a user from not being affected by private', help="moderation", brief="manage guild", usage="[user]")
+  @private.command(name='unwhitelist', description='unwhitelist a user from not being affected by private', brief="manage guild", usage="[user]")
   @Permissions.has_permission(manage_guild=True)
   async def private_unwhitelist(self, ctx: commands.Context, *, member: discord.User): 
       check = await self.bot.db.fetchrow("SELECT * FROM globalban WHERE banned = $1", member.id) 
@@ -668,7 +668,7 @@ class moderation(commands.Cog):
       await ctx.success(f'removed **{member}** from privte whitelist.')
 
   @Mod.is_mod_configured()
-  @private.command(name='whitelist', description='whitelist a user from being affected by private', help="moderation", brief="manage guild", usage="[user]")
+  @private.command(name='whitelist', description='whitelist a user from being affected by private', brief="manage guild", usage="[user]")
   @Permissions.has_permission(manage_guild=True)
   async def private_whitelist(self, ctx: commands.Context, *, member: Union[discord.Member, discord.User]): 
       check = await self.bot.db.fetchrow("SELECT * FROM globalban WHERE banned = $1", member.id) 
@@ -678,7 +678,7 @@ class moderation(commands.Cog):
       await self.bot.db.execute("INSERT INTO private VALUES ($1,$2)", ctx.guild.id, member.id)
       await ctx.success(f'added **{member}** to private whitelist.')
 
-  @private.command(name='enable', description="enable the private module", help="moderation", brief="manage guild")
+  @private.command(name='enable', description="enable the private module", brief="manage guild")
   @Permissions.has_permission(manage_guild=True)
   async def private_enable(self, ctx: commands.Context):
       private = await self.bot.db.fetchrow("SELECT * FROM private WHERE guild_id = $1", ctx.guild.id)
@@ -686,7 +686,7 @@ class moderation(commands.Cog):
       await self.bot.db.execute("INSERT INTO private VALUES ($1)", ctx.guild.id)
       return await ctx.success('marked the server as private, new members will be automatically kicked.') 
 
-  @private.command(name='disable', description="disable the private module", help="moderation", brief="manage guild")
+  @private.command(name='disable', description="disable the private module", brief="manage guild")
   @Permissions.has_permission(manage_guild=True)
   async def private_disable(self, ctx: commands.Context):
       private = await self.bot.db.fetchrow("SELECT * FROM private WHERE guild_id = $1", ctx.guild.id)

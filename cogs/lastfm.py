@@ -68,7 +68,7 @@ class lastfm(commands.Cog):
     async def lastfm(self, ctx: commands.Context):
         await ctx.create_pages()
 
-    @lastfm.command(name="set", help="lastfm", description="register your lastfm account", usage="[name]")
+    @lastfm.command(name="set", description="register your lastfm account", usage="[name]")
     async def lf_set(self, ctx: commands.Context, *, ref: str):
       if not await lastfm_user_exists(ref): return await lastfm_message(ctx, "**Invalid** Last.Fm username")                        
       check = await self.bot.db.fetchrow("SELECT * FROM lastfm WHERE user_id = {}".format(ctx.author.id))
@@ -76,22 +76,22 @@ class lastfm(commands.Cog):
       else: await self.bot.db.execute("UPDATE lastfm SET username = $1 WHERE user_id = $2", ref, ctx.author.id)
       return await lastfm_message(ctx, f"Your **Last.fm** username has been set to **{ref}**")
 
-    @lastfm.command(name="remove", help="lastfm", description="unset your lastfm account")
+    @lastfm.command(name="remove", description="unset your lastfm account")
     async def lf_remove(self, ctx: commands.Context):      
         check = await self.bot.db.fetchrow("SELECT * FROM lastfm WHERE user_id = {}".format(ctx.author.id))        
         if not check: return await lastfm_message(ctx, "you don't have a **last.fm** account connected".capitalize())
         await self.bot.db.execute("DELETE FROM lastfm WHERE user_id = {}".format(ctx.author.id))
         await lastfm_message(ctx, "Your **last.fm** account has been removed")
          
-    @lastfm.command(name="variables", description="view lastfm custom embed variables", help="lastfm")
+    @lastfm.command(name="variables", description="view lastfm custom embed variables")
     async def lf_variables(self, ctx: commands.Context):
         await ctx.invoke(self.bot.get_command("embed variables"))
 
-    @lastfm.group(invoke_without_command=True, name="embed", description="create your own lastfm custom embed", aliases=["mode"], help="lastfm")
+    @lastfm.group(invoke_without_command=True, name="embed", description="create your own lastfm custom embed", aliases=["mode"])
     async def lf_embed(self, ctx: commands.Context):
      await ctx.create_pages()
     
-    @lf_embed.command(name="steal", description="steal someone's custom lastfm embed", help="lastfm", usage="[member]")
+    @lf_embed.command(name="steal", description="steal someone's custom lastfm embed", usage="[member]")
     async def lf_embed_steal(self, ctx: commands.Context, *, member: discord.Member): 
      check = await self.bot.db.fetchrow("SELECT * FROM lfmode WHERE user_id = $1", member.id)
      if not check: return await ctx.warning(f"**{member}** doesn't have a custom lastfm embed")
@@ -100,28 +100,28 @@ class lastfm(commands.Cog):
      else: await self.bot.db.execute("UPDATE lfmode SET mode = $1 WHERE user_id = $2", check['mode'], ctx.author.id)
      return await lastfm_message(ctx, f"Succesfully copied **{member.name}'s** custom lastfm embed")  
 
-    @lf_embed.command(name="set", description="set a personal embed as the lastfm embed", help="lastfm", usage="[message | embed code]")                 
+    @lf_embed.command(name="set", description="set a personal embed as the lastfm embed", usage="[message | embed code]")                 
     async def lf_embed_set(self, ctx: commands.Context, *, embed: str):      
      check = await self.bot.db.fetchrow("SELECT * FROM lfmode WHERE user_id = $1", ctx.author.id)
      if not check: await self.bot.db.execute("INSERT INTO lfmode VALUES ($1,$2)", ctx.author.id, embed)
      else: await self.bot.db.execute("UPDATE lfmode SET mode = $1 WHERE user_id = $2", embed, ctx.author.id) 
      await lastfm_message(ctx, f"Set your **last.fm** mode to\n```{embed}```")              
     
-    @lf_embed.command(name="view", description="check your lastfm custom embed", help="lastfm")
+    @lf_embed.command(name="view", description="check your lastfm custom embed")
     async def lf_embed_view(self, ctx: commands.Context): 
      check = await self.bot.db.fetchrow("SELECT * FROM lfmode WHERE user_id = $1", ctx.author.id)
      if not check: return await lastfm_message(ctx, "You do not have any **last.fm** embed") 
      embed = discord.Embed(color=self.bot.color, description=f"```{check['mode']}```")
      return await ctx.reply(embed=embed)    
 
-    @lf_embed.command(name="none", description="clear your last.fm custom embed", help="lastfm", aliases=["delete"])
+    @lf_embed.command(name="none", description="clear your last.fm custom embed", aliases=["delete"])
     async def lf_embed_none(self, ctx: commands.Context): 
      check = await self.bot.db.fetchrow("SELECT * FROM lfmode WHERE user_id = $1", ctx.author.id)
      if not check: return await lastfm_message(ctx, "You do not have any **last.fm** embed") 
      await self.bot.db.execute("DELETE FROM lfmode WHERE user_id = $1", ctx.author.id)
      await lastfm_message(ctx, "Deleted your **last.fm** embed")  
 
-    @lastfm.command(name="customcommand", help="lastfm", description="set a custom command for nowplaying", usage="[command]", aliases=["cc"])
+    @lastfm.command(name="customcommand", description="set a custom command for nowplaying", usage="[command]", aliases=["cc"])
     async def lf_customcommand(self, ctx: commands.Context, *, cmd: str):
         check = await self.bot.db.fetchrow("SELECT * FROM lastfmcc WHERE user_id = {}".format(ctx.author.id))
         if cmd == "none":   
@@ -132,7 +132,7 @@ class lastfm(commands.Cog):
         else: await self.bot.db.execute("UPDATE lastfmcc SET command = $1 WHERE user_id = $2", cmd, ctx.author.id)
         return await lastfm_message(ctx, f"Your **Last.fm** custom command is {cmd}")         
 
-    @lastfm.command(name="topartists", aliases = ['ta', "tar"], description="check a member's top 10 artists", help="lastfm", usage="<member>")
+    @lastfm.command(name="topartists", aliases = ['ta', "tar"], description="check a member's top 10 artists", usage="<member>")
     async def lf_topartists(self, ctx, member: discord.Member=None):
         try:
            if member is None: member = ctx.author
@@ -150,7 +150,7 @@ class lastfm(commands.Cog):
         except Exception as e:
             print(e)
 
-    @lastfm.command(name="toptracks", aliases = ['tt'], description="check a member's top 10 tracks", help="lastfm", usage="<member>")
+    @lastfm.command(name="toptracks", aliases = ['tt'], description="check a member's top 10 tracks", usage="<member>")
     async def lf_toptracks(self, ctx: commands.Context, *, member: discord.Member=None):
         if member == None: member = ctx.author
         try:
@@ -167,7 +167,7 @@ class lastfm(commands.Cog):
         except Exception as e:
             print(e)
 
-    @lastfm.command(name="topalbums", aliases = ['tal'], description="check a member's top 10 albums", help="lastfm", usage="<member>")
+    @lastfm.command(name="topalbums", aliases = ['tal'], description="check a member's top 10 albums", usage="<member>")
     async def lf_topalbums(self,ctx: commands.Context, *, member: discord.Member=None):
         if member == None: member=ctx.author
         try:
@@ -212,7 +212,7 @@ class lastfm(commands.Cog):
              await ctx.reply(embed=embed)
             except TypeError: return await lastfm_message(ctx, "This user doesn't have a **last.fm** account connected")
 
-    @lastfm.command(name="whoknows", aliases = ['wk'], help="lastfm", description="see who knows a certain artist in the server", usage="[artist]")
+    @lastfm.command(name="whoknows", aliases = ['wk'], description="see who knows a certain artist in the server", usage="[artist]")
     async def lf_whoknows(self, ctx: commands.Context, * , artist: str=None):
      await ctx.typing()
      check = await self.bot.db.fetchrow("SELECT username FROM lastfm WHERE user_id = {}".format(ctx.author.id))
@@ -247,7 +247,7 @@ class lastfm(commands.Cog):
      embeds.append(embed)     
      return await ctx.reply(embed=embed) 
 
-    @lastfm.command(name="globalwhoknows", aliases=["gwk"], help="lastfm", description="see who knows a certain artist across all servers the bot is in", usage="[artist]")
+    @lastfm.command(name="globalwhoknows", aliases=["gwk"], description="see who knows a certain artist across all servers the bot is in", usage="[artist]")
     async def lf_globalwhoknows(self, ctx: commands.Context, * ,artist: str=None):
       await ctx.typing()
       check = await self.bot.db.fetchrow("SELECT username FROM lastfm WHERE user_id = {}".format(ctx.author.id))
@@ -294,7 +294,7 @@ class lastfm(commands.Cog):
         else: await self.bot.db.execute("INSERT INTO lfcrowns VALUES ($1,$2)", sorted(tuples, key=lambda n: n[1])[::-1][0][3], artist)
       return await ctx.reply(embed=embed)  
     
-    @lastfm.command(name="cover", help="lastfm", description="get the cover image of your lastfm song", usage="<member>")
+    @lastfm.command(name="cover", description="get the cover image of your lastfm song", usage="<member>")
     async def lf_cover(self, ctx: commands.Context, *, member: discord.Member=commands.Author): 
      check = await self.bot.db.fetchrow("SELECT username FROM lastfm WHERE user_id = $1", member.id)
      if check is None: return await lastfm_message(ctx, "You don't have a **last.fm** account connected")  
@@ -303,7 +303,7 @@ class lastfm(commands.Cog):
      file = discord.File(await self.bot.getbyte((a['recenttracks']['track'][0])['image'][3]['#text']), filename="cover.png")
      return await ctx.reply(f"**{a['recenttracks']['track'][0]['name']}**", file=file)
 
-    @lastfm.command(name="reactions", help="lastfm", description="add custom reactions to your lastfm embed", usage="[emojis | none]\nnone -> no reactions for np command\nno emoji -> default emojis will be used")
+    @lastfm.command(name="reactions", description="add custom reactions to your lastfm embed", usage="[emojis | none]\nnone -> no reactions for np command\nno emoji -> default emojis will be used")
     async def lf_reactions(self, ctx: commands.Context, *emojis: str): 
      check = await self.bot.db.fetchrow("SELECT * FROM lfreactions WHERE user_id = $1", ctx.author.id)
      if len(emojis) == 0: 
@@ -315,11 +315,11 @@ class lastfm(commands.Cog):
      else: await self.bot.db.execute("INSERT INTO lfreactions VALUES ($1,$2)", ctx.author.id, sql_as_text)
      return await lastfm_message(ctx, f"Your **last.fm** reactions are {''.join([e for e in emojis])}")
     
-    @lastfm.command(name="howto", help="lastfm", description="tutorial for using lastfm", aliases=["tutorial"])
+    @lastfm.command(name="howto", description="tutorial for using lastfm", aliases=["tutorial"])
     async def lf_howto(self, ctx: commands.Context): 
       await ctx.reply(f"1) create an account at https://last.fm\n2) link your **spotify** account to your **last.fm** account\n3) use the command `{ctx.clean_prefix}lf set [your lastfm username]`\n4) while you listen to your songs, you can use the `{ctx.clean_prefix}nowplaying` command") 
 
-    @lastfm.command(name="crowns", help="lastfm", description="get the crowns of a member", usage="<user>") 
+    @lastfm.command(name="crowns", description="get the crowns of a member", usage="<user>") 
     async def lf_crowns(self, ctx: commands.Context, *, member: discord.User=None): 
       if member is None: member = ctx.author 
       check = await self.bot.db.fetch("SELECT * FROM lfcrowns WHERE user_id = $1", member.id)
@@ -346,7 +346,7 @@ class lastfm(commands.Cog):
       embeds.append(discord.Embed(color=self.bot.color, title=f"{member.name}'s cronws ({len(check)})", description=mes))    
       return await ctx.paginator(embeds) 
     
-    @lastfm.command(name="chart", aliases=["c"], help="lastfm", description="Generates an album image chart.", usage="[size] [period]\nsizes available: 3x3 (default), 2x2, 4x5, 20x4\nperiods available: alltime (default), yearly, monthly")
+    @lastfm.command(name="chart", aliases=["c"], description="Generates an album image chart.", usage="[size] [period]\nsizes available: 3x3 (default), 2x2, 4x5, 20x4\nperiods available: alltime (default), yearly, monthly")
     async def lf_chart(self, ctx: commands.Context, user: discord.User=None, size: str = "3x3", period: Literal['overall', '7day', '1month', '3month', '6month', '12month'] = 'overall'):
       if user is None: user = ctx.author   
       username = await self.bot.db.fetchval("SELECT username FROM lastfm WHERE user_id = $1", user.id)
@@ -360,27 +360,27 @@ class lastfm(commands.Cog):
       image = await self.session.get_bytes(x['image_url'])
       return await ctx.reply(f"Last.FM chart for {user.mention} **{size}** album chart ({period})", file = File(BytesIO(image), filename="chart.png"))
     
-    @commands.command(aliases=["gwk"], help="lastfm", description="see who knows a certain artist across all servers the bot is in", usage="[artist]")
+    @commands.command(aliases=["gwk"], description="see who knows a certain artist across all servers the bot is in", usage="[artist]")
     async def globalwhoknows(self, ctx: commands.Context, *, artist: str=None): 
       await ctx.invoke(self.bot.get_command("lastfm globalwhoknows"), artist=artist)
 
-    @commands.command(aliases = ['wk'], help="lastfm", description="see who knows a certain artist in the server", usage="[artist]") 
+    @commands.command(aliases = ['wk'], description="see who knows a certain artist in the server", usage="[artist]") 
     async def whoknows(self, ctx: commands.Context, *, artist: str=None):
       await ctx.invoke(self.bot.get_command("lastfm whoknows"), artist=artist)    
     
-    @commands.command(aliases = ['tal'], description="check a member's top 10 albums", help="lastfm", usage="<member>")
+    @commands.command(aliases = ['tal'], description="check a member's top 10 albums", usage="<member>")
     async def topalbums(self, ctx: commands.Context, *, member: discord.Member=None): 
      await ctx.invoke(self.bot.get_command("lastfm topalbums"), member=member)
 
-    @commands.command(aliases = ['tt'], description="check a member's top 10 tracks", help="lastfm", usage="<member>")
+    @commands.command(aliases = ['tt'], description="check a member's top 10 tracks", usage="<member>")
     async def toptracks(self, ctx: commands.Context, *, member: discord.Member=None): 
       await ctx.invoke(self.bot.get_command("lastfm toptracks"), member=member) 
     
-    @commands.command(aliases = ['ta', "tar"], description="check a member's top 10 artists", help="lastfm", usage="<member>")
+    @commands.command(aliases = ['ta', "tar"], description="check a member's top 10 artists", usage="<member>")
     async def topartists(self, ctx: commands.Context, *, member: discord.Member=None): 
      await ctx.invoke(self.bot.get_command("lastfm topartists"), member=member)   
 
-    @commands.command(aliases=['np', 'fm'], help="lastfm", description="check what song is playing right now", usage="<user>")
+    @commands.command(aliases=['np', 'fm'], description="check what song is playing right now", usage="<user>")
     async def nowplaying(self, ctx: commands.Context, *, member: discord.User=None):
         if member is None: member = ctx.author
         try:

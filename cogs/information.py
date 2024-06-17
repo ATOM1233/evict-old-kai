@@ -29,7 +29,7 @@ class information(commands.Cog):
       meridian = "PM"  
      return f"{month}/{day}/{year} at {hour}:{minute} {meridian} ({discord.utils.format_dt(date, style='R')})" 
 
-    @commands.command(aliases=["si"], description="show information about the server", help="information")
+    @commands.command(aliases=["si"], description="show information about the server")
     async def serverinfo(self, ctx: Context):
         guild = ctx.guild        
         icon= f"[icon]({guild.icon.url})" if guild.icon is not None else "N/A"
@@ -48,7 +48,7 @@ class information(commands.Cog):
         embed.set_footer(text=f"Guild ID: {guild.id}")
         await ctx.reply(embed=embed)
 
-    @commands.command(aliases=["banner", "ubanner", "ub"], description="see someone's banner", help="information", usage="<user>")
+    @commands.command(aliases=["banner", "ubanner", "ub"], description="see someone's banner", usage="<user>")
     async def userbanner(self, ctx: commands.Context, *, member: discord.User=commands.Author):
      user = await self.bot.fetch_user(member.id)
      if not user.banner: return await ctx.warning(f"**{user}** doesn't have a banner") 
@@ -56,7 +56,7 @@ class information(commands.Cog):
      embed.set_image(url=user.banner.url)
      return await ctx.reply(embed=embed) 
 
-    @commands.command(aliases=["pfp", "uav", "avatar", "av"], description="see user's avatar", help="information", usage="<user>")
+    @commands.command(aliases=["pfp", "uav", "avatar", "av"], description="see user's avatar", usage="<user>")
     async def useravatar(self, ctx: commands.Context, *, member: discord.User = None):
       if member is None: member = ctx.author
       member = await self.bot.fetch_user(member.id)
@@ -64,7 +64,7 @@ class information(commands.Cog):
       embed.set_image(url=member.avatar.url)
       await ctx.reply(embed=embed)
 
-    @commands.command(aliases=["sav", "savatar", "spfp"], description="see user's server avatar", help="information", usage="<user>")
+    @commands.command(aliases=["sav", "savatar", "spfp"], description="see user's server avatar", usage="<user>")
     async def serveravatar(self, ctx: commands.Context, *, member: discord.Member = None):
       if member is None: member = ctx.author
       if member.guild_avatar is None: return await ctx.warning(f'**{member}** doesnt have a server avatar set.')
@@ -72,7 +72,7 @@ class information(commands.Cog):
       embed.set_image(url=member.guild_avatar.url)
       await ctx.reply(embed=embed)
 
-    @commands.command(aliases=["sbanner"], description="get the server's banner", help="information")
+    @commands.command(aliases=["sbanner"], description="get the server's banner")
     async def serverbanner(self, ctx: commands.Context): 
         guild = ctx.guild
         if not guild.banner: return await ctx.warning( "this server has no banner".capitalize())
@@ -80,7 +80,7 @@ class information(commands.Cog):
         embed.set_image(url=guild.banner.url)
         await ctx.reply(embed=embed)
 
-    @commands.command(aliases=["sicon", "icon"], description="get the server's icon", help="information")
+    @commands.command(aliases=["sicon", "icon"], description="get the server's icon")
     async def servericon(self, ctx: Context, *, id: int=None): 
         guild = ctx.guild
         if not guild.icon: return await ctx.warning( "this server has no icon".capitalize())
@@ -88,7 +88,7 @@ class information(commands.Cog):
         embed.set_image(url=guild.icon.url)
         await ctx.reply(embed=embed)   
 
-    @commands.command(aliases=["splash", "ssplash"], description="get the server's invite background image", help="information")
+    @commands.command(aliases=["splash", "ssplash"], description="get the server's invite background image")
     async def serversplash(self, ctx: Context): 
         guild = ctx.guild
         if not guild.splash: return await ctx.warning( "this server has no splash".capitalize())
@@ -96,7 +96,7 @@ class information(commands.Cog):
         embed.set_image(url=guild.splash.url)
         await ctx.reply(embed=embed)
 
-    @commands.command(aliases=["gbanner"], description="gets the banner from a server based by invite code", help="information", usage="[invite code]")
+    @commands.command(aliases=["gbanner"], description="gets the banner from a server based by invite code", usage="[invite code]")
     async def guildbanner(self, ctx, *, link: str):
      invite_code = link
      data = await self.bot.session.json(DISCORD_API_LINK + invite_code)
@@ -105,7 +105,7 @@ class information(commands.Cog):
      embed.set_image(url="https://cdn.discordapp.com/banners/" + data["guild"]["id"] + "/" + data["guild"]["banner"] + f"{format}?size=1024")
      await ctx.reply(embed=embed)
 
-    @commands.command(aliases=["gsplash"],description="gets the splash from a server based by invite code", help="information", usage="[invite code]")
+    @commands.command(aliases=["gsplash"],description="gets the splash from a server based by invite code", usage="[invite code]")
     async def guildsplash(self, ctx, *, link: str):
       invite_code = link
       data = await self.bot.session.json(DISCORD_API_LINK + invite_code)
@@ -114,7 +114,7 @@ class information(commands.Cog):
       if data == None: return await ctx.warning("this server doesn't have a splash set.")
       else: await ctx.reply(embed=embed)
     
-    @commands.command(aliases=["gicon"], description="gets the icon from a server based by invite code", help="information", usage="[invite code]")
+    @commands.command(aliases=["gicon"], description="gets the icon from a server based by invite code", usage="[invite code]")
     async def guildicon(self, ctx, *, link: str):
       invite_code = link
       data = await self.bot.session.json(DISCORD_API_LINK + invite_code)
@@ -123,7 +123,7 @@ class information(commands.Cog):
       embed.set_image(url="https://cdn.discordapp.com/icons/" + data["guild"]["id"] + "/" + data["guild"]["icon"] + f"{format}?size=1024")
       await ctx.reply(embed=embed)
 
-    @commands.command(description="sends a definition of a word", help="fun", usage="[word]")
+    @commands.command(description="sends a definition of a word", usage="[word]")
     async def urban(self, ctx, *, word):
       embeds = []
       try:
@@ -138,7 +138,7 @@ class information(commands.Cog):
        return await ctx.paginator(embeds)
       except Exception as e: await ctx.reply("no definition found for **{}**".format(word))
 
-    @commands.command(description="gets information about a github user", aliases=["gh"], help="information", usage="[user]")
+    @commands.command(description="gets information about a github user", aliases=["gh"], usage="[user]")
     async def github(self, ctx, *, user: str):
         res = await self.bot.session.json(f'https://api.github.com/users/{user}') 
         name=res['login']
@@ -164,7 +164,7 @@ class information(commands.Cog):
         embed.set_footer(text='Github', icon_url='https://cdn.evict.dev/github.png')
         await ctx.reply(embed=embed)
 
-    @commands.command(aliases=["firstmsg"], description="get the first message", help="information", usage="<channel>")
+    @commands.command(aliases=["firstmsg"], description="get the first message", usage="<channel>")
     async def firstmessage(self, ctx: Context, *, channel: TextChannel=None):
      channel = channel or ctx.channel 
      messages = [mes async for mes in channel.history(oldest_first=True, limit=1)]
@@ -175,7 +175,7 @@ class information(commands.Cog):
      view.add_item(Button(label="jump to message", url=message.jump_url))
      await ctx.reply(embed=embed, view=view) 
 
-    @commands.command(name="inviteinfo", aliases=["ii"], description="get information about an invite", help="information", usage="invite code")
+    @commands.command(name="inviteinfo", aliases=["ii"], description="get information about an invite", usage="invite code")
     async def inviteinfo(self, ctx, code: str):
         if "/" in code:
             code = code.split("/", -1)[-1].replace(" ", "")
@@ -201,7 +201,7 @@ class information(commands.Cog):
 
         await ctx.reply(embed=embed)
 
-    @commands.command(aliases=["sp"], name="spotify", description="send what you or another person is listening to on Spotify", help="information", usage="member")
+    @commands.command(aliases=["sp"], name="spotify", description="send what you or another person is listening to on Spotify", usage="member")
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def spotify(self, ctx, user: discord.Member = None):
         try:
@@ -233,7 +233,7 @@ class information(commands.Cog):
         except Exception as e:
             print(e)
 
-    @commands.command(name="devices", description="send what device you or another person is using", help="information", usage="member")
+    @commands.command(name="devices", description="send what device you or another person is using", usage="member")
     async def devices(self, ctx, *, member: discord.Member=None):
         if member is None:
             member = ctx.author
@@ -259,16 +259,16 @@ class information(commands.Cog):
         embed.set_thumbnail(url=member.display_avatar.url)
         await ctx.reply(embed=embed, mention_author=False)
     
-    @commands.command(description="check how long the bot has been online for", help="information")
+    @commands.command(description="check how long the bot has been online for")
     async def uptime(self, ctx: commands.Context):
      e = discord.Embed(color=self.bot.color, description=f"⏰ **{self.bot.user.name}'s** uptime: **{self.bot.ext.uptime}**")
      await ctx.reply(embed=e)
     
-    @commands.command(description="check bot connection", help="information")
+    @commands.command(description="check bot connection")
     async def ping(self, ctx):
       await ctx.reply(f"....pong 🏓 `{self.bot.ext.ping}ms`")
 
-    @commands.command(description="invite the bot", help="information", aliases=["support", "inv"])
+    @commands.command(description="invite the bot", aliases=["support", "inv"])
     async def invite(self, ctx):
       embed = discord.Embed(color=self.bot.color, description="I am a private Discord Bot serving a few servers. Inquire to add me.")
       await ctx.reply(embed=embed)

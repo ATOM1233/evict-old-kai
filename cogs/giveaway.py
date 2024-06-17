@@ -38,7 +38,7 @@ class giveaway(commands.Cog):
   async def on_connect(self): 
    gw_loop.start(self.bot)
 
-  @commands.command(name="gcreate", brief="manage server", description="create a giveaway in this server", help="config", usage="<channel>")
+  @commands.command(name="gcreate", brief="manage server", description="create a giveaway in this server", usage="<channel>")
   @Permissions.has_permission(manage_guild=True) 
   async def gcreate(self, ctx: commands.Context, *, channel: discord.TextChannel=None):  
    return await ctx.invoke(self.bot.get_command('giveaway create'), channel=channel or ctx.channel) 
@@ -48,12 +48,12 @@ class giveaway(commands.Cog):
   async def glist(self, ctx: commands.Context): 
    return await ctx.invoke(self.bot.get_command('giveaway list')) 
   
-  @commands.command(brief="manage_server", description="end a giveaway", help="config", usage="[message id] <channel>")
+  @commands.command(brief="manage_server", description="end a giveaway", usage="[message id] <channel>")
   @Permissions.has_permission(manage_guild=True) 
   async def gend(self, ctx: commands.Context, message_id: int, *, channel: discord.TextChannel=None): 
    await ctx.invoke(self.bot.get_command('giveaway end'), message_id=message_id, channel=channel or ctx.channel) 
   
-  @commands.command(help="config", description="reroll a giveaway", brief="manage server", usage="[message id] <channel>")
+  @commands.command(description="reroll a giveaway", brief="manage server", usage="[message id] <channel>")
   @Permissions.has_permission(manage_guild=True) 
   async def greroll(self, ctx: commands.Context, message_id: int, *, channel: discord.TextChannel=None): 
    await ctx.invoke(self.bot.get_command('giveaway reroll'), message_id=message_id, channel=channel or ctx.channel)  
@@ -62,7 +62,7 @@ class giveaway(commands.Cog):
   async def giveaway(self, ctx): 
     return await ctx.create_pages()
   
-  @giveaway.command(name="end", brief="manage_server", description="end a giveaway", help="config", usage="[message id] <channel>")
+  @giveaway.command(name="end", brief="manage_server", description="end a giveaway", usage="[message id] <channel>")
   @Permissions.has_permission(manage_guild=True) 
   async def gw_end(self, ctx: commands.Context, message_id: int, *, channel: discord.TextChannel=None): 
    if not channel: channel = ctx.channel
@@ -71,7 +71,7 @@ class giveaway(commands.Cog):
    await gwend_task(self.bot, check, datetime.datetime.now())
    return await ctx.success(f"Ended giveaway in {channel.mention}")
 
-  @giveaway.command(name="reroll", help="config", description="reroll a giveaway", brief="manage server", usage="[message id] <channel>")
+  @giveaway.command(name="reroll", description="reroll a giveaway", brief="manage server", usage="[message id] <channel>")
   @Permissions.has_permission(manage_guild=True) 
   async def gw_reroll(self, ctx: commands.Context, message_id: int, *, channel: discord.TextChannel=None): 
    if not channel: channel = ctx.channel
@@ -106,7 +106,7 @@ class giveaway(commands.Cog):
     number.append(discord.Embed(color=self.bot.color, title=f"giveaways ({len(results)})", description=messages[i]))
     await ctx.paginator(number)  
 
-  @giveaway.command(name="create", brief="manage server", description="create a giveaway in this server", help="config", usage="<channel>")
+  @giveaway.command(name="create", brief="manage server", description="create a giveaway in this server", usage="<channel>")
   @Permissions.has_permission(manage_guild=True) 
   async def gw_create(self, ctx: commands.Context, *, channel: discord.TextChannel=None):
    if not channel: channel = ctx.channel 

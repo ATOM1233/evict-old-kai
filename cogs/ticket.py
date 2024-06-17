@@ -149,7 +149,7 @@ class tickets(commands.Cog):
     async def ticket(self, ctx): 
       await ctx.create_pages()  
 
-    @ticket.command(description="add a person to the ticket", help="config", usage="[member]", brief="manage channels")
+    @ticket.command(description="add a person to the ticket", usage="[member]", brief="manage channels")
     @Permissions.has_permission(manage_channels=True)
     @get_ticket()
     async def add(self, ctx: commands.Context, *, member: discord.Member):
@@ -161,7 +161,7 @@ class tickets(commands.Cog):
      await ctx.channel.set_permissions(member, overwrite=overwrites) 
      return await ctx.success( "Added **{}** to the ticket".format(member))
     
-    @ticket.command(help="config", description="remove a member from the ticket", usage="[member]", brief="manage channels")
+    @ticket.command(description="remove a member from the ticket", usage="[member]", brief="manage channels")
     @Permissions.has_permission(manage_channels=True)
     @get_ticket() 
     async def remove(self, ctx: commands.Context, *, member: discord.Member): 
@@ -173,7 +173,7 @@ class tickets(commands.Cog):
      await ctx.channel.set_permissions(member, overwrite=overwrites) 
      return await ctx.success( "Removed **{}** from the ticket".format(member))
 
-    @ticket.command(description="manage the ticket topics", help="config", brief="administrator")
+    @ticket.command(description="manage the ticket topics", brief="administrator")
     @Permissions.has_permission(administrator=True)
     async def topics(self, ctx: commands.Context): 
         check = await self.bot.db.fetchrow("SELECT * FROM tickets WHERE guild_id = $1", ctx.guild.id)
@@ -211,7 +211,7 @@ class tickets(commands.Cog):
         view.add_item(button2)
         await ctx.reply(embed=embed, view=view)  
 
-    @ticket.command(description="configure the ticket message", help="config", usage="[embed code]", brief="administrator")
+    @ticket.command(description="configure the ticket message", usage="[embed code]", brief="administrator")
     @Permissions.has_permission(administrator=True)
     async def message(self, ctx: commands.Context, *, message: str=None):
         check = await self.bot.db.fetchrow("SELECT * FROM tickets WHERE guild_id = $1", ctx.guild.id)
@@ -224,7 +224,7 @@ class tickets(commands.Cog):
           await self.bot.db.execute("UPDATE tickets SET message = $1 WHERE guild_id = $2", None, ctx.guild.id)
           return await ctx.success( "Custom ticket message set to default")
     
-    @ticket.command(description="configure the ticket support role (will be pinged)", help="config", usage="[role]", brief="administrator")
+    @ticket.command(description="configure the ticket support role (will be pinged)", usage="[role]", brief="administrator")
     @Permissions.has_permission(administrator=True)
     async def support(self, ctx: commands.Context, role: discord.Role=None):
       if role == None:
@@ -235,7 +235,7 @@ class tickets(commands.Cog):
       return await ctx.success(f'Added **{role.name}** as a **support role**.')
       
       
-    @ticket.command(description="configure the ticket category", help="config", usage="[category]", brief="administrator")
+    @ticket.command(description="configure the ticket category", usage="[category]", brief="administrator")
     @Permissions.has_permission(administrator=True)
     async def category(self, ctx: commands.Context, *, channel: discord.CategoryChannel=None):
         check = await self.bot.db.fetchrow("SELECT * FROM tickets WHERE guild_id = $1", ctx.guild.id)
@@ -248,7 +248,7 @@ class tickets(commands.Cog):
             await self.bot.db.execute("UPDATE tickets SET category = $1 WHERE guild_id = $2", None, ctx.guild.id)
             await ctx.success( "removed tickets category")
 
-    @ticket.command(description="configure the ticket channel", help="config", usage="[channel]", brief="administrator")
+    @ticket.command(description="configure the ticket channel", usage="[channel]", brief="administrator")
     @Permissions.has_permission(administrator=True)
     async def channel(self, ctx: commands.Context, *, channel: discord.TextChannel=None):  
         check = await self.bot.db.fetchrow("SELECT * FROM tickets WHERE guild_id = $1", ctx.guild.id)
@@ -261,7 +261,7 @@ class tickets(commands.Cog):
             await self.bot.db.execute("UPDATE tickets SET channel_id = $1 WHERE guild_id = $2", None, ctx.guild.id)
             await ctx.success( "removed tickets channel") 
 
-    @ticket.command(description="configure the ticket logging channel", help="config", usage="[channel]", brief="administrator")
+    @ticket.command(description="configure the ticket logging channel", usage="[channel]", brief="administrator")
     @Permissions.has_permission(administrator=True)
     async def logs(self, ctx: commands.Context, *, channel: discord.TextChannel=None):
         check = await self.bot.db.fetchrow("SELECT * FROM tickets WHERE guild_id = $1", ctx.guild.id)
@@ -274,7 +274,7 @@ class tickets(commands.Cog):
             await self.bot.db.execute("UPDATE tickets SET logs = $1 WHERE guild_id = $2", None, ctx.guild.id)
             await ctx.success("removed tickets logs") 
 
-    @ticket.command(description="sends the ticket panel", help="config", brief="administrator")
+    @ticket.command(description="sends the ticket panel", brief="administrator")
     @Permissions.has_permission(administrator=True)
     async def send(self, ctx: commands.Context): 
         check = await self.bot.db.fetchrow("SELECT * FROM tickets WHERE guild_id = $1", ctx.guild.id)
@@ -296,7 +296,7 @@ class tickets(commands.Cog):
         await ctx.success("Sent the **ticket** message to {}".format(channel.mention)) 
         await self.bot.db.execute("UPDATE tickets SET color = $1 WHERE guild_id = $2", self.bot.color or message.embeds[0].color.value, ctx.guild.id)
       
-    @ticket.command(description="check the ticket panel's settings", help="config")
+    @ticket.command(description="check the ticket panel's settings")
     async def settings(self, ctx: commands.Context):
         check = await self.bot.db.fetchrow("SELECT * FROM tickets WHERE guild_id = $1", ctx.guild.id)
         if check is None: return await ctx.reply("no ticket panel created")

@@ -32,11 +32,11 @@ class joindm(commands.Cog):
         try: await member.send(content=EmbedBuilder.embed_replacement(member, check['message'])  , view=view)
         except: pass 
 
-  @commands.group(invoke_without_command=True, help="config", description="manage dm's on member join")
+  @commands.group(invoke_without_command=True, description="manage dm's on member join")
   async def joindm(self, ctx): 
     return await ctx.create_pages()
   
-  @joindm.command(name="add", description="add a message that will be sent to any new member that will join the server", help="config", brief="manage guild", usage="[message | --embed embed name]")
+  @joindm.command(name="add", description="add a message that will be sent to any new member that will join the server", brief="manage guild", usage="[message | --embed embed name]")
   @Permissions.has_permission(manage_guild=True) 
   async def joindm_add(self, ctx: commands.Context, *, message: str): 
    check = await self.bot.db.fetchrow("SELECT * FROM joindm WHERE guild_id = $1", ctx.guild.id)
@@ -44,7 +44,7 @@ class joindm(commands.Cog):
    else: await self.bot.db.execute("INSERT INTO joindm VALUES ($1,$2)", ctx.guild.id, message)
    await ctx.success(f"Configured **joindm** message to\n```{message}```")    
   
-  @joindm.command(name="remove", description="remove the joindm message", help="config", brief="manage guild")
+  @joindm.command(name="remove", description="remove the joindm message", brief="manage guild")
   @Permissions.has_permission(manage_guild=True) 
   async def joindm_remove(self, ctx: commands.Context):
     check = await self.bot.db.fetchrow("SELECT * FROM joindm WHERE guild_id = $1", ctx.guild.id)
@@ -52,7 +52,7 @@ class joindm(commands.Cog):
     await self.bot.db.execute("DELETE FROM joindm WHERE guild_id = $1", ctx.guild.id)
     return await ctx.success('Deleted joindm')
   
-  @joindm.command(name="test", description="test the joindm message", help="config", brief="manage guild")
+  @joindm.command(name="test", description="test the joindm message", brief="manage guild")
   @Permissions.has_permission(manage_guild=True) 
   async def joindm_test(self, ctx: commands.Context): 
     check = await self.bot.db.fetchrow("SELECT message FROM joindm WHERE guild_id = $1", ctx.guild.id)

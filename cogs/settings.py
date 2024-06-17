@@ -31,7 +31,7 @@ class settings(commands.Cog):
         await ctx.bot.db.execute("INSERT INTO settings_social VALUES ($1, $2, $3) ON CONFLICT (guild_id) DO UPDATE SET toggled = $2 WHERE settings_social.guild_id = $1", ctx.guild.id, False, 'evict')
         return await ctx.success('**social media** reposting is now disabled.')
     
-    @reposter.command(description="set reposter prefix (set to 'none' to have no prefix)", usage='[prefix]', brief='manage server', help='')
+    @reposter.command(description="set reposter prefix (set to 'none' to have no prefix)", usage='[prefix]', brief='manage server')
     @Permissions.has_permission(manage_guild=True)
     async def prefix(self, ctx: commands.Context, prefix: str=None):
         social = await ctx.bot.db.fetchrow('SELECT * FROM settings_social WHERE guild_id = $1', ctx.guild.id)

@@ -59,7 +59,7 @@ class utility(commands.Cog):
       meridian = "PM"  
      return f"{month}/{day}/{year} at {hour}:{minute} {meridian} ({discord.utils.format_dt(date, style='R')})" 
 
-    @commands.command(description="show user information", help="utility", usage="<user>", aliases=["whois", "ui", "user"])
+    @commands.command(description="show user information", usage="<user>", aliases=["whois", "ui", "user"])
     async def userinfo(self, ctx: Context, *, member: Union[Member, User]=None):
      await ctx.typing()
      if member is None: member = ctx.author           
@@ -139,7 +139,7 @@ class utility(commands.Cog):
      except: e.set_footer(text='ID: ' + str(member.id))
      await ctx.reply(embed=e) 
 
-    @commands.command(description="clear your usernames", help="utility", aliases=["clearusernames", "clearusers"])
+    @commands.command(description="clear your usernames", aliases=["clearusernames", "clearusers"])
     async def clearnames(self, ctx):
         embed = discord.Embed(color=self.bot.color, description=f"{ctx.author.mention} are you sure you want to clear your usernames. This decision is **irreversible**")
         button1 = discord.ui.Button(emoji=self.bot.yes)
@@ -161,14 +161,14 @@ class utility(commands.Cog):
         view.add_item(button2)
         return await ctx.reply(embed=embed, view=view)
        
-    @commands.command(description="clear all snipe data", help="utility", brief="manage messages", aliases=['cs'])
+    @commands.command(description="clear all snipe data", brief="manage messages", aliases=['cs'])
     @Permissions.has_permission(manage_messages=True)
     async def clearsnipes(self, ctx: Context): 
       lis = ["snipe", "reactionsnipe", "editsnipe"]
       for l in lis: await self.bot.db.execute(f"DELETE FROM {l} WHERE guild_id = $1", ctx.guild.id)
       return await ctx.success("Cleared all snipes from this server") 
 
-    @commands.command(aliases = ['names', 'usernames'], help="utility", usage="<user>", description="check an user's past usernames")
+    @commands.command(aliases = ['names', 'usernames'], usage="<user>", description="check an user's past usernames")
     async def pastusernames(self, ctx, member: User = None):
        if not member: member = ctx.author
        data = await self.bot.db.fetch("SELECT * FROM oldusernames WHERE user_id = $1", member.id)
@@ -199,13 +199,13 @@ class utility(commands.Cog):
          return await ctx.paginator( number)     
        else: return await ctx.warning( f"no logged usernames for **{member}**".capitalize())
 
-    @commands.command(help="utility", usage="[message]", description="uwify a message", aliases=["uwu"])
+    @commands.command(usage="[message]", description="uwify a message", aliases=["uwu"])
     async def uwuify(self, ctx: Context, *, text: str): 
      uwu = uwuipy.uwuipy()
      uwu_message = uwu.uwuify(text)
      await ctx.send(uwu_message)  
 
-    @commands.command(help="utility", description="give someone permission to post pictures in a channel", usage="[member] <channel>", brief="manage roles")
+    @commands.command(description="give someone permission to post pictures in a channel", usage="[member] <channel>", brief="manage roles")
     @Permissions.has_permission(manage_roles=True)
     async def picperms(self, ctx: Context, member: Member, *, channel: TextChannel=None):
       if channel is None: channel = ctx.channel
@@ -215,14 +215,14 @@ class utility(commands.Cog):
       await channel.set_permissions(member, attach_files=True,embed_links=True)
       return await ctx.success(f"Added pic perms to {member.mention} in {channel.mention}")     
     
-    @commands.command(description="see when a user was last seen", help="utility", usage="[member]")
+    @commands.command(description="see when a user was last seen", usage="[member]")
     async def seen(self, ctx, *, member: Member):
         check = await self.bot.db.fetchrow("SELECT * FROM seen WHERE guild_id = {} AND user_id = {}".format(ctx.guild.id, member.id))
         if check is None: return await ctx.warning( f"I didn't see **{member}**")
         ts = check['time']
         await ctx.reply(embed=Embed(color=self.bot.color, description="{}: **{}** was last seen <t:{}:R>".format(ctx.author.mention, member, ts)))   
 
-    @commands.command(help="utility", description="let everyone know you are away", usage="<reason>")
+    @commands.command(description="let everyone know you are away", usage="<reason>")
     async def afk(self, ctx: Context, *, reason="AFK"):      
        ts = int(datetime.datetime.now().timestamp())   
        result = await self.bot.db.fetchrow("SELECT * FROM afk WHERE guild_id = {} AND user_id = {}".format(ctx.guild.id, ctx.author.id)) 
@@ -230,7 +230,7 @@ class utility(commands.Cog):
         await self.bot.db.execute("INSERT INTO afk VALUES ($1,$2,$3,$4)", ctx.guild.id, ctx.author.id, reason, ts)
         await ctx.success(f"You're now AFK with the status: **{reason}**")
 
-    @commands.command(aliases=["es"], description="get the most recent edited messages from the channel", help="utility", usage="<number>")
+    @commands.command(aliases=["es"], description="get the most recent edited messages from the channel", usage="<number>")
     async def editsnipe(self, ctx: Context, number: int=1): 
      results = await self.bot.db.fetch("SELECT * FROM editsnipe WHERE guild_id = $1 AND channel_id = $2", ctx.guild.id, ctx.channel.id)
      if len(results) == 0: return await ctx.warning( "There are no edited messages in this channel")
@@ -243,7 +243,7 @@ class utility(commands.Cog):
      embed.set_footer(text=f"{number}/{len(results)}")
      await ctx.reply(embed=embed)
 
-    @commands.command(aliases=["rs"], description="get the most recent messages that got one of their reactions removed", help="utility", usage="number")
+    @commands.command(aliases=["rs"], description="get the most recent messages that got one of their reactions removed", usage="number")
     async def reactionsnipe(self, ctx: Context, number: int=1):
      results = await self.bot.db.fetch("SELECT * FROM reactionsnipe WHERE guild_id = $1 AND channel_id = $2", ctx.guild.id, ctx.channel.id)
      if len(results) == 0: return await ctx.warning( "There are no reaction removed in this channel")
@@ -256,7 +256,7 @@ class utility(commands.Cog):
      embed.set_footer(text=f"{number}/{len(results)}")
      await ctx.reply(embed=embed)
 
-    @commands.command(aliases=["s"], description="check the latest deleted message from a channel", usage="<number>", help="utility")
+    @commands.command(aliases=["s"], description="check the latest deleted message from a channel", usage="<number>")
     async def snipe(self, ctx: Context, *, number: int=1):
         check = await self.bot.db.fetch("SELECT * FROM snipe WHERE guild_id = {} AND channel_id = {}".format(ctx.guild.id, ctx.channel.id))
         if len(check) == 0: return await ctx.warning( "There are no deleted messages in this channel") 
@@ -277,7 +277,7 @@ class utility(commands.Cog):
            except: pass 
         return await ctx.reply(embed=em)
     
-    @commands.command(aliases=["mc"], description="check how many members does your server have", help="utility")
+    @commands.command(aliases=["mc"], description="check how many members does your server have")
     async def membercount(self, ctx: Context):
       b=len(set(b for b in ctx.guild.members if b.bot))
       h=len(set(b for b in ctx.guild.members if not b.bot))
@@ -288,7 +288,7 @@ class utility(commands.Cog):
       embed.add_field(name="bots", value=b)
       await ctx.reply(embed=embed)
     
-    @commands.command(description="get role information", usage="[role]", help="utility", aliases=["ri"])
+    @commands.command(description="get role information", usage="[role]", aliases=["ri"])
     async def roleinfo(self, ctx: Context, *, role: Union[Role, str]): 
       if isinstance(role, str): 
         role = ctx.find_role(role)
@@ -303,7 +303,7 @@ class utility(commands.Cog):
       embed.add_field(name="permissions", value=f"```{perms}```", inline=False)
       await ctx.reply(embed=embed)
        
-    @commands.command(description="see all members in a role", help="utility", usage="[role]")
+    @commands.command(description="see all members in a role", usage="[role]")
     async def inrole(self, ctx: Context, *, role: Union[Role, str]):
             if isinstance(role, str): 
               role = ctx.find_role(role)
@@ -332,7 +332,7 @@ class utility(commands.Cog):
             number.append(embed)
             await ctx.paginator( number)
     
-    @commands.command(description="see all members joined within 24 hours", help="utility")
+    @commands.command(description="see all members joined within 24 hours")
     async def joins(self, ctx: Context): 
       members = [m for m in ctx.guild.members if (datetime.datetime.now() - m.joined_at.replace(tzinfo=None)).total_seconds() < 3600*24]      
       if len(members) == 0: return await ctx.error("No members joined in the last **24** hours")
@@ -359,7 +359,7 @@ class utility(commands.Cog):
       number.append(embed)
       await ctx.paginator(number) 
 
-    @commands.command(description="see all muted members", help="utility")
+    @commands.command(description="see all muted members")
     async def muted(self, ctx: Context): 
             members = [m for m in ctx.guild.members if m.is_timed_out()]
             if len(members) == 0: return await ctx.error("There are no muted members")
@@ -386,7 +386,7 @@ class utility(commands.Cog):
             await ctx.paginator(number)     
     
     @Permissions.has_permission(ban_members=True)
-    @commands.command(description="see all banned members", help="utility")
+    @commands.command(description="see all banned members")
     async def bans(self, ctx: Context): 
      banned = [m async for m in ctx.guild.bans()]
      if len(banned) == 0: return await ctx.warning( "There are no banned people in this server")  
@@ -416,7 +416,7 @@ class utility(commands.Cog):
     async def boosters(self, ctx: commands.Context):
       await ctx.create_pages()
 
-    @boosters.command(invoke_without_command=True, description="see all server boosters", help="utility")
+    @boosters.command(invoke_without_command=True, description="see all server boosters")
     async def list(self, ctx: Context):
             if not ctx.guild.premium_subscriber_role or len(ctx.guild.premium_subscriber_role.members) == 0: return await ctx.warning( "this server doesn't have any boosters".capitalize())
             i=0
@@ -441,7 +441,7 @@ class utility(commands.Cog):
             number.append(embed)
             await ctx.paginator(number) 
     
-    @boosters.command(name="lost", description="display lost boosters", help="utility")
+    @boosters.command(name="lost", description="display lost boosters")
     async def lost(self, ctx: Context): 
       results = await self.bot.db.fetch("SELECT * FROM boosterslost WHERE guild_id = $1", ctx.guild.id)
       if len(results) == 0: return await ctx.warning( "There are no lost boosters")
@@ -468,7 +468,7 @@ class utility(commands.Cog):
       await ctx.paginator(number) 
 
     @Permissions.has_permission(manage_roles=True)
-    @commands.command(description="see all server roles", help="utility")
+    @commands.command(description="see all server roles")
     async def roles(self, ctx: Context):
             i=0
             k=1
@@ -493,7 +493,7 @@ class utility(commands.Cog):
             await ctx.paginator(number)
 
     @Permissions.has_permission(moderate_members=True)
-    @commands.command(description="see all server's bots", help="utility")
+    @commands.command(description="see all server's bots")
     async def bots(self, ctx: Context):
             i=0
             k=1
@@ -519,7 +519,7 @@ class utility(commands.Cog):
             number.append(embed)
             await ctx.paginator(number)
     
-    @commands.command(help="utility", description="check the weather from a location", usage="[country]")
+    @commands.command(description="check the weather from a location", usage="[country]")
     async def weather(self, ctx: Context, *, location: str): 
      url = "http://api.weatherapi.com/v1/current.json"
      params = {
@@ -545,13 +545,13 @@ class utility(commands.Cog):
      embed.add_field(name="Wind", value=f"{wind_mph} mph / {wind_kph} kph")
      return await ctx.reply(embed=embed)
  
-    @commands.command(description="shows the number of invites an user has", usage="<user>", help="utility")
+    @commands.command(description="shows the number of invites an user has", usage="<user>")
     async def invites(self, ctx: Context, *, member: Member=None):
       if member is None: member = ctx.author 
       invites = await ctx.guild.invites()
       await ctx.reply(f"{member} has **{sum(invite.uses for invite in invites if invite.inviter.id == member.id)}** invites")
     
-    @commands.command(description="see the list of donators", help="utility", aliases=["donors"])
+    @commands.command(description="see the list of donators", aliases=["donors"])
     async def donators(self, ctx):
           i=0
           k=1
@@ -576,7 +576,7 @@ class utility(commands.Cog):
           number.append(Embed(color=self.bot.color, title=f"donators ({len(results)})", description=messages[i]))
           await ctx.paginator( number)
     
-    @commands.command(aliases=["tts", "speech"], description="convert your message to mp3", help="utility", usage="[message]")     
+    @commands.command(aliases=["tts", "speech"], description="convert your message to mp3", usage="[message]")     
     async def texttospeech(self, ctx: Context, *, txt: str): 
       i=BytesIO()
       aiogtts = aiogTTS()
@@ -585,19 +585,19 @@ class utility(commands.Cog):
       await ctx.reply(file=discord.File(fp='tts.mp3', filename="tts.mp3"))
       return os.remove('tts.mp3')
      
-    @commands.command(description="gets the invite link with administrator permission of a bot", help="utility", usage="[bot id]")
+    @commands.command(description="gets the invite link with administrator permission of a bot", usage="[bot id]")
     async def getbotinvite(self, ctx, id: User):   
       if not id.bot: return await ctx.error("This isn't a bot")
       embed = Embed(color=self.bot.color, description=f"**[invite the bot](https://discord.com/api/oauth2/authorize?client_id={id.id}&permissions=8&scope=bot%20applications.commands)**")
       await ctx.reply(embed=embed)
     
-    @commands.command(aliases=["tr"], description="translate a message", help="utility", usage="[language] [message]")
+    @commands.command(aliases=["tr"], description="translate a message", usage="[language] [message]")
     async def translate(self, ctx: Context, lang: str, *, mes: str): 
       translated = GoogleTranslator(source="auto", target=lang).translate(mes)
       embed = Embed(color=self.bot.color, description="```{}```".format(translated), title="translated to {}".format(lang))
       await ctx.reply(embed=embed)
     
-    @commands.group(invoke_without_command=True, help="utility", description="check member's birthday", aliases=['bday'])
+    @commands.group(invoke_without_command=True, description="check member's birthday", aliases=['bday'])
     async def birthday(self, ctx: Context, *, member: Member=None): 
      if member is None: member = ctx.author 
      lol = "'s"
@@ -611,7 +611,7 @@ class utility(commands.Cog):
      else: date=arrow.get(date+datetime.timedelta(days=1)).humanize(granularity='day') 
      await self.bday_send(ctx, f"{'Your' if member == ctx.author else '**' + member.name + lol + '**'} birthday is **{date}**")
 
-    @birthday.command(name="set", help="utility", description="set your birthday", usage="[month] [day]\nexample: birthday set January 19")
+    @birthday.command(name="set", description="set your birthday", usage="[month] [day]\nexample: birthday set January 19")
     async def bday_set(self, ctx: Context, month: str, day: str): 
      try:
       if len(month)==1: mn="M"
@@ -633,23 +633,23 @@ class utility(commands.Cog):
       await self.bday_send(ctx, f"Configured your birthday as **{month} {day}**")
      except: return await ctx.error(f"usage: `{ctx.clean_prefix}birthday set [month] [day]`") 
     
-    @birthday.command(name="unset", help="utility", description="unset your birthday")
+    @birthday.command(name="unset", description="unset your birthday")
     async def bday_unset(self, ctx: Context):
       check = await self.bot.db.fetchrow("SELECT bday FROM birthday WHERE user_id = $1", ctx.author.id)
       if not check: return await ctx.warning( "Your birthday is not set")
       await self.bot.db.execute("DELETE FROM birthday WHERE user_id = $1", ctx.author.id)
       await ctx.warning( "Unset your birthday")
 
-    @commands.group(invoke_without_command=True, help="utility", description="check member's timezones", aliases=['tz'])
+    @commands.group(invoke_without_command=True, description="check member's timezones", aliases=['tz'])
     async def timezone(self, ctx: Context, *, member: discord.Member=None): 
      if member is None: member = ctx.author  
      return await self.tz.get_user_timezone(ctx, member)
 
-    @timezone.command(name="set", help="utility", description="set the timezone", usage="[location]\nexample: ;tz set russia")
+    @timezone.command(name="set", description="set the timezone", usage="[location]\nexample: ;tz set russia")
     async def tz_set(self, ctx: Context, *, location: str):
      return await self.tz.tz_set_cmd(ctx, location)
     
-    @timezone.command(name="list", help="utility", description="return a list of server member's timezones")
+    @timezone.command(name="list", description="return a list of server member's timezones")
     async def tz_list(self, ctx: Context): 
      ids = [str(m.id) for m in ctx.guild.members] 
      results = await self.bot.db.fetch(f"SELECT * FROM timezone WHERE user_id IN ({','.join(ids)})") 
@@ -677,7 +677,7 @@ class utility(commands.Cog):
      number.append(embed)
      await ctx.paginator(number) 
 
-    @timezone.command(name="unset", help="utility", description="unset the timezone")
+    @timezone.command(name="unset", description="unset the timezone")
     async def tz_unset(self, ctx: Context):
       check = await self.bot.db.fetchrow("SELECT * FROM timezone WHERE user_id = $1", ctx.author.id)
       if not check: return await ctx.warning( "You don't have a **timezone** set")
@@ -688,17 +688,17 @@ class utility(commands.Cog):
     async def reminder(self, ctx: Context): 
       return await ctx.create_pages()
     
-    @reminder.command(name="add", help="utility", description="make the bot remind you about a task", usage="[time] [reminder]")
+    @reminder.command(name="add", description="make the bot remind you about a task", usage="[time] [reminder]")
     async def reminder_add(self, ctx: Context, time: str, *, task: str): 
       return await ctx.invoke(self.bot.get_command('remind'), time=time, task=task)
     
-    @reminder.command(name="stop", aliases=['cancel'], description="cancel a reminder from this server", help="utility")
+    @reminder.command(name="stop", aliases=['cancel'], description="cancel a reminder from this server")
     @is_there_a_reminder()
     async def reminder_stop(self, ctx: Context): 
       await self.bot.db.execute("DELETE FROM reminder WHERE guild_id = $1 AND user_id = $2", ctx.guild.id, ctx.author.id)
       return await ctx.success("Deleted a reminder")
 
-    @commands.command(aliases=['remindme'], help="utility", description="make the bot remind you about a task", usage="[time] [reminder]")
+    @commands.command(aliases=['remindme'], description="make the bot remind you about a task", usage="[time] [reminder]")
     async def remind(self, ctx: Context, time: str, *, task: str):
      try: seconds = humanfriendly.parse_timespan(time)
      except humanfriendly.InvalidTimespan: return await ctx.warning(f"**{time}** is not a correct time format")
@@ -710,7 +710,7 @@ class utility(commands.Cog):
       try: await self.bot.db.execute("INSERT INTO reminder VALUES ($1,$2,$3,$4,$5)", ctx.author.id, ctx.channel.id, ctx.guild.id, (datetime.datetime.now() + datetime.timedelta(seconds=seconds)), task)
       except: return await ctx.warning("You already have a reminder set in this channel. Use `{ctx.clean_prefix}reminder stop` to cancel the reminder")
 
-    @commands.command(name='members', description="get an embed of all the members in a server by join date", help='utility')
+    @commands.command(name='members', description="get an embed of all the members in a server by join date")
     async def members(self, ctx: commands.Context):
             members1 = [m for m in ctx.guild.members if not m.bot] 
             members = sorted(members1, key=lambda m: m.joined_at)
@@ -736,7 +736,7 @@ class utility(commands.Cog):
             number.append(embed)
             await ctx.paginator(number)
 
-    @commands.command(name='oldestaccounts', description="get an embed of the oldest accounts in the server", help='utility')
+    @commands.command(name='oldestaccounts', description="get an embed of the oldest accounts in the server")
     async def oldestaccounts(self, ctx: commands.Context):
             members1 = [m for m in ctx.guild.members if not m.bot] 
             members = sorted(members1, key=lambda m: m.created_at, reverse=True)
