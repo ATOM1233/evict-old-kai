@@ -2,7 +2,7 @@ from discord.ext import commands
 from patches.permissions import Permissions
 
 class settings(commands.Cog):
-    def __init__(self, bot: commands.AutoShardedBot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
         
     @commands.group(invoke_without_command=True, description='server settings', brief='manage guild', aliases=['config'])

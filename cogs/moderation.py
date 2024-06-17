@@ -57,7 +57,7 @@ class ClearMod(discord.ui.View):
 
 class ModConfig:
  
- async def sendlogs(bot: commands.AutoShardedBot, action: str, author: discord.Member, victim: Union[discord.Member, discord.User], reason: str): 
+ async def sendlogs(bot: commands.Bot, action: str, author: discord.Member, victim: Union[discord.Member, discord.User], reason: str): 
   check = await bot.db.fetchrow("SELECT channel_id FROM mod WHERE guild_id = $1", author.guild.id)
   if check: 
    res = await bot.db.fetchrow("SELECT count FROM cases WHERE guild_id = $1", author.guild.id)
@@ -70,7 +70,7 @@ class ModConfig:
    except: pass
 
 class moderation(commands.Cog): 
-  def __init__(self, bot: commands.AutoShardedBot): 
+  def __init__(self, bot: commands.Bot): 
     self.bot = bot
 
   @Mod.is_mod_configured()

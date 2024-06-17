@@ -7,7 +7,7 @@ from collections import defaultdict
 from bot.headers import Session
 
 class Reposter:
-    async def repost(self, bot: commands.AutoShardedBot, message: discord.Message, url: str):
+    async def repost(self, bot: commands.Bot, message: discord.Message, url: str):
         if 'x.com' in url or 'twitter.com' in url:
             await self.repost_twitter(bot, message, url)
             return await message.delete()
@@ -24,7 +24,7 @@ class Reposter:
             await self.repost_tiktok(bot, message, url)
             return await message.delete()
         
-    async def repost_instagram(self, bot: commands.AutoShardedBot, message: discord.Message, url: str):
+    async def repost_instagram(self, bot: commands.Bot, message: discord.Message, url: str):
         await message.channel.typing()
         post = await Instagram().post(url)
         views = self.format_number(post.views)
@@ -49,7 +49,7 @@ class Reposter:
         else:
             return str(number) 
         
-    async def repost_twitter(self, bot: commands.AutoShardedBot, message: discord.Message, url: str):
+    async def repost_twitter(self, bot: commands.Bot, message: discord.Message, url: str):
         await message.channel.typing()
         
         tweet_id_match = re.search(r'status/(\d+)', url)
@@ -73,7 +73,7 @@ class Reposter:
         
         return await message.channel.send(embed=embed, file=file, view=view) if file is not None else await message.channel.send(embed=embed, view=view)
     
-    async def repost_youtube(self, bot: commands.AutoShardedBot, message: discord.Message, url: str):
+    async def repost_youtube(self, bot: commands.Bot, message: discord.Message, url: str):
         await message.channel.typing()
         ydl_opts = {
             'outtmpl': 'youtube.mp4',
@@ -103,7 +103,7 @@ class Reposter:
         view.add_item(discord.ui.Button(style=discord.ButtonStyle.link, label="View On YouTube", url=info['webpage_url'], emoji="<:youtube:1219530840070160384>"))
         return await message.channel.send(embed=embed, file=file, view=view)
     
-    async def repost_tiktok(self, bot: commands.AutoShardedBot, message: discord.Message, url: str):
+    async def repost_tiktok(self, bot: commands.Bot, message: discord.Message, url: str):
 
         session = Session()
       

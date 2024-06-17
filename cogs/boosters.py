@@ -5,7 +5,7 @@ from typing import Union
 from patches.classes import Modals
 
 class boosters(commands.Cog): 
-    def __init__(self, bot: commands.AutoShardedBot): 
+    def __init__(self, bot: commands.Bot): 
       self.bot = bot    
     
     @commands.Cog.listener()

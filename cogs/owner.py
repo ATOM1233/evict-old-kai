@@ -7,7 +7,7 @@ from typing import Optional
 from patches.classes import OwnerConfig
 
 class owner(commands.Cog):
-   def __init__(self, bot: commands.AutoShardedBot):
+   def __init__(self, bot: commands.Bot):
        self.bot = bot
 
    def convert_datetime(self, date: datetime.datetime=None):

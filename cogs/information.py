@@ -1,4 +1,4 @@
-from discord.ext.commands import Context, AutoShardedBot as Bot
+from discord.ext.commands import Context, Bot as Bot
 from discord.ext import commands
 import discord, datetime, dateutil.parser
 from discord import Embed, TextChannel 

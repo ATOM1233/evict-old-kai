@@ -5,7 +5,7 @@ from patches.permissions import Permissions
 from patches.fun import MarryView, DiaryModal, Joint
 
 class roleplay(commands.Cog):
-    def __init__(self, bot: commands.AutoShardedBot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot 
         self.joint_emoji = "🍃"
         self.smoke = "🌬️" 

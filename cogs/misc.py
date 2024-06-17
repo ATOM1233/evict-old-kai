@@ -14,7 +14,7 @@ def is_detention():
  return commands.check(predicate)
  
 class misc(commands.Cog):
-  def __init__(self, bot: commands.AutoShardedBot): 
+  def __init__(self, bot: commands.Bot): 
     self.bot = bot   
     self.headers = {
       "Content-Type": "application/json"
@@ -220,5 +220,5 @@ class misc(commands.Cog):
         except discord.Forbidden:
             await ctx.warning("I don't have the required permissions to manage channels.")
 
-async def setup(bot: commands.AutoShardedBot) -> None:
+async def setup(bot: commands.Bot) -> None:
   await bot.add_cog(misc(bot))       

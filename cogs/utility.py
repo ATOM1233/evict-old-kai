@@ -1,4 +1,4 @@
-from discord.ext.commands import Cog, Context, AutoShardedBot as Bot
+from discord.ext.commands import Cog, Context, Bot as Bot
 from discord.ext import commands
 import datetime, discord, os, arrow, uwuipy, humanfriendly, asyncio
 from discord import Embed, File, TextChannel, Member, User, Role 

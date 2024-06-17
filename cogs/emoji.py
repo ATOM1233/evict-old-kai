@@ -43,7 +43,7 @@ class StolenEmoji:
         return isinstance(other, StolenEmoji) and self.id == other.id
 
 class emoji(commands.Cog):
-   def __init__(self, bot: commands.AutoShardedBot):
+   def __init__(self, bot: commands.Bot):
       self.bot = bot
 
    @staticmethod

@@ -7,7 +7,7 @@ from discord import Member
 poj_cache = {}
 
 class listeners(commands.Cog): 
-  def __init__(self, bot: commands.AutoShardedBot): 
+  def __init__(self, bot: commands.Bot): 
    self.bot = bot 
    self._cd = commands.CooldownMapping.from_cooldown(3, 5, commands.BucketType.member) 
 
@@ -298,5 +298,5 @@ class listeners(commands.Cog):
       if role:
        if role.is_assignable(): await member.add_roles(role, reason="giving level roles back to this member")
 
-async def setup(bot: commands.AutoShardedBot):
+async def setup(bot: commands.Bot):
   await bot.add_cog(listeners(bot))

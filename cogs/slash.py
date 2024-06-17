@@ -159,7 +159,7 @@ class confessModal(Modal, title="confess here"):
        except Exception as e: return await interaction.client.ext.error(interaction, f"Couldn't send your confession - {e}")
 
 class Cog(commands.Cog):
- def __init__(self, bot: commands.AutoShardedBot):
+ def __init__(self, bot: commands.Bot):
     self.bot = bot
     try:
             self.bot.tree.add_command(steal_sticker)

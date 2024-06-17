@@ -81,7 +81,7 @@ def get_progress(xp, level):
   return "N/A"  
 
 class leveling(commands.Cog): 
-  def __init__(self, bot: commands.AutoShardedBot): 
+  def __init__(self, bot: commands.Bot): 
    self.bot = bot 
    self._cd = commands.CooldownMapping.from_cooldown(3, 5, commands.BucketType.member) 
 

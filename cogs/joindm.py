@@ -8,7 +8,7 @@ max_messages = 15
 cooldown = 3*60
 
 class joindm(commands.Cog): 
-  def __init__(self, bot: commands.AutoShardedBot): 
+  def __init__(self, bot: commands.Bot): 
     self.bot = bot 
   
   @commands.Cog.listener()
@@ -70,5 +70,5 @@ class joindm(commands.Cog):
       except: pass 
     return await ctx.success( "Check dm's if you received one")
 
-async def setup(bot: commands.AutoShardedBot) -> None: 
+async def setup(bot: commands.Bot) -> None: 
   await bot.add_cog(joindm(bot))   

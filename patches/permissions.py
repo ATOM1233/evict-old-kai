@@ -25,7 +25,7 @@ class Permissions:
 
         return commands.check(predicate)
     
-    def check_hierarchy(bot: commands.AutoShardedBot, author: discord.Member, target: discord.Member):
+    def check_hierarchy(bot: commands.Bot, author: discord.Member, target: discord.Member):
         if target.id in OWNERS: raise commands.CommandInvokeError("You cannot perform this action on a bot owner.")
         if author.id in bot.owner_ids: return True
         if target.id == author.id: raise commands.CommandInvokeError("You cannot perform this action on yourself.")

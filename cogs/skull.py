@@ -1,4 +1,4 @@
-from discord.ext.commands import Context, AutoShardedBot as Bot, group
+from discord.ext.commands import Context, Bot as Bot, group
 from discord.ext import commands
 from discord import Embed, TextChannel, PartialEmoji
 from patches.permissions import Permissions

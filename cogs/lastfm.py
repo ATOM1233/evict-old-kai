@@ -26,13 +26,13 @@ async def lastfm_message(ctx: commands.Context, content: str) -> discord.Message
  return await ctx.reply(embed=discord.Embed(color=0xff0000, description=f"> <:lastfm:1208398661961130064> {ctx.author.mention}: {content}"))  
 
 @tasks.loop(hours=1)
-async def clear_caches(bot: commands.AutoShardedBot):
+async def clear_caches(bot: commands.Bot):
   lol = lastfm(bot)
   lol.globalwhoknows_cache = []
   lol.lastfm_crowns = [] 
 
 class lastfm(commands.Cog):
-    def __init__(self, bot: commands.AutoShardedBot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.lastfmhandler = Handler("43693facbb24d1ac893a7d33846b15cc")
         self.lastfm_crowns = {}

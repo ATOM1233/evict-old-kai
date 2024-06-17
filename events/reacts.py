@@ -92,5 +92,5 @@ class reacts(commands.Cog):
    if member.bot: return
    await self.bot.db.execute("INSERT INTO reactionsnipe VALUES ($1,$2,$3,$4,$5,$6,$7)", guild.id, payload.channel_id, member.name, member.display_avatar.url, payload.emoji.name, payload.emoji.url, payload.message_id)  
 
-async def setup(bot: commands.AutoShardedBot) -> None: 
+async def setup(bot: commands.Bot) -> None: 
   await bot.add_cog(reacts(bot))  

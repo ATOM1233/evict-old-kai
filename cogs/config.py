@@ -1,6 +1,6 @@
 import json, discord, typing
 from discord import TextChannel, ChannelType, Embed, Role, SelectOption, Interaction, PartialEmoji, PermissionOverwrite
-from discord.ext.commands import Cog, Context, group, command, AutoShardedBot as AB
+from discord.ext.commands import Cog, Context, group, command, Bot as AB
 from discord.ui import Select, View, Button 
 from typing import Union
 from utils.utils import InvokeClass, EmbedScript

@@ -31,7 +31,7 @@ class GiveawayView(discord.ui.View):
     return await interaction.response.edit_message(embed=interaction.message.embeds[0])
       
 class giveaway(commands.Cog): 
-  def __init__(self, bot: commands.AutoShardedBot): 
+  def __init__(self, bot: commands.Bot): 
     self.bot = bot 
   
   @commands.Cog.listener()

@@ -169,7 +169,7 @@ class Mod:
 
 
 class Timezone(object):
-  def __init__(self, bot: commands.AutoShardedBot): 
+  def __init__(self, bot: commands.Bot): 
    """
    Get timezones of people
    """

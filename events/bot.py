@@ -56,5 +56,5 @@ class Bot(commands.Cog):
             try: await channel.send(embed=embed)
             except: return
 
-async def setup(bot: commands.AutoShardedBot) -> None: 
+async def setup(bot: commands.Bot) -> None: 
   await bot.add_cog(Bot(bot)) 

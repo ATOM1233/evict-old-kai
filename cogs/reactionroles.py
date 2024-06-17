@@ -4,7 +4,7 @@ from patches.permissions import Permissions
 from typing import Union 
 
 class reactionroles(commands.Cog): 
-  def __init__(self, bot: commands.AutoShardedBot): 
+  def __init__(self, bot: commands.Bot): 
     self.bot = bot 
   
   async def removerr(self, channel: discord.TextChannel): 
@@ -76,5 +76,5 @@ class reactionroles(commands.Cog):
    number.append(discord.Embed(color=self.bot.color, title=f"reaction roles ({len(results)})", description=messages[i]))
    await ctx.paginator(number)   
 
-async def setup(bot: commands.AutoShardedBot) -> None: 
+async def setup(bot: commands.Bot) -> None: 
   await bot.add_cog(reactionroles(bot))      

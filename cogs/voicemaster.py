@@ -346,7 +346,7 @@ class vmbuttons(discord.ui.View):
             await interaction.response.send_message(embed=em, view=view, ephemeral=True)
 
 class voicemaster(commands.Cog):
-   def __init__(self, bot: commands.AutoShardedBot):
+   def __init__(self, bot: commands.Bot):
         self.bot = bot
    
    def create_interface(self, ctx: commands.Context) -> discord.Embed: 
