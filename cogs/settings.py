@@ -48,7 +48,7 @@ class settings(commands.Cog):
     async def logs(self, ctx: commands.Context):
         await ctx.create_pages()
     
-    @logs.command(description="toggle voice logging", help="settings", brief="manage guild", usage="[toggle] <channel>")
+    @logs.command(description="toggle voice logging", brief="manage guild", usage="[toggle] <channel>")
     @Permissions.has_permission(manage_guild=True)
     async def voice(self, ctx: commands.Context, status: bool, channel: discord.TextChannel=None):
         voice = await self.bot.db.fetchrow("SELECT * FROM voice_logs WHERE guild_id = $1", ctx.guild.id)
@@ -63,7 +63,7 @@ class settings(commands.Cog):
         await self.bot.db.execute("DELETE FROM voice_logs WHERE guild_id = $1", ctx.guild.id)
         return await ctx.success('**voice channel** logs **disabled**')
         
-    @logs.command(description="toggle message logging", help="settings", brief="manage guild", usage="[toggle] <channel>")
+    @logs.command(description="toggle message logging", brief="manage guild", usage="[toggle] <channel>")
     @Permissions.has_permission(manage_guild=True)
     async def message(self, ctx: commands.Context, status: bool, channel: discord.TextChannel=None):
         message = await self.bot.db.fetchrow("SELECT * FROM message_logs WHERE guild_id = $1", ctx.guild.id)
@@ -77,7 +77,7 @@ class settings(commands.Cog):
         await self.bot.db.execute("DELETE FROM message_logs WHERE guild_id = $1", ctx.guild.id)
         return await ctx.success('**message** logs **disabled**')
     
-    @logs.command(description="toggle member logging", help="settings", brief="manage guild", usage="[toggle] <channel>")
+    @logs.command(description="toggle member logging", brief="manage guild", usage="[toggle] <channel>")
     @Permissions.has_permission(manage_guild=True)
     async def member(self, ctx: commands.Context, status: bool, channel: discord.TextChannel=None):
         member = await self.bot.db.fetchrow("SELECT * FROM member_logs WHERE guild_id = $1", ctx.guild.id)
@@ -91,7 +91,7 @@ class settings(commands.Cog):
         await self.bot.db.execute("DELETE FROM member_logs WHERE guild_id = $1", ctx.guild.id)
         return await ctx.success('**member** logs **disabled**')
         
-    @logs.command(description="toggle role logging", help="settings", brief="manage guild", usage="[toggle] <channel>")
+    @logs.command(description="toggle role logging", brief="manage guild", usage="[toggle] <channel>")
     @Permissions.has_permission(manage_guild=True)
     async def role(self, ctx: commands.Context, status: bool, channel: discord.TextChannel=None):
         role = await self.bot.db.fetchrow("SELECT * FROM role_logs WHERE guild_id = $1", ctx.guild.id)
@@ -105,7 +105,7 @@ class settings(commands.Cog):
         await self.bot.db.execute("DELETE FROM role_logs WHERE guild_id = $1", ctx.guild.id)
         return await ctx.success('**role** logs **disabled**')
         
-    @logs.command(description="toggle server logging", help="settings", brief="manage guild", usage="[toggle] <channel>")
+    @logs.command(description="toggle server logging", brief="manage guild", usage="[toggle] <channel>")
     @Permissions.has_permission(manage_guild=True)
     async def server(self, ctx: commands.Context, status: bool, channel: discord.TextChannel=None):
         server = await self.bot.db.fetchrow("SELECT * FROM server_logs WHERE guild_id = $1", ctx.guild.id)
@@ -119,7 +119,7 @@ class settings(commands.Cog):
         await self.bot.db.execute("DELETE FROM server_logs WHERE guild_id = $1", ctx.guild.id)
         return await ctx.success('**server** logs **disabled**')
         
-    @logs.command(description="toggle channel logging", help="settings", brief="manage guild", usage="[toggle] <channel>")
+    @logs.command(description="toggle channel logging", brief="manage guild", usage="[toggle] <channel>")
     @Permissions.has_permission(manage_guild=True)
     async def channel(self, ctx: commands.Context, status: bool, channel: discord.TextChannel=None):
         channelCheck = await self.bot.db.fetchrow("SELECT * FROM channel_logs WHERE guild_id = $1", ctx.guild.id)
@@ -139,7 +139,7 @@ class settings(commands.Cog):
     async def rolebutton(self, ctx: commands.Context):
         await ctx.create_pages()
 
-    @rolebutton.command(name="add", help="settings", description="add a role button", brief="manage roles", usage="[message] [emoji] [role]") 
+    @rolebutton.command(name="add", description="add a role button", brief="manage roles", usage="[message] [emoji] [role]") 
     async def rolebutton_add(self, ctx: commands.Context, message: discord.Message, emoji: discord.Emoji, role: discord.Role):
         prefix = await self.bot.get_prefix(ctx.message)
         if message.author.id != self.bot.user.id: return await ctx.warning(f"I can only add role **buttons** to my own **messages**. You can create an **embed** using `{prefix}createembed (code)` and add the **button** there.")
@@ -156,7 +156,7 @@ class settings(commands.Cog):
         await message.edit(view=view)
         return await ctx.success(f"added **role** {role.mention} to [**message**]({message.jump_url})")
     
-    @rolebutton.command(name="remove", help="settings", description="remove a role button", brief="manage roles", usage="[message] [role]") 
+    @rolebutton.command(name="remove", description="remove a role button", brief="manage roles", usage="[message] [role]") 
     async def rolebutton_remove(self, ctx: commands.Context, message: discord.Message, role: discord.Role):
         prefix = await self.bot.get_prefix(ctx.message)
         if message.author.id != self.bot.user.id: return await ctx.warning(f"I can only remove role **buttons** to my own **messages**. You can create an **embed** using `{prefix}createembed (code)` and add the **button** there.")

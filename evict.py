@@ -58,6 +58,12 @@ async def blacklist(ctx: commands.Context):
  view.add_item(yes)
  view.add_item(no)
  await ctx.reply(embed=embed, view=view, mention_author=False)   
+ 
+@bot.check
+async def is_chunked(ctx: commands.Context):
+  if ctx.guild: 
+    if not ctx.guild.chunked: await ctx.guild.chunk(cache=True)
+    return True
 
 @bot.check
 async def disabled_command(ctx: commands.Context):
