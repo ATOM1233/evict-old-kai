@@ -11,6 +11,7 @@ from bot.dynamicrolebutton import DynamicRoleButton
 from cogs.ticket import CreateTicket, DeleteTicket
 from cogs.giveaway import GiveawayView
 from discord.gateway import DiscordWebSocket
+from typing import List
 
 DiscordWebSocket.identify = StartUp.identify
 
@@ -79,6 +80,11 @@ class Evict(commands.Bot):
 
   async def on_message_edit(self, before, after):
         if before.content != after.content: await self.process_commands(after)
+
+  async def prefixes(self, message: discord.Message) -> List[str]: 
+     prefixes = []
+     for l in set(p for p in await self.command_prefix(self, message)): prefixes.append(l)
+     return prefixes
 
   async def member_ratelimit(self,message:discord.Message) -> typing.Optional[int]:
         cd=self.m_cd
