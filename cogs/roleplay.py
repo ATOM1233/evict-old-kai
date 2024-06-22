@@ -347,7 +347,7 @@ class roleplay(commands.Cog):
 
     @commands.command(description='hump a user', usage='[user]')
     async def hump(self, ctx: commands.Context, user: discord.User):
-      data = await self.bot.session.json('https://v1.pretend.best/roleplay/hump', headers={"api-key": "l924CWdIJhKwhFGrEE7tvpg9qTvCklRi2AX25ArGngQn5tuTdSGv4JZIocjNOYYx"})
+      data = await self.bot.session.get_json('https://api.resent.dev/roleplay/hump', headers={"api-key": "58ZCTj0fTkai"})
       embed = discord.Embed(colour=self.bot.color, description=f"**{ctx.author.mention}** just humped {f'**{str(user.mention)}**' if user else 'themselves'}!")
       embed.set_image(url=data)
       await ctx.reply(embed=embed)

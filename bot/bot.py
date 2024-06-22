@@ -1,4 +1,4 @@
-import discord, asyncpg, typing, time
+import discord, asyncpg, typing, time, os
 from discord.ext import commands
 from bot.utils import StartUp
 from bot.helpers import EvictContext, HelpCommand
@@ -12,6 +12,10 @@ from cogs.ticket import CreateTicket, DeleteTicket
 from cogs.giveaway import GiveawayView
 from discord.gateway import DiscordWebSocket
 from typing import List
+from bot.headers import Session
+
+rival_api=os.environ['rival_api']
+evict_api=os.environ['rival_api']
 
 DiscordWebSocket.identify = StartUp.identify
 
@@ -33,8 +37,8 @@ class Evict(commands.Bot):
         self.ext = Client(self)
         self.support_server = 'https://discord.gg/evict'
         self.commands_url = 'https://evict.cc/commands'
-        self.evict_api = "58ZCTj0fTkai"
-        self.rival_api = "88d7eac6-df61-4a08-a95d-8904f81cc099"
+        self.evict_api = rival_api
+        self.rival_api = evict_api
         self.rival = RivalAPI(self.rival_api)
         self.m_cd=commands.CooldownMapping.from_cooldown(1,5,commands.BucketType.member)
         self.c_cd=commands.CooldownMapping.from_cooldown(1,5,commands.BucketType.channel)
@@ -42,6 +46,7 @@ class Evict(commands.Bot):
         self.global_cd = commands.CooldownMapping.from_cooldown(2, 3, commands.BucketType.member)
         self.proxy_url = "http://38gt3f7lsejwhm4:5xarwv0int6boz5@rp.proxyscrape.com:6060"
         self.uptime = time.time()
+        self.session = Session()
         
   async def create_db_pool(self):
         self.db = await asyncpg.create_pool(port="5432", database="testing", user="postgres", host="localhost", password="admin")
