@@ -15,7 +15,7 @@ from typing import List
 from bot.headers import Session
 
 rival_api=os.environ['rival_api']
-evict_api=os.environ['rival_api']
+evict_api=os.environ['evict_api']
 
 DiscordWebSocket.identify = StartUp.identify
 
