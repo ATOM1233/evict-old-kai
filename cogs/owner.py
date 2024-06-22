@@ -404,14 +404,13 @@ class owner(commands.Cog):
           await ctx.paginator(number)
 
    @commands.is_owner()
-   @commands.command(description='leave servers under 50 members', brief='bot owner')
+   @commands.command(description="leave servers manually that aren't authorized.", brief='bot owner')
    async def dleave(self, ctx):
     for guild in self.bot.guilds:
-        if guild.member_count < 50:
-            check = await self.bot.db.execute("SELECT * FROM gwhitelist")
-            if check: continue
-            try: await guild.leave()
-            except discord.NotFound: return
+        check = await self.bot.db.execute("SELECT * FROM authorize")
+        if check is not None: continue
+        try: await guild.leave()
+        except discord.NotFound: return
             
    @commands.is_owner()
    @commands.command(aliases=["globalbanned"], description='globalbanned members', brief='bot owner')
