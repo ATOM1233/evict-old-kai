@@ -3,6 +3,7 @@ from discord.ext import commands
 from discord.ui import Button, View
 from patches.permissions import Permissions
 from patches.fun import MarryView, DiaryModal, Joint
+from ResentAPI import API as api
 
 class roleplay(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -346,7 +347,7 @@ class roleplay(commands.Cog):
         await ctx.reply(embed=embed)
 
     @commands.command(description='hump a user', usage='[user]')
-    async def hump(self, ctx: commands.Context, user: discord.User):
+    async def hump(self, ctx: commands.Context, user: discord.Member):
       data = await self.bot.session.get_json('https://api.resent.dev/roleplay/hump', headers={"api-key": "58ZCTj0fTkai"})
       embed = discord.Embed(colour=self.bot.color, description=f"**{ctx.author.mention}** just humped {f'**{str(user.mention)}**' if user else 'themselves'}!")
       embed.set_image(url=data)

@@ -14,8 +14,6 @@ from discord.gateway import DiscordWebSocket
 from typing import List
 from bot.headers import Session
 
-rival_api=os.environ['rival_api']
-evict_api=os.environ['evict_api']
 
 DiscordWebSocket.identify = StartUp.identify
 
@@ -26,6 +24,7 @@ class Evict(commands.Bot):
                          help_command=HelpCommand(), strip_after_prefix=True, activity=discord.CustomActivity(name="🔗 evict.cc"))
         
         self.db = db
+        
         self.color = 0xCCCCFF
         self.error_color= 0xFFFFED
         self.yes = "<:approved:1250418891373412374>"
@@ -34,19 +33,24 @@ class Evict(commands.Bot):
         self.left = "<:left:1250428984693362792>"
         self.right = "<:right:1250418914072989855>"
         self.goto = "<:filter:1250429945998479431>"
+        
         self.ext = Client(self)
-        self.support_server = 'https://discord.gg/evict'
-        self.commands_url = 'https://evict.cc/commands'
-        self.evict_api = rival_api
-        self.rival_api = evict_api
-        self.rival = RivalAPI(self.rival_api)
+        
         self.m_cd=commands.CooldownMapping.from_cooldown(1,5,commands.BucketType.member)
         self.c_cd=commands.CooldownMapping.from_cooldown(1,5,commands.BucketType.channel)
         self.m_cd2=commands.CooldownMapping.from_cooldown(1,10,commands.BucketType.member)
         self.global_cd = commands.CooldownMapping.from_cooldown(2, 3, commands.BucketType.member)
-        self.proxy_url = "http://38gt3f7lsejwhm4:5xarwv0int6boz5@rp.proxyscrape.com:6060"
+        
         self.uptime = time.time()
         self.session = Session()
+        
+        self.rival = RivalAPI(self.rival_api)
+        self.evict_api = os.environ.get["evict_api"]
+        self.rival_api = os.environ.get["rival_api"]
+        self.proxy_url = os.environ.get["proxy_url"]
+        
+        self.commands_url = os.environ.get["commands_url"]
+        self.support_server = os.environ.get["support_server"]
         
   async def create_db_pool(self):
         self.db = await asyncpg.create_pool(port="5432", database="testing", user="postgres", host="localhost", password="admin")
