@@ -25,14 +25,14 @@ class Evict(commands.Bot):
         
         self.db = db
         
-        self.color = 0xCCCCFF
-        self.error_color= 0xFFFFED
-        self.yes = "<:approved:1250418891373412374>"
-        self.no = "<:false:1250429646000881789>"
-        self.warning = "<:warning:1250418903079718912>"
-        self.left = "<:left:1250428984693362792>"
-        self.right = "<:right:1250418914072989855>"
-        self.goto = "<:filter:1250429945998479431>"
+        self.color = os.environ.get("color")
+        self.error_color= os.environ.get("error_color")
+        self.yes = os.environ.get("yes")
+        self.no = os.environ.get("no")
+        self.warning = os.environ.get("warning")
+        self.left = os.environ.get("left")
+        self.right = os.environ.get("right")
+        self.goto = os.environ.get("goto")
         
         self.ext = Client(self)
         
@@ -44,13 +44,13 @@ class Evict(commands.Bot):
         self.uptime = time.time()
         self.session = Session()
         
+        self.evict_api = os.environ.get("evict_api")
+        self.rival_api = os.environ.get("rival_api")
+        self.proxy_url = os.environ.get("proxy_url")
         self.rival = RivalAPI(self.rival_api)
-        self.evict_api = os.environ.get["evict_api"]
-        self.rival_api = os.environ.get["rival_api"]
-        self.proxy_url = os.environ.get["proxy_url"]
         
-        self.commands_url = os.environ.get["commands_url"]
-        self.support_server = os.environ.get["support_server"]
+        self.commands_url = os.environ.get("commands_url")
+        self.support_server = os.environ.get("support_server")
         
   async def create_db_pool(self):
         self.db = await asyncpg.create_pool(port="5432", database="testing", user="postgres", host="localhost", password="admin")
