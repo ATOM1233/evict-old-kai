@@ -1,7 +1,16 @@
 from bot.bot import Evict
-import os, dotenv
+import os, dotenv, logging
 from discord.ext import commands
 import discord
+
+logging.basicConfig(
+    level=logging.INFO, 
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.FileHandler("debug.log"),
+        logging.StreamHandler()
+    ]
+)
 
 dotenv.load_dotenv(verbose=True)
 

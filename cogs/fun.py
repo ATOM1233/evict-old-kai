@@ -188,7 +188,7 @@ class fun(commands.Cog):
       await ctx.reply(embed=embed)
 
     @commands.command(description='grab info on a snapchat profile', usage='[username]', help='fun')
-    async def snapchatuser(self, ctx: commands.Context, profile: str):
+    async def snap(self, ctx: commands.Context, profile: str):
       data = await api.get_snapchat_user(f"{profile}")
       embed = discord.Embed(color=self.bot.color, description=f'{data.bio}')
       embed.set_author(name=f'{data.username}', icon_url=f'{data.avatar}')
@@ -226,7 +226,7 @@ class fun(commands.Cog):
       embed.set_thumbnail(url=data.profile_pic)
       embed.set_footer(text='Instagram', icon_url='https://cdn.resent.dev/instagram.png')
       await ctx.reply(embed=embed)
-
+      
     @commands.command(description='ask chatgpt a question', usage='text', help='fun')
     async def chatgpt(self, ctx: commands.Context, *, text: str):
       data = await api.ask_chatgpt(f"{text}")

@@ -1,14 +1,22 @@
-import discord, datetime
-from discord.ext import commands
+import discord, datetime, logging
+from discord.ext import commands, tasks
+
+@tasks.loop(seconds=5)
+async def servers_check(bot: commands.Bot):
+    return [await guild.leave() for guild in bot.guilds if guild.id not in [x['guild_id'] for x in await bot.db.fetch("SELECT guild_id FROM authorize")]]
 
 class Bot(commands.Cog): 
     def __init__(self, bot: commands.Bot):
       self.bot = bot
       
-    """@commands.Cog.listener('on_guild_join')
+    @commands.Cog.listener()
+    async def on_ready(self): 
+        servers_check.start(self.bot)
+      
+    @commands.Cog.listener('on_guild_join')
     async def auth_check(self, guild: discord.Guild):
         check = await self.bot.db.execute("SELECT * FROM authorize WHERE guild_id = $1", guild.id)
-        if check is None: await guild.leave()"""
+        if check is None: await guild.leave()
 
     @commands.Cog.listener('on_guild_join')
     async def join_log(self, guild: discord.Guild):
