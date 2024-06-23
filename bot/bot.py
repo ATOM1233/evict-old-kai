@@ -1,19 +1,23 @@
 import discord, asyncpg, typing, time, os
+
+from typing import List
+from humanfriendly import format_timespan
+
 from discord.ext import commands
+from discord.gateway import DiscordWebSocket
+
 from bot.utils import StartUp
 from bot.helpers import EvictContext, HelpCommand
 from bot.ext import Client
 from bot.database import create_db
-from rivalapi.rivalapi import RivalAPI
-from humanfriendly import format_timespan
-from cogs.voicemaster import vmbuttons
+from bot.headers import Session
 from bot.dynamicrolebutton import DynamicRoleButton
+
+from cogs.voicemaster import vmbuttons
 from cogs.ticket import CreateTicket, DeleteTicket
 from cogs.giveaway import GiveawayView
-from discord.gateway import DiscordWebSocket
-from typing import List
-from bot.headers import Session
 
+from rivalapi.rivalapi import RivalAPI
 
 DiscordWebSocket.identify = StartUp.identify
 
