@@ -1,9 +1,8 @@
-import discord, datetime, asyncio, random
+import discord, datetime, asyncio, random, aiohttp
 from discord.ext import commands 
 from discord.ui import Button, View
 from patches.permissions import Permissions
 from patches.fun import MarryView, DiaryModal, Joint
-from ResentAPI import API as api
 
 class roleplay(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -316,20 +315,14 @@ class roleplay(commands.Cog):
         embed.set_image(url=images)
         await ctx.reply(embed=embed)
 
-    @commands.cooldown(1, 3, commands.BucketType.user)
-    @commands.command(name="fuck", description="fuck a user", usage='[member]')
+    @commands.command(description='fuck a user', usage='[user]')
     async def fuck(self, ctx: commands.Context, user: discord.Member):
-        
-        images = f"https://cdn.evict.cc/roleplay/fuck/fuck{random.randint(1, 11)}.gif"
-
-        embed = discord.Embed(
-            colour=self.bot.color,
-            description=f"**{ctx.author.mention}** just fucked {f'**{str(user.mention)}**' if user else 'themselves'}!",
-        )
-
-        embed.set_author(name=self.bot.user.display_name, icon_url=self.bot.user.avatar)
-        embed.set_image(url=images)
-        await ctx.reply(embed=embed)
+        async with aiohttp.ClientSession() as session:
+            async with session.get('https://api.resent.dev/roleplay/fuck', headers={"api-key": self.bot.evict_api}) as response:
+                data = await response.json()
+                # embed = discord.Embed(colour=self.bot.color, description=f"**{ctx.author.mention}** just fucked **{user.mention}**!")
+                # embed.set_image(url=data)
+            await ctx.reply(f"``{data}``") # embed=embed)
 
     @commands.cooldown(1, 3, commands.BucketType.user)
     @commands.command(name="threesome", description="have a threesome", usage='[member] [member]')
@@ -346,12 +339,14 @@ class roleplay(commands.Cog):
         embed.set_image(url=images)
         await ctx.reply(embed=embed)
 
-    @commands.command(description='hump a user', usage='[user]')
+    @commands.command(description='Hump a user', usage='[user]')
     async def hump(self, ctx: commands.Context, user: discord.Member):
-      data = await self.bot.session.get_json('https://api.resent.dev/roleplay/hump', headers={"api-key": "58ZCTj0fTkai"})
-      embed = discord.Embed(colour=self.bot.color, description=f"**{ctx.author.mention}** just humped {f'**{str(user.mention)}**' if user else 'themselves'}!")
-      embed.set_image(url=data)
-      await ctx.reply(embed=embed)
+        async with aiohttp.ClientSession() as session:
+            async with session.get('https://api.resent.dev/roleplay/hump', headers={"api-key": self.bot.evict_api}) as response:
+                data = await response.json()
+                embed = discord.Embed(colour=self.bot.color, description=f"**{ctx.author.mention}** just humped **{user.mention}**!")
+                embed.set_image(url=data)
+            await ctx.reply(f"``{data}``", embed=embed)
 
     @commands.command(description="marry an user", usage="[user]")
     async def marry(self, ctx: commands.Context, *, member: discord.Member):

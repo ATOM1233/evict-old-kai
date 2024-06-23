@@ -217,12 +217,13 @@ class fun(commands.Cog):
     async def instagram(self, ctx: commands.Context, profile: str):
       data = await api.get_instagram_user(f"{profile}")
       url = data.url
-      embed = discord.Embed(color=self.bot.color, description=f'{data.bio}', title=f'{data.username}', url=f'{url}')
+      embed = discord.Embed(color=self.bot.color, description=f'{data.bio}', title=f'{data.full_name}', url=f'{url}')
       embed.set_author(name=f'{data.username}', icon_url=f'{data.profile_pic}')
       embed.add_field(name='followers:', value=f'{data.followers}', inline=True)
       embed.add_field(name='following:', value=f'{data.following}', inline=True)
       embed.add_field(name='posts:', value=f'{data.posts}', inline=True)
-      # embed.set_thumbnail(url=data.avatar)
+      embed.add_field(name='highlights:', value=f'{data.highlights}', inline=True)
+      embed.set_thumbnail(url=data.profile_pic)
       embed.set_footer(text='Instagram', icon_url='https://cdn.resent.dev/instagram.png')
       await ctx.reply(embed=embed)
 
