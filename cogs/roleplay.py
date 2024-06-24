@@ -81,47 +81,52 @@ class roleplay(commands.Cog):
     @commands.command(description='cuddle a user', usage='[user]')
     async def cuddle(self, ctx: commands.Context, user: discord.Member):
             headers = {"api-key": self.bot.evict_api}
-            response = await self.bot.session.get_json('https://api.resent.dev/roleplay/cuddle', headers=headers)
+            response = await self.session.get_json('https://api.resent.dev/roleplay/cuddle', headers=headers)
             embed = discord.Embed(colour=self.bot.color, description=f"**{ctx.author.mention}** just cuddled **{user.mention}**!")
+            embed.set_author(name=self.bot.user.display_name, icon_url=self.bot.user.avatar)
             embed.set_image(url=response["image_url"])
             await ctx.reply(embed=embed)
 
     @commands.command(description='poke a user', usage='[user]')
     async def poke(self, ctx: commands.Context, user: discord.Member):
             headers = {"api-key": self.bot.evict_api}
-            response = await self.bot.session.get_json('https://api.resent.dev/roleplay/poke', headers=headers)
+            response = await self.session.get_json('https://api.resent.dev/roleplay/poke', headers=headers)
             embed = discord.Embed(colour=self.bot.color, description=f"**{ctx.author.mention}** just poked **{user.mention}**!")
+            embed.set_author(name=self.bot.user.display_name, icon_url=self.bot.user.avatar)
             embed.set_image(url=response["image_url"])
             await ctx.reply(embed=embed)
 
     @commands.command(description='kiss a user', usage='[user]')
     async def kiss(self, ctx: commands.Context, user: discord.Member):
             headers = {"api-key": self.bot.evict_api}
-            response = await self.bot.session.get_json('https://api.resent.dev/roleplay/kiss', headers=headers)
+            response = await self.session.get_json('https://api.resent.dev/roleplay/kiss', headers=headers)
             embed = discord.Embed(colour=self.bot.color, description=f"**{ctx.author.mention}** just kissed **{user.mention}**!")
+            embed.set_author(name=self.bot.user.display_name, icon_url=self.bot.user.avatar)
             embed.set_image(url=response["image_url"])
             await ctx.reply(embed=embed)
 
     @commands.command(description='hug a user', usage='[user]')
     async def hug(self, ctx: commands.Context, user: discord.Member):
             headers = {"api-key": self.bot.evict_api}
-            response = await self.bot.session.get_json('https://api.resent.dev/roleplay/hug', headers=headers)
+            response = await self.session.get_json('https://api.resent.dev/roleplay/hug', headers=headers)
             embed = discord.Embed(colour=self.bot.color, description=f"**{ctx.author.mention}** just hugged **{user.mention}**!")
+            embed.set_author(name=self.bot.user.display_name, icon_url=self.bot.user.avatar)
             embed.set_image(url=response["image_url"])
             await ctx.reply(embed=embed)
 
     @commands.command(description='pat a user', usage='[user]')
     async def pat(self, ctx: commands.Context, user: discord.Member):
             headers = {"api-key": self.bot.evict_api}
-            response = await self.bot.session.get_json('https://api.resent.dev/roleplay/pat', headers=headers)
+            response = await self.session.get_json('https://api.resent.dev/roleplay/pat', headers=headers)
             embed = discord.Embed(colour=self.bot.color, description=f"**{ctx.author.mention}** just patted **{user.mention}**!")
+            embed.set_author(name=self.bot.user.display_name, icon_url=self.bot.user.avatar)
             embed.set_image(url=response["image_url"])
             await ctx.reply(embed=embed)
 
     @commands.command(description='tickle a user', usage='[user]')
     async def tickle(self, ctx: commands.Context, user: discord.Member):
             headers = {"api-key": self.bot.evict_api}
-            response = await self.bot.session.get_json('https://api.resent.dev/roleplay/tickle', headers=headers)
+            response = await self.session.get_json('https://api.resent.dev/roleplay/tickle', headers=headers)
             embed = discord.Embed(colour=self.bot.color, description=f"**{ctx.author.mention}** just tickled **{user.mention}**!")
             embed.set_image(url=response["image_url"])
             await ctx.reply(embed=embed)
@@ -129,104 +134,117 @@ class roleplay(commands.Cog):
     @commands.command(description='lick a user', usage='[user]')
     async def lick(self, ctx: commands.Context, user: discord.Member):
             headers = {"api-key": self.bot.evict_api}
-            response = await self.bot.session.get_json('https://api.resent.dev/roleplay/lick', headers=headers)
+            response = await self.session.get_json('https://api.resent.dev/roleplay/lick', headers=headers)
             embed = discord.Embed(colour=self.bot.color, description=f"**{ctx.author.mention}** just licked **{user.mention}**!")
+            embed.set_author(name=self.bot.user.display_name, icon_url=self.bot.user.avatar)
             embed.set_image(url=response["image_url"])
             await ctx.reply(embed=embed)
 
     @commands.command(description='slap a user', usage='[user]')
     async def slap(self, ctx: commands.Context, user: discord.Member):
             headers = {"api-key": self.bot.evict_api}
-            response = await self.bot.session.get_json('https://api.resent.dev/roleplay/slap', headers=headers)
+            response = await self.session.get_json('https://api.resent.dev/roleplay/slap', headers=headers)
             embed = discord.Embed(colour=self.bot.color, description=f"**{ctx.author.mention}** just slapped **{user.mention}**!")
+            embed.set_author(name=self.bot.user.display_name, icon_url=self.bot.user.avatar)
             embed.set_image(url=response["image_url"])
             await ctx.reply(embed=embed)
 
     @commands.command(description='spank a user', usage='[user]')
     async def spank(self, ctx: commands.Context, user: discord.Member):
             headers = {"api-key": self.bot.evict_api}
-            response = await self.bot.session.get_json('https://api.resent.dev/roleplay/spank', headers=headers)
+            response = await self.session.get_json('https://api.resent.dev/roleplay/spank', headers=headers)
             embed = discord.Embed(colour=self.bot.color, description=f"**{ctx.author.mention}** just spanked **{user.mention}**!")
+            embed.set_author(name=self.bot.user.display_name, icon_url=self.bot.user.avatar)
             embed.set_image(url=response["image_url"])
             await ctx.reply(embed=embed)
 
     @commands.command(description='feed a user', usage='[user]')
     async def feed(self, ctx: commands.Context, user: discord.Member):
             headers = {"api-key": self.bot.evict_api}
-            response = await self.bot.session.get_json('https://api.resent.dev/roleplay/feed', headers=headers)
+            response = await self.session.get_json('https://api.resent.dev/roleplay/feed', headers=headers)
             embed = discord.Embed(colour=self.bot.color, description=f"**{ctx.author.mention}** just fed **{user.mention}**!")
+            embed.set_author(name=self.bot.user.display_name, icon_url=self.bot.user.avatar)
             embed.set_image(url=response["image_url"])
             await ctx.reply(embed=embed)
 
     @commands.command(description='punch a user', usage='[user]')
     async def punch(self, ctx: commands.Context, user: discord.Member):
             headers = {"api-key": self.bot.evict_api}
-            response = await self.bot.session.get_json('https://api.resent.dev/roleplay/punch', headers=headers)
+            response = await self.session.get_json('https://api.resent.dev/roleplay/punch', headers=headers)
             embed = discord.Embed(colour=self.bot.color, description=f"**{ctx.author.mention}** just punched **{user.mention}**!")
+            embed.set_author(name=self.bot.user.display_name, icon_url=self.bot.user.avatar)
             embed.set_image(url=response["image_url"])
             await ctx.reply(embed=embed)
 
     @commands.command(description='highfive a user', usage='[user]')
     async def highfive(self, ctx: commands.Context, user: discord.Member):
             headers = {"api-key": self.bot.evict_api}
-            response = await self.bot.session.get_json('https://api.resent.dev/roleplay/lick', headers=headers)
+            response = await self.session.get_json('https://api.resent.dev/roleplay/lick', headers=headers)
             embed = discord.Embed(colour=self.bot.color, description=f"**{ctx.author.mention}** just highfived **{user.mention}**!")
+            embed.set_author(name=self.bot.user.display_name, icon_url=self.bot.user.avatar)
             embed.set_image(url=response["image_url"])
             await ctx.reply(embed=embed)
     
     @commands.command(description='kill a user', usage='[user]')
     async def kill(self, ctx: commands.Context, user: discord.Member):
             headers = {"api-key": self.bot.evict_api}
-            response = await self.bot.session.get_json('https://api.resent.dev/roleplay/kill', headers=headers)
+            response = await self.session.get_json('https://api.resent.dev/roleplay/kill', headers=headers)
             embed = discord.Embed(colour=self.bot.color, description=f"**{ctx.author.mention}** just killed **{user.mention}**!")
+            embed.set_author(name=self.bot.user.display_name, icon_url=self.bot.user.avatar)
             embed.set_image(url=response["image_url"])
             await ctx.reply(embed=embed)
             
     @commands.command(description='bite a user', usage='[user]')
     async def bite(self, ctx: commands.Context, user: discord.Member):
             headers = {"api-key": self.bot.evict_api}
-            response = await self.bot.session.get_json('https://api.resent.dev/roleplay/bite', headers=headers)
+            response = await self.session.get_json('https://api.resent.dev/roleplay/bite', headers=headers)
             embed = discord.Embed(colour=self.bot.color, description=f"**{ctx.author.mention}** just bit **{user.mention}**!")
+            embed.set_author(name=self.bot.user.display_name, icon_url=self.bot.user.avatar)
             embed.set_image(url=response["image_url"])
             await ctx.reply(embed=embed)
 
     @commands.command(description='yeet a user', usage='[user]')
     async def lick(self, ctx: commands.Context, user: discord.Member):
             headers = {"api-key": self.bot.evict_api}
-            response = await self.bot.session.get_json('https://api.resent.dev/roleplay/yeet', headers=headers)
+            response = await self.session.get_json('https://api.resent.dev/roleplay/yeet', headers=headers)
             embed = discord.Embed(colour=self.bot.color, description=f"**{ctx.author.mention}** just yeeted **{user.mention}**!")
+            embed.set_author(name=self.bot.user.display_name, icon_url=self.bot.user.avatar)
             embed.set_image(url=response["image_url"])
             await ctx.reply(embed=embed)
 
     @commands.command(description='nutkick a user', usage='[user]')
     async def nutkick(self, ctx: commands.Context, user: discord.Member):
             headers = {"api-key": self.bot.evict_api}
-            response = await self.bot.session.get_json('https://api.resent.dev/roleplay/nutkick', headers=headers)
+            response = await self.session.get_json('https://api.resent.dev/roleplay/nutkick', headers=headers)
             embed = discord.Embed(colour=self.bot.color, description=f"**{ctx.author.mention}** just nutkicked **{user.mention}**!")
+            embed.set_author(name=self.bot.user.display_name, icon_url=self.bot.user.avatar)
             embed.set_image(url=response["image_url"])
             await ctx.reply(embed=embed)
 
     @commands.command(description='fuck a user', usage='[user]')
     async def fuck(self, ctx: commands.Context, user: discord.Member):
             headers = {"api-key": self.bot.evict_api}
-            response = await self.bot.session.get_json('https://api.resent.dev/roleplay/fuck', headers=headers)
+            response = await self.session.get_json('https://api.resent.dev/roleplay/fuck', headers=headers)
             embed = discord.Embed(colour=self.bot.color, description=f"**{ctx.author.mention}** just fucked **{user.mention}**!")
+            embed.set_author(name=self.bot.user.display_name, icon_url=self.bot.user.avatar)
             embed.set_image(url=response["image_url"])
             await ctx.reply(embed=embed)
 
     @commands.command(description='have a threesome', usage='[user]')
-    async def threesome(self, ctx: commands.Context, user: discord.Member):
+    async def threesome(self, ctx: commands.Context, user: discord.Member, user1: discord.Member):
             headers = {"api-key": self.bot.evict_api}
-            response = await self.bot.session.get_json('https://api.resent.dev/roleplay/threesome', headers=headers)
-            embed = discord.Embed(colour=self.bot.color, description=f"**{ctx.author.mention}** just humped **{user.mention}**!")
+            response = await self.session.get_json('https://api.resent.dev/roleplay/threesome', headers=headers)
+            embed = discord.Embed(colour=self.bot.color, description=f"**{ctx.author.mention}** just fucked {str(user.mention)} and {f'{str(user1.mention)}' if user else 'themselves'}!")
+            embed.set_author(name=self.bot.user.display_name, icon_url=self.bot.user.avatar)
             embed.set_image(url=response["image_url"])
             await ctx.reply(embed=embed)
 
     @commands.command(description='hump a user', usage='[user]')
     async def hump(self, ctx: commands.Context, user: discord.Member):
             headers = {"api-key": self.bot.evict_api}
-            response = await self.bot.session.get_json('https://api.resent.dev/roleplay/hump', headers=headers)
+            response = await self.session.get_json('https://api.resent.dev/roleplay/hump', headers=headers)
             embed = discord.Embed(colour=self.bot.color, description=f"**{ctx.author.mention}** just humped **{user.mention}**!")
+            embed.set_author(name=self.bot.user.display_name, icon_url=self.bot.user.avatar)
             embed.set_image(url=response["image_url"])
             await ctx.reply(embed=embed)
 
