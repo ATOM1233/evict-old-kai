@@ -10,7 +10,7 @@ class EvictContext(Context):
   flags: Dict[str, Any] = {}
   
   async def getprefix(bot, message):
-       if not message.guild: return ";"
+       if not message.guild: return "+"
        check = await bot.db.fetchrow("SELECT * FROM selfprefix WHERE user_id = $1", message.author.id) 
        if check: selfprefix = check["prefix"]
        res = await bot.db.fetchrow("SELECT * FROM prefixes WHERE guild_id = $1", message.guild.id) 

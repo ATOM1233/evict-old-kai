@@ -24,7 +24,7 @@ class Permissions:
             raise commands.MissingPermissions(missing)
 
         return commands.check(predicate)
-    
+        
     def check_hierarchy(bot: commands.Bot, author: discord.Member, target: discord.Member):
         if target.id in OWNERS: raise commands.CommandInvokeError("You cannot perform this action on a bot owner.")
         if author.id in bot.owner_ids: return True
