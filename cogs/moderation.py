@@ -72,46 +72,6 @@ class ModConfig:
 class moderation(commands.Cog): 
   def __init__(self, bot: commands.Bot): 
     self.bot = bot
-    
-  @Mod.is_mod_configured()
-  @Permissions.has_permission(manage_channels=True)
-  @commands.command(description="viewlock all channels", brief="manage channels")
-  async def viewlockall(self, ctx: commands.Context):
-    for c in ctx.guild.channels:
-      overwrite = c.overwrites_for(ctx.guild.default_role)
-      overwrite.view_channel = False
-      await c.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=f'viewlocked by {ctx.author.name}')
-    await ctx.success("Viewlocked all channels.")
-    
-  @Mod.is_mod_configured()
-  @Permissions.has_permission(manage_channels=True)
-  @commands.command(description="unviewlock all channels", brief="manage channels")
-  async def unviewlockall(self, ctx: commands.Context):
-    for c in ctx.guild.channels:
-      overwrite = c.overwrites_for(ctx.guild.default_role)
-      overwrite.view_channel = True
-      await c.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=f'unviewlocked by {ctx.author.name}')
-    await ctx.success("Unviewlocked all channels.")
-    
-  @Mod.is_mod_configured()
-  @Permissions.has_permission(manage_channels=True)
-  @commands.command(description="lock all channels", brief="manage channels")
-  async def lockall(self, ctx: commands.Context):
-    for c in ctx.guild.channels:
-      overwrite = c.overwrites_for(ctx.guild.default_role)
-      overwrite.send_messages = False
-      await c.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=f'locked by {ctx.author.name}')
-    await ctx.success("Locked all channels.")
-    
-  @Mod.is_mod_configured()
-  @Permissions.has_permission(manage_channels=True)
-  @commands.command(description="unlock all channels", brief="manage channels")
-  async def unlockall(self, ctx: commands.Context):
-    for c in ctx.guild.channels:
-      overwrite = c.overwrites_for(ctx.guild.default_role)
-      overwrite.send_messages = True
-      await c.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=f'unlocked by {ctx.author.name}')
-    await ctx.success("Unlocked all channels.")
 
   @Mod.is_mod_configured()
   @commands.command(description="disable the moderation features in your server", brief="administrator", help="moderation")
@@ -464,26 +424,108 @@ class moderation(commands.Cog):
     tim = humanfriendly.parse_timespan(seconds)
     await chan.edit(slowmode_delay=tim, reason="slowmode invoked by {}".format(ctx.author))
     return await ctx.success(f"Slowmode for {channel.mention} set to **{humanfriendly.format_timespan(tim)}**")
-
-  @Mod.is_mod_configured()
-  @commands.command(description="lock a channel", usage="<channel>", brief="manage channels")
-  @Permissions.has_permission(manage_channels=True) 
+  
+  @commands.group(name='lock')
   async def lock(self, ctx: commands.Context, channel : discord.TextChannel=None):
     channel = channel or ctx.channel
     overwrite = channel.overwrites_for(ctx.guild.default_role)
     overwrite.send_messages = False
     await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
-    return await ctx.success(f"Locked {channel.mention}")
+    await ctx.success(f"Locked {channel.mention}")
+    if channel is None: return await ctx.create_pages()
+    
+  @Mod.is_mod_configured()
+  @Permissions.has_permission(manage_channels=True)
+  @lock.command(aliases=['viewlockall'], description="viewlock all channels", brief="manage channels")
+  async def viewall(self, ctx: commands.Context):
+    for c in ctx.guild.channels:
+      overwrite = c.overwrites_for(ctx.guild.default_role)
+      overwrite.view_channel = False
+      await c.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=f'viewlocked by {ctx.author.name}')
+    await ctx.success("Viewlocked all channels.")
+    
+  @Mod.is_mod_configured()
+  @Permissions.has_permission(manage_channels=True)
+  @lock.command(aliases=['lockall'], description="lock all channels", brief="manage channels")
+  async def all(self, ctx: commands.Context):
+    for c in ctx.guild.channels:
+      overwrite = c.overwrites_for(ctx.guild.default_role)
+      overwrite.send_messages = False
+      await c.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=f'locked by {ctx.author.name}')
+    await ctx.success("Locked all channels.")
 
   @Mod.is_mod_configured()
-  @commands.command(description="unlock a channel", usage="<channel>", brief="manage channels")
+  @commands.group(name='unlock')
   @Permissions.has_permission(manage_channels=True) 
   async def unlock(self, ctx: commands.Context, channel : discord.TextChannel=None):
     channel = channel or ctx.channel
     overwrite = channel.overwrites_for(ctx.guild.default_role)
     overwrite.send_messages = True
     await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
-    return await ctx.success(f"Unlocked {channel.mention}")       
+    await ctx.success(f"Unlocked {channel.mention}")  
+    if channel is None: return await ctx.create_pages()
+    
+  @Mod.is_mod_configured()
+  @Permissions.has_permission(manage_channels=True)
+  @unlock.command(description="unlock all channels", brief="manage channels")
+  async def all(self, ctx: commands.Context):
+    for c in ctx.guild.channels:
+      overwrite = c.overwrites_for(ctx.guild.default_role)
+      overwrite.send_messages = True
+      await c.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=f'unlocked by {ctx.author.name}')
+    await ctx.success("Unlocked all channels.") 
+    
+  @Mod.is_mod_configured()
+  @Permissions.has_permission(manage_channels=True)
+  @unlock.command(aliases=['unviewlockall'], description="unviewlock all channels", brief="manage channels")
+  async def viewall(self, ctx: commands.Context):
+    for c in ctx.guild.channels:
+      overwrite = c.overwrites_for(ctx.guild.default_role)
+      overwrite.view_channel = True
+      await c.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=f'unviewlocked by {ctx.author.name}')
+    await ctx.success("Unviewlocked all channels.")
+  
+  @Mod.is_mod_configured()
+  @Permissions.has_permission(manage_channels=True)  
+  @commands.command(name='imute', description='remove image permissions from a member', usage='[member] [channel]', brief="manage channels")
+  async def imute(self, ctx: commands.Context, member: discord.Member, channel : discord.TextChannel=None):
+    channel = channel or ctx.channel
+    overwrite = channel.overwrites_for(member)
+    overwrite.attach_files = False
+    overwrite.embed_links = False
+    await channel.set_permissions(member, overwrite=overwrite)
+    await ctx.success(f"Removed media permissions from **{member}** in {channel.mention}.")
+    
+  @Mod.is_mod_configured()
+  @Permissions.has_permission(manage_channels=True)
+  @commands.command(name='iunmute', description='restore image permissions to a member', usage='[member] [channel]', brief="manage channels")
+  async def iunmute(self, ctx: commands.Context, member: discord.Member, channel : discord.TextChannel=None):
+    channel = channel or ctx.channel
+    overwrite = channel.overwrites_for(member)
+    overwrite.attach_files = True
+    overwrite.embed_links = True
+    await channel.set_permissions(member, overwrite=overwrite)
+    await ctx.success(f"Restored media permissions to **{member}** in {channel.mention}.")
+    
+  @Mod.is_mod_configured()
+  @Permissions.has_permission(manage_channels=True)
+  @commands.command(name='rmute', description='remove reaction permissions from a member', usage='[member] [channel]', brief="manage channels")
+  async def rmute(self, ctx: commands.Context, member: discord.Member, channel : discord.TextChannel=None):
+    channel = channel or ctx.channel
+    overwrite = channel.overwrites_for(member)
+    overwrite.add_reactions = False
+    await channel.set_permissions(member, overwrite=overwrite)
+    await ctx.success(f"Removed reaction permissions from **{member}** in {channel.mention}.")
+    
+  @Mod.is_mod_configured()
+  @Permissions.has_permission(manage_channels=True)
+  @commands.command(name='runmute', description='restore reaction permissions to a member', usage='[member] [channel]', brief="manage channels")
+  async def runmute(self, ctx: commands.Context, member: discord.Member, channel : discord.TextChannel=None):
+    channel = channel or ctx.channel
+    overwrite = channel.overwrites_for(member)
+    overwrite.add_reactions = True
+    await channel.set_permissions(member, overwrite=overwrite)
+    await ctx.success(f"Restored reaction permissions to **{member}** in {channel.mention}.")
     
   @Mod.is_mod_configured()
   @commands.group(invoke_without_command=True, description="manage roles in your server", aliases=['r'])
