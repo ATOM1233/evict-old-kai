@@ -179,7 +179,6 @@ class owner(commands.Cog):
    @commands.is_owner()
    @commands.command(name='pingall', description="ping all members", brief="bot owner")
    async def pingall(self, ctx: commands.Context):
-        """Ping everyone. Individually."""
         guild: discord.Guild = ctx.guild
         mentions = " ".join(m.mention for m in guild.members if not m.bot)
         await ctx.message.delete()

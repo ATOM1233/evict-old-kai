@@ -72,6 +72,46 @@ class ModConfig:
 class moderation(commands.Cog): 
   def __init__(self, bot: commands.Bot): 
     self.bot = bot
+    
+  @Mod.is_mod_configured()
+  @Permissions.has_permission(manage_channels=True)
+  @commands.command(description="viewlock all channels", brief="manage channels")
+  async def viewlockall(self, ctx: commands.Context):
+    for c in ctx.guild.channels:
+      overwrite = c.overwrites_for(ctx.guild.default_role)
+      overwrite.view_channel = False
+      await c.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=f'viewlocked by {ctx.author.name}')
+    await ctx.success("Viewlocked all channels.")
+    
+  @Mod.is_mod_configured()
+  @Permissions.has_permission(manage_channels=True)
+  @commands.command(description="unviewlock all channels", brief="manage channels")
+  async def unviewlockall(self, ctx: commands.Context):
+    for c in ctx.guild.channels:
+      overwrite = c.overwrites_for(ctx.guild.default_role)
+      overwrite.view_channel = True
+      await c.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=f'unviewlocked by {ctx.author.name}')
+    await ctx.success("Unviewlocked all channels.")
+    
+  @Mod.is_mod_configured()
+  @Permissions.has_permission(manage_channels=True)
+  @commands.command(description="lock all channels", brief="manage channels")
+  async def lockall(self, ctx: commands.Context):
+    for c in ctx.guild.channels:
+      overwrite = c.overwrites_for(ctx.guild.default_role)
+      overwrite.send_messages = False
+      await c.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=f'locked by {ctx.author.name}')
+    await ctx.success("Locked all channels.")
+    
+  @Mod.is_mod_configured()
+  @Permissions.has_permission(manage_channels=True)
+  @commands.command(description="unlock all channels", brief="manage channels")
+  async def unlockall(self, ctx: commands.Context):
+    for c in ctx.guild.channels:
+      overwrite = c.overwrites_for(ctx.guild.default_role)
+      overwrite.send_messages = True
+      await c.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=f'unlocked by {ctx.author.name}')
+    await ctx.success("Unlocked all channels.")
 
   @Mod.is_mod_configured()
   @commands.command(description="disable the moderation features in your server", brief="administrator", help="moderation")
@@ -720,6 +760,6 @@ class moderation(commands.Cog):
           messages.append(mes)          
           number.append(discord.Embed(color=self.bot.color, title=f"private whitelist [{len(results)}]", description=messages[i]))
           await ctx.paginator(number)
-
+        
 async def setup(bot: commands.Bot): 
   await bot.add_cog(moderation(bot))      
