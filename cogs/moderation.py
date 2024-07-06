@@ -88,11 +88,11 @@ class moderation(commands.Cog):
    check = await self.bot.db.fetchrow("SELECT * FROM mod WHERE guild_id = $1", ctx.guild.id)
    if check: return await ctx.warning( "Moderation is **already** enabled in this server")
    await ctx.typing()
-   role = await ctx.guild.create_role(name="resent-jail")
+   role = await ctx.guild.create_role(name="evict-jail")
    for channel in ctx.guild.channels: await channel.set_permissions(role, view_channel=False)
    overwrite = {role: discord.PermissionOverwrite(view_channel=True), ctx.guild.default_role: discord.PermissionOverwrite(view_channel=False)}
    over = {ctx.guild.default_role: discord.PermissionOverwrite(view_channel=False)}
-   category = await ctx.guild.create_category(name="resent mod", overwrites=over)
+   category = await ctx.guild.create_category(name="evict mod", overwrites=over)
    text = await ctx.guild.create_text_channel(name="mod-logs", overwrites=over, category=category)
    jai = await ctx.guild.create_text_channel(name="jail", overwrites=overwrite, category=category)
    await self.bot.db.execute("INSERT INTO mod VALUES ($1,$2,$3,$4)", ctx.guild.id, text.id, jai.id, role.id)

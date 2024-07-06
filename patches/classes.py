@@ -93,12 +93,6 @@ class Modals:
          await role.edit(color=color)
          return await interaction.client.ext.success(interaction, "Changed the **booster role** color", ephemeral=True)
        except: return await interaction.client.ext.error(interaction, "Unable to change the role color", ephemeral=True)
-       
-class Messages: 
-
-  def good_message(message: discord.Message) -> bool: 
-   if not message.guild or message.author.bot or message.content == "": return False 
-   return True
 
 class OwnerConfig:
     async def send_dm(ctx: commands.Context, member: discord.Member, action: str, reason: str): 

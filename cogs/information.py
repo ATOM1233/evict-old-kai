@@ -270,7 +270,7 @@ class information(commands.Cog):
 
     @commands.command(description="invite the bot", aliases=["support", "inv"])
     async def invite(self, ctx):
-      embed = discord.Embed(color=self.bot.color, description="I am a private Discord Bot serving a few servers. Inquire to add me.")
+      embed = discord.Embed(color=self.bot.color, description="If your server is authorized [add me](https://discordapp.com/oauth2/authorize?client_id=1203514684326805524&scope=bot+applications.commands&permissions=8) otherwise join the [support server](https://discord.gg/evict) and request a whitelist.")
       await ctx.reply(embed=embed)
     
     @commands.command(aliases=["pos"], description='check member join position', usage="[member]")
@@ -280,6 +280,19 @@ class information(commands.Cog):
         pos = sum(m.joined_at < member.joined_at for m in ctx.guild.members if m.joined_at is not None)
         embed=discord.Embed(color=self.bot.color, description=f'{member.mention} is member number {pos}.')
         await ctx.reply(embed=embed)
+        
+    @commands.command(description='shows bot information', help='information', aliases=['info', 'bi'])
+    async def botinfo(self, ctx: commands.Context):
+        embed = discord.Embed(title=f"{ctx.author.name}", description= 'Developer: [sin](https://discordapp.com/users/214753146512080907)', color=self.bot.color)
+        embed.add_field(name='Created', value=f'<t:{int(self.bot.user.created_at.timestamp())}:R>', inline=True)
+        embed.add_field(name='Servers', value=f"`{len(self.bot.guilds)}`", inline=True)
+        embed.add_field(name='Users', value=f"`{len(self.bot.users)}`", inline=True)
+        embed.add_field(name='Commands', value=f"`{len(self.bot.commands)}`", inline=True)
+        embed.add_field(name='Cogs', value=f"`{len(self.bot.cogs)}`", inline=True)
+        embed.add_field(name='Uptime', value=f"`{Time().format_duration(self.bot.uptime)}`", inline=True)
+        embed.set_author(name=f"{ctx.author.display_name}", icon_url=ctx.author.display_avatar)
+        embed.set_thumbnail(url=self.bot.user.avatar.url)
+        return await ctx.reply(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(information(bot))

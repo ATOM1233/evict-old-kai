@@ -49,7 +49,7 @@ async def blacklist(ctx: commands.Context):
   if check["state"] == "false": return False 
   else: return True 
  
- embed = discord.Embed(color=bot.color, description="Do you **agree** to our [privacy policy](https://resent.dev/privacy) and for your data to be used for commands?\n**DISAGREEING** will result in a blacklist from using bot's commands")
+ embed = discord.Embed(color=bot.color, description="Do you **agree** to our [privacy policy](https://evict.cc/privacy) and for your data to be used for commands?\n**DISAGREEING** will result in a blacklist from using bot's commands")
  yes = discord.ui.Button(emoji=bot.yes, style=discord.ButtonStyle.gray)
  no = discord.ui.Button(emoji=bot.no, style=discord.ButtonStyle.gray)
  
@@ -63,7 +63,7 @@ async def blacklist(ctx: commands.Context):
     await interaction.message.delete()
     await bot.process_commands(ctx.message)
     
-    embed = discord.Embed(title="Resent Logs", description="User agreed to Resent's privacy policy & terms of service.", color=bot.color)
+    embed = discord.Embed(title="Evict Logs", description="User agreed to Evict's privacy policy & terms of service.", color=bot.color)
     embed.add_field(name="User", value=f"{interaction.user}", inline=False)
     embed.add_field(name="User ID", value=f"{interaction.user.id}", inline=False)
     embed.add_field(name="Guild", value=f"{ctx.guild.name}", inline=False)
@@ -82,7 +82,7 @@ async def blacklist(ctx: commands.Context):
     await bot.db.execute("INSERT INTO nodata VALUES ($1,$2)", ctx.author.id, "false")                        
     await interaction.response.edit_message(embed=discord.Embed(color=bot.color, description=f"You got blacklisted from using bot's commands. If this is a mistake, please check our [**support server**](https://discord.gg/resent)"), view=None)
     
-    embed = discord.Embed(title="Resent Logs", description="User got blacklisted for saying no on callback.", color=bot.color)
+    embed = discord.Embed(title="Evict Logs", description="User got blacklisted for saying no on callback.", color=bot.color)
     embed.add_field(name="User", value=f"{interaction.user}", inline=False)
     embed.add_field(name="User ID", value=f"{interaction.user.id}", inline=False)
     embed.add_field(name="Guild", value=f"{ctx.guild.name}", inline=False)

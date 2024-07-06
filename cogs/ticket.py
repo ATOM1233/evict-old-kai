@@ -60,7 +60,7 @@ class CreateTicket(discord.ui.View):
            overwrites.embed_links = True
            await text.set_permissions(interaction.user, overwrite=overwrites)
            embed = discord.Embed(color=int(check['color']) or interaction.client.color, description="Support will be with you shortly, please be patient.\n\nTo close the ticket press the button down below.")
-           embed.set_footer(text="resent.dev", icon_url=interaction.client.user.display_avatar.url)
+           embed.set_footer(text="evict.cc", icon_url=interaction.client.user.display_avatar.url)
            await interaction.client.db.execute("INSERT INTO opened_tickets VALUES ($1,$2,$3)", interaction.guild.id, text.id, interaction.user.id)
            mes = await text.send(content=f"{interaction.user.mention}, Welcome.", embed=embed, view=DeleteTicket(), allowed_mentions=discord.AllowedMentions.all())
            await interaction.response.send_message(embed=discord.Embed(color=int(check['color']) or interaction.client.color, description=f"{interaction.client.yes} {interaction.user.mention}: Opened ticket in {text.mention}"), ephemeral=True)
@@ -87,7 +87,7 @@ class CreateTicket(discord.ui.View):
             overwrites.embed_links = True
             await text.set_permissions(interaction.user, overwrite=overwrites)
             e = discord.Embed(color=int(check['color']) if check['color'] is not None else inte.client.color, title=f"<:rename:1209076697324986378> {select.values[0]}", description="Support will be with you shortly, please be patient.\n\nTo close the ticket press the button down below.")
-            e.set_footer(text="resent.dev", icon_url=interaction.client.user.display_avatar.url)
+            e.set_footer(text="evict.cc", icon_url=interaction.client.user.display_avatar.url)
             await inte.client.db.execute("INSERT INTO opened_tickets VALUES ($1,$2,$3)", interaction.guild.id, text.id, interaction.user.id)
             await inte.response.edit_message(embed=discord.Embed(color=int(check['color']) if check['color'] is not None else inte.client.color, description=f"{inte.client.yes} {inte.user.mention}: Opened ticket in {text.mention}"), view=None)
             mes = await text.send(content=f"{interaction.user.mention}, Welcome.", embed=e, view=DeleteTicket(), allowed_mentions=discord.AllowedMentions.all())

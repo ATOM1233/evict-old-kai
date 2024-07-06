@@ -23,7 +23,7 @@ class settings(commands.Cog):
     async def enable(self, ctx: commands.Context):
         social = await ctx.bot.db.fetchrow('SELECT * FROM settings_social WHERE guild_id = $1', ctx.guild.id)
         if social is not None and social['toggled']: return await ctx.warning('**Social Media** Reposting is already **enabled**.')
-        await ctx.bot.db.execute("INSERT INTO settings_social VALUES ($1, $2, $3) ON CONFLICT (guild_id) DO UPDATE SET toggled = $2 WHERE settings_social.guild_id = $1", ctx.guild.id, True, 'resent')
+        await ctx.bot.db.execute("INSERT INTO settings_social VALUES ($1, $2, $3) ON CONFLICT (guild_id) DO UPDATE SET toggled = $2 WHERE settings_social.guild_id = $1", ctx.guild.id, True, 'evict')
         return await ctx.success('**social media** reposting is now enabled.')
     
     @reposter.command(description="disable reposter", brief='manage server', aliases=['false', 'off'])
@@ -31,7 +31,7 @@ class settings(commands.Cog):
     async def disable(self, ctx: commands.Context):
         social = await ctx.bot.db.fetchrow('SELECT * FROM settings_social WHERE guild_id = $1', ctx.guild.id)
         if not social or not social['toggled']: return await ctx.warning('**Social Media** Reposting is already **disabled**.')
-        await ctx.bot.db.execute("INSERT INTO settings_social VALUES ($1, $2, $3) ON CONFLICT (guild_id) DO UPDATE SET toggled = $2 WHERE settings_social.guild_id = $1", ctx.guild.id, False, 'resent')
+        await ctx.bot.db.execute("INSERT INTO settings_social VALUES ($1, $2, $3) ON CONFLICT (guild_id) DO UPDATE SET toggled = $2 WHERE settings_social.guild_id = $1", ctx.guild.id, False, 'evict')
         return await ctx.success('**social media** reposting is now disabled.')
     
     @reposter.command(description="set reposter prefix (set to 'none' to have no prefix)", usage='[prefix]', brief='manage server', help='')
@@ -113,7 +113,7 @@ class settings(commands.Cog):
             if server: return await ctx.warning('server logs are already enabled')
             if channel == None: channel = await ctx.guild.create_text_channel('server-logs')
             await self.bot.db.execute("INSERT INTO server_logs VALUES ($1, $2)", ctx.guild.id, channel.id)
-            return await ctx.success('**Server** logs **enabled**')
+            return await ctx.success('**server** logs **enabled**')
 
         if not server: return await ctx.warning('server logs are already disabled')
         await self.bot.db.execute("DELETE FROM server_logs WHERE guild_id = $1", ctx.guild.id)

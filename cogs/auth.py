@@ -10,12 +10,14 @@ class auth(commands.Cog):
     @commands.is_owner()
     async def authorize(self, ctx: commands.Context, guild: int, buyer: Union[discord.Member, discord.User]): 
      check = await self.bot.db.fetchrow("SELECT * FROM authorize WHERE guild_id = $1", guild)
-     if check is not None: return await ctx.reply(f"this server is already authorized. please use `{ctx.clean_prefix}transfer` to transfer a server authorization")
+     if check is not None: return await ctx.warning("this server is **already** whitelisted.")
      
      await self.bot.db.execute("INSERT INTO authorize VALUES ($1,$2)", guild, buyer.id)
-     await ctx.reply(embed=discord.Embed(color=self.bot.color, description=f"Added **{guild}** as an authorized server"))
+     await ctx.success(f"added **{guild}** as an authorized server to {buyer}.")
+     
      view = discord.ui.View()
      view.add_item(discord.ui.Button(label="invite", url=discord.utils.oauth_url(client_id=self.bot.user.id, permissions=discord.Permissions.all())))
+     
      try: await buyer.send(f"Congratulations! Your server **{guild}** has been authorized.", view=view)
      except: pass
      
@@ -41,7 +43,7 @@ class auth(commands.Cog):
      messages = []          
      for result in results:
        
-      mes = f"{mes}`{k}` `{result['guild_id']}`"
+      mes = f"{mes} ``{k}`` ``{result['guild_id']}``\n"
       k+=1
       l+=1
       if l == 10:

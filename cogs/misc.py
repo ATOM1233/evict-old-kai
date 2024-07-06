@@ -141,7 +141,7 @@ class misc(commands.Cog):
 
   @webhook.command(name="create", aliases=['add'],  description="create a webhook in a channel", usage="[channel] <name>", brief="manage server")
   @Permissions.has_permission(manage_guild=True)
-  async def webhook_create(self, ctx: commands.Context, channel: discord.TextChannel, *, name: str="resent"): 
+  async def webhook_create(self, ctx: commands.Context, channel: discord.TextChannel, *, name: str="evict"): 
    webhook = await channel.create_webhook(name=name, avatar=await self.bot.session.read(ctx.guild.me.display_avatar.url), reason=f"webhook created by {ctx.author}") 
    code = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(5)) 
    await self.bot.db.execute("INSERT INTO webhook VALUES ($1,$2,$3,$4)", ctx.guild.id, channel.id, code, webhook.url)

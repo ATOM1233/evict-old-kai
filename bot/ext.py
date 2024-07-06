@@ -1,6 +1,7 @@
 from discord.ext import commands
 import discord, datetime, time
 from typing import Union
+from math import log, floor
 
 
 class Client(object): 
@@ -28,34 +29,58 @@ class Client(object):
       permissions.manage_roles, permissions.manage_webhooks,
       permissions.manage_emojis_and_stickers, permissions.manage_threads,
       permissions.mention_everyone, permissions.moderate_members])
-  
-  def ordinal(self, num: int) -> str:
-     """Convert from number to ordinal (10 - 10th)""" 
-     numb = str(num) 
-     if numb.startswith("0"): numb = numb.strip('0')
-     if numb in ["11", "12", "13"]: return numb + "th"
-     if numb.endswith("1"): return numb + "st"
-     elif numb.endswith("2"):  return numb + "nd"
-     elif numb.endswith("3"): return numb + "rd"
-     else: return numb + "th"
+     
+  def human_format(self, number) -> str:
+    units = ['', 'K', 'M', 'G', 'T', 'P']
+    if number < 1000:
+      return number
 
-  def convert_datetime(self, date: datetime.datetime=None):
-     if date is None: return None  
-     month = f'0{date.month}' if date.month < 10 else date.month 
-     day = f'0{date.day}' if date.day < 10 else date.day 
-     year = date.year 
-     minute = f'0{date.minute}' if date.minute < 10 else date.minute 
-     if date.hour < 10: 
-      hour = f'0{date.hour}'
-      meridian = "AM"
-     elif date.hour > 12: 
-      hour = f'0{date.hour - 12}' if date.hour - 12 < 10 else f"{date.hour - 12}"
-      meridian = "PM"
-     else: 
-      hour = date.hour
-      meridian = "PM"  
-     return f"{month}/{day}/{year} at {hour}:{minute} {meridian} ({discord.utils.format_dt(date, style='R')})" 
+    k = 1000.0
+    magnitude = int(floor(log(number, k)))
+    return '%.2f%s' % (number / k**magnitude, units[magnitude])
   
+  def relative_time(self, date):
+    """Take a datetime and return its "age" as a string.
+    The age can be in second, minute, hour, day, month or year. Only the
+    biggest unit is considered, e.g. if it's 2 days and 3 hours, "2 days" will
+    be returned.
+    Make sure date is not in the future, or else it won't work.
+    """
+
+    def formatn(n, s):
+        """Add "s" if it's plural"""
+
+        if n == 1:
+            return "1 %s" % s
+        elif n > 1:
+            return "%d %ss" % (n, s)
+
+    def qnr(a, b):
+        """Return quotient and remaining"""
+
+        return a / b, a % b
+
+    class FormatDelta:
+
+        def __init__(self, dt):
+            now = datetime.datetime.now()
+            delta = now - dt
+            self.day = delta.days
+            self.second = delta.seconds
+            self.year, self.day = qnr(self.day, 365)
+            self.month, self.day = qnr(self.day, 30)
+            self.hour, self.second = qnr(self.second, 3600)
+            self.minute, self.second = qnr(self.second, 60)
+
+        def format(self):
+            for period in ['year', 'month', 'day', 'hour', 'minute', 'second']:
+                n = getattr(self, period)
+                if n >= 1:
+                    return '{0} ago'.format(formatn(n, period))
+            return "just now"
+
+    return FormatDelta(date).format()
+    
   @property 
   def uptime(self) -> str:
     uptime = int(time.time() - self.bot.uptime)
@@ -81,3 +106,23 @@ class Client(object):
   @property
   def ping(self) -> int: 
     return round(self.bot.latency * 1000)
+  
+  def is_dangerous(self, role: discord.Role) -> bool:
+     permissions = role.permissions
+     return any([
+      permissions.kick_members, permissions.ban_members,
+      permissions.administrator, permissions.manage_channels,
+      permissions.manage_guild, permissions.manage_messages,
+      permissions.manage_roles, permissions.manage_webhooks,
+      permissions.manage_emojis_and_stickers, permissions.manage_threads,
+      permissions.mention_everyone, permissions.moderate_members])
+  
+  def ordinal(self, num: int) -> str:
+     """Convert from number to ordinal (10 - 10th)""" 
+     numb = str(num) 
+     if numb.startswith("0"): numb = numb.strip('0')
+     if numb in ["11", "12", "13"]: return numb + "th"
+     if numb.endswith("1"): return numb + "st"
+     elif numb.endswith("2"):  return numb + "nd"
+     elif numb.endswith("3"): return numb + "rd"
+     else: return numb + "th"

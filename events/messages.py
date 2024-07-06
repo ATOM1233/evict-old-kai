@@ -3,16 +3,26 @@ import discord, json, asyncio, datetime, re
 from uwuipy import uwuipy
 from discord import Embed, Message, User
 from reposter.reposter import Reposter
-from patches.classes import Messages
 
 DISCORD_API_LINK = "https://discord.com/api/invite/"
 
-class messages(commands.Cog): 
+class Messages(commands.Cog): 
   def __init__(self, bot: commands.Bot): 
-   self.bot = bot 
+    self.bot = bot 
+    
+  def good_message(message: discord.Message) -> bool: 
+   if not message.guild or message.author.bot or message.content == "": return False 
+   return True
+    
+  async def webhook(self, channel) -> discord.Webhook:
+      for webhook in await channel.webhooks():
+        if webhook.user == self.bot.user:
+          return webhook
+      try: await channel.create_webhook(name='evict')
+      except: pass
    
-@commands.Cog.listener('on_message')
-async def reposter(self, message: discord.Message):
+  @commands.Cog.listener('on_message')
+  async def reposter(self, message: discord.Message):
         if not message.guild: return
         if message.author.bot: return
         args = message.content.split(' ')
@@ -24,14 +34,14 @@ async def reposter(self, message: discord.Message):
         if prefix.lower() == 'none': return await Reposter().repost(self.bot, message, args[0])
         if args[0] == prefix and args[1] is not None: return await Reposter().repost(self.bot, message, args[1])
         
-@commands.Cog.listener()
-async def subscriber_join(self, member: discord.Member): 
-  if member.guild.id == 1208651928507129887:
-    check = await self.bot.db.fetchrow("SELECT * FROM authorize WHERE buyer = $1", member.id)
-    if check: await member.add_roles(member.guild.get_role(1209127936414842990))
+  @commands.Cog.listener()
+  async def subscriber_join(self, member: discord.Member): 
+    if member.guild.id == 1208651928507129887:
+      check = await self.bot.db.fetchrow("SELECT * FROM authorize WHERE buyer = $1", member.id)
+      if check: await member.add_roles(member.guild.get_role(1209127936414842990))
     
-@commands.Cog.listener('on_message')
-async def autoresponses(self, message: discord.Message):
+  @commands.Cog.listener('on_message')
+  async def autoresponses(self, message: discord.Message):
         if message.author.bot: return
         if message.guild is None: return
         
@@ -44,9 +54,9 @@ async def autoresponses(self, message: discord.Message):
                 if embed.only_content: return await message.channel.send(embed.content)
                 else: return await message.channel.send(content=embed.content, embed=embed.to_embed(), view=embed.to_view())
   
-@commands.Cog.listener('on_message')
-async def autoreacts(self, message: discord.Message): 
-   if Messages.good_message(message): 
+  @commands.Cog.listener('on_message')
+  async def autoreacts(self, message: discord.Message): 
+   if self.good_message(message): 
     check = await self.bot.db.fetchrow("SELECT emojis FROM autoreact WHERE guild_id = $1 AND trigger = $2", message.guild.id, message.content)
     if check: 
      retry_after = self.get_ratelimit(message)
@@ -56,8 +66,8 @@ async def autoreacts(self, message: discord.Message):
        try: await message.add_reaction(emoji)
        except: continue
 
-@commands.Cog.listener('on_message')
-async def boost_listener(self, message: discord.Message): 
+  @commands.Cog.listener('on_message')
+  async def boost_listener(self, message: discord.Message): 
      if "MessageType.premium_guild" in str(message.type):
       if message.guild.id == 952161067033849919: 
        member = message.author
@@ -67,8 +77,8 @@ async def boost_listener(self, message: discord.Message):
        await self.bot.db.execute("INSERT INTO donor VALUES ($1,$2)", member.id, ts)  
        return await message.channel.send(f"{member.mention}, enjoy your perks! <a:catclap:1081008257776226354>")     
 
-@commands.Cog.listener("on_message")
-async def seen_listener(self, message: discord.Message): 
+  @commands.Cog.listener("on_message")
+  async def seen_listener(self, message: discord.Message): 
       if not message.guild: return 
       if message.author.bot: return
       check = await self.bot.db.fetchrow("SELECT * FROM seen WHERE guild_id = {} AND user_id = {}".format(message.guild.id, message.author.id))
@@ -76,8 +86,8 @@ async def seen_listener(self, message: discord.Message):
       ts = int(datetime.datetime.now().timestamp())
       await self.bot.db.execute("UPDATE seen SET time = $1 WHERE guild_id = $2 AND user_id = $3", ts, message.guild.id, message.author.id)
 
-@commands.Cog.listener('on_message')
-async def bump_event(self, message: discord.Message): 
+  @commands.Cog.listener('on_message')
+  async def bump_event(self, message: discord.Message): 
      if message.type == discord.MessageType.chat_input_command:
        if message.interaction.name == "bump" and message.author.id == 302050872383242240:   
         if "Bump done!" in message.embeds[0].description or "Bump done!" in message.content:
@@ -88,8 +98,8 @@ async def bump_event(self, message: discord.Message):
            embed = discord.Embed(color=self.bot.color, description="Bump the server using the `/bump` command")
            await message.channel.send(f"{message.interaction.user.mention} time to bump !!", embed=embed)  
 
-@commands.Cog.listener("on_message")
-async def afk_listener(self, message: discord.Message):
+  @commands.Cog.listener("on_message")
+  async def afk_listener(self, message: discord.Message):
      if not message.guild: return 
      if message.author.bot: return
      if message.mentions: 
@@ -119,14 +129,14 @@ async def afk_listener(self, message: discord.Message):
       except: pass
       await self.bot.db.execute("DELETE FROM afk WHERE guild_id = $1 AND user_id = $2", message.guild.id, message.author.id)    
     
-@commands.Cog.listener('on_message_edit')
-async def edit_snipe(self, before: discord.Message, after: discord.Message): 
+  @commands.Cog.listener('on_message_edit')
+  async def edit_snipe(self, before: discord.Message, after: discord.Message): 
      if not before.guild: return 
      if before.author.bot: return 
      await self.bot.db.execute("INSERT INTO editsnipe VALUES ($1,$2,$3,$4,$5,$6)", before.guild.id, before.channel.id, before.author.name, before.author.display_avatar.url, before.content, after.content)
 
-@commands.Cog.listener('on_message_delete')
-async def snipe(self, message: discord.Message):
+  @commands.Cog.listener('on_message_delete')
+  async def snipe(self, message: discord.Message):
      if not message.guild: return 
      if message.author.bot: return
      invites = ["discord.gg/", ".gg/", "discord.com/invite/"]
@@ -140,8 +150,8 @@ async def snipe(self, message: discord.Message):
      avatar = message.author.display_avatar.url 
      await self.bot.db.execute("INSERT INTO snipe VALUES ($1,$2,$3,$4,$5,$6,$7)", message.guild.id, message.channel.id, author, content, attachment, avatar, datetime.datetime.now())
 
-@commands.Cog.listener('on_message')
-async def uwulock(self, message: discord.Message):
+  @commands.Cog.listener('on_message')
+  async def uwulock(self, message: discord.Message):
         if not message.guild: return
         check = await self.bot.db.fetchrow("SELECT user_id FROM uwulock WHERE user_id = $1 AND guild_id = $2", message.author.id, message.guild.id)
         check1 = await self.bot.db.fetchrow("SELECT user_id FROM guwulock WHERE user_id = $1", message.author.id)
@@ -158,15 +168,8 @@ async def uwulock(self, message: discord.Message):
                     )
         await message.delete()
 
-async def webhook(self, channel) -> discord.Webhook:
-      for webhook in await channel.webhooks():
-        if webhook.user == self.bot.user:
-          return webhook
-      try: await channel.create_webhook(name='evict')
-      except: pass
-
-@commands.Cog.listener('on_message')
-async def guwulock(self, message: discord.Message):
+  @commands.Cog.listener('on_message')
+  async def guwulock(self, message: discord.Message):
         if not message.guild: return
         check1 =  await self.bot.db.fetchrow("SELECT user_id FROM uwulock WHERE user_id = $1 AND guild_id = $2", message.author.id, message.guild.id) 
         check = await self.bot.db.fetchrow("SELECT user_id FROM guwulock WHERE user_id = $1", message.author.id)  
@@ -183,23 +186,16 @@ async def guwulock(self, message: discord.Message):
                     )
         await message.delete()
 
-async def webhook(self, channel) -> discord.Webhook:
-      for webhook in await channel.webhooks():
-        if webhook.user == self.bot.user:
-          return webhook
-      try: await channel.create_webhook(name='evict')
-      except: pass
-
-@commands.Cog.listener('on_message')
-async def on_message_shutup(self, message: discord.Message):
+  @commands.Cog.listener('on_message')
+  async def on_message_shutup(self, message: discord.Message):
         if not message.guild: return
         check = await self.bot.db.fetchrow("SELECT user_id FROM shutup WHERE user_id = $1 AND guild_id = $2", message.author.id, message.guild.id)   
         if check is None or not check: return 
         try: await message.delete()
         except: pass
 
-@commands.Cog.listener("on_message")
-async def reposter(self, message: Message):
+  @commands.Cog.listener("on_message")
+  async def reposter(self, message: Message):
         if (
             message.guild
             and not message.author.bot
@@ -211,8 +207,8 @@ async def reposter(self, message: Message):
             ):
                 return await self.repost_tiktok(message)
 
-@commands.Cog.listener('on_message')
-async def imageonly(self, message: Message):
+  @commands.Cog.listener('on_message')
+  async def imageonly(self, message: Message):
       if not message.guild: return
       if isinstance(message.author, User): return
       if message.author.guild_permissions.manage_guild: return 
@@ -223,8 +219,8 @@ async def imageonly(self, message: Message):
         try: await message.delete()
         except: pass
 
-@commands.Cog.listener('on_message')
-async def sticky(self, message: discord.Message):
+  @commands.Cog.listener('on_message')
+  async def sticky(self, message: discord.Message):
       if message.author.bot: return
       stickym = await self.bot.db.fetchval("SELECT key FROM stickym WHERE channel_id = $1", message.channel.id)
       if not stickym: return
@@ -235,4 +231,4 @@ async def sticky(self, message: discord.Message):
       return await message.channel.send(stickym)   
         
 async def setup(bot: commands.Bot):
-  await bot.add_cog(messages(bot))
+  await bot.add_cog(Messages(bot))

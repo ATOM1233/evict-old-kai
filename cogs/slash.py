@@ -151,7 +151,7 @@ class confessModal(Modal, title="confess here"):
           embed = discord.Embed(color=interaction.client.color, description=f"{interaction.user.mention}: sent your confession in {channel.mention}")
           await interaction.response.send_message(embed=embed, ephemeral=True)
           e = discord.Embed(color=interaction.client.color, description=f"{self.name.value}", timestamp=datetime.datetime.now())
-          e.set_author(name=f"anonymous confession #{count}", url="https://discord.gg/resent", icon_url=interaction.guild.icon)
+          e.set_author(name=f"anonymous confession #{count}", url="https://discord.gg/evict", icon_url=interaction.guild.icon)
           e.set_footer(text="type /confess to send a confession")            
           await channel.send(embed=e)
           await interaction.client.db.execute("UPDATE confess SET confession = $1 WHERE guild_id = $2", count, interaction.guild.id) 
