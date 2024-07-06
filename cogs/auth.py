@@ -22,12 +22,10 @@ class auth(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def authorizeall(self, ctx: commands.Context): 
-        for g in self.bot.guilds: 
-            check = await self.bot.db.fetchrow("SELECT * FROM authorize WHERE guild_id = $1", g.id)
-            if check is None: continue
-            embed = discord.Embed(color=self.bot.color, description=f"{ctx.author.mention}: authorizing **all** servers.")
+        for g in self.bot.guilds:
+            await self.bot.db.execute("INSERT INTO authorize values ($1, $2) ON CONFLICT (guild_id) DO NOTHING", g.id, g.owner.id)
+        embed = discord.Embed(color=self.bot.color, description=f"{ctx.author.mention}: authorizing **all** servers.")
         message = await ctx.reply(embed=embed)
-        await self.bot.db.execute("INSERT INTO authorize values ($1, $2)", g.id, g.owner.id)
         await message.edit(embed=discord.Embed(color=self.bot.color, description=f"{self.bot.yes} {ctx.author.mention}: authorized **all** servers."))
      
     @commands.command()

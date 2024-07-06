@@ -37,28 +37,59 @@ async def check_ratelimit(ctx):
 
 @bot.check 
 async def blacklist(ctx: commands.Context): 
+ 
  rl=await check_ratelimit(ctx)
+ 
  if rl == True: return
  if ctx.guild is None: return False
+ 
  check = await bot.db.fetchrow("SELECT * FROM nodata WHERE user_id = $1", ctx.author.id)
+ 
  if check is not None: 
   if check["state"] == "false": return False 
   else: return True 
- embed = discord.Embed(color=bot.color, description="Do you **agree** to our [privacy policy](https://evict.cc/privacy) and for your data to be used for commands?\n**DISAGREEING** will result in a blacklist from using bot's commands")
+ 
+ embed = discord.Embed(color=bot.color, description="Do you **agree** to our [privacy policy](https://resent.dev/privacy) and for your data to be used for commands?\n**DISAGREEING** will result in a blacklist from using bot's commands")
  yes = discord.ui.Button(emoji=bot.yes, style=discord.ButtonStyle.gray)
  no = discord.ui.Button(emoji=bot.no, style=discord.ButtonStyle.gray)
+ 
  async def yes_callback(interaction: discord.Interaction): 
+    
+    channel = bot.get_channel(1258940601458757803)
+    
     if interaction.user != ctx.author: return await interaction.response.send_message(embed=discord.Embed(color=bot.color, description=f"{bot.warning} {interaction.user.mention}: This is not your message"), ephemeral=True)
+    
     await bot.db.execute("INSERT INTO nodata VALUES ($1,$2)", ctx.author.id, "true")                     
     await interaction.message.delete()
     await bot.process_commands(ctx.message)
+    
+    embed = discord.Embed(title="Resent Logs", description="User agreed to Resent's privacy policy & terms of service.", color=bot.color)
+    embed.add_field(name="User", value=f"{interaction.user}", inline=False)
+    embed.add_field(name="User ID", value=f"{interaction.user.id}", inline=False)
+    embed.add_field(name="Guild", value=f"{ctx.guild.name}", inline=False)
+    embed.add_field(name="Guild ID", value=f"{ctx.guild.id}", inline=False)
+    embed.set_thumbnail(url=bot.user.avatar.url)
+    await channel.send(embed=embed)
 
  yes.callback = yes_callback
 
- async def no_callback(interaction: discord.Interaction): 
+ async def no_callback(interaction: discord.Interaction):
+    
+    channel = bot.get_channel(1258940601458757803)
+    
     if interaction.user != ctx.author: return await interaction.response.send_message(embed=discord.Embed(color=bot.color, description=f"{bot.warning} {interaction.user.mention}: This is not your message"), ephemeral=True)
+    
     await bot.db.execute("INSERT INTO nodata VALUES ($1,$2)", ctx.author.id, "false")                        
-    await interaction.response.edit_message(embed=discord.Embed(color=bot.color, description=f"You got blacklisted from using bot's commands. If this is a mistake, please check our [**support server**](https://discord.gg/evict)"), view=None)
+    await interaction.response.edit_message(embed=discord.Embed(color=bot.color, description=f"You got blacklisted from using bot's commands. If this is a mistake, please check our [**support server**](https://discord.gg/resent)"), view=None)
+    
+    embed = discord.Embed(title="Resent Logs", description="User got blacklisted for saying no on callback.", color=bot.color)
+    embed.add_field(name="User", value=f"{interaction.user}", inline=False)
+    embed.add_field(name="User ID", value=f"{interaction.user.id}", inline=False)
+    embed.add_field(name="Guild", value=f"{ctx.guild.name}", inline=False)
+    embed.add_field(name="Guild ID", value=f"{ctx.guild.id}", inline=False)
+    embed.set_thumbnail(url=bot.user.avatar.url)
+    await channel.send("<@214753146512080907>")
+    await channel.send(embed=embed)
     return 
 
  no.callback = no_callback

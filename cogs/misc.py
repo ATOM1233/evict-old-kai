@@ -219,6 +219,36 @@ class misc(commands.Cog):
             await ctx.success(f"The channel {channel.mention} is no longer marked as NSFW.")
         except discord.Forbidden:
             await ctx.warning("I don't have the required permissions to manage channels.")
+            
+  @commands.command(description='pin a message by replying to it', brief='manage messages', usage='[message id]')
+  @Permissions.has_permission(manage_messages=True)
+  async def pin(self, ctx: commands.Context, message_id: int = None):
+        
+        if ctx.message.reference:
+            message_id = ctx.message.reference.message_id
+        
+        if not message_id:
+            await ctx.warning("You need to provide a **message ID** or **reply** to the message")
+            return
+
+        message = await ctx.channel.fetch_message(message_id)
+        await message.pin()
+        await ctx.success(f"pinned message.")
+        
+  @commands.command(description='unpin a message by replying to it', brief='manage messages', usage='[message id]')
+  @Permissions.has_permission(manage_messages=True)
+  async def unpin(self, ctx: commands.Context, message_id: int = None):
+        
+        if ctx.message.reference:
+            message_id = ctx.message.reference.message_id
+        
+        if not message_id:
+            await ctx.warning("You need to provide a **message ID** or **reply** to the message")
+            return
+
+        message = await ctx.channel.fetch_message(message_id)
+        await message.unpin()
+        await ctx.success(f"unpinned message.")
 
 async def setup(bot: commands.Bot) -> None:
   await bot.add_cog(misc(bot))       

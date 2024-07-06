@@ -425,14 +425,16 @@ class moderation(commands.Cog):
     await chan.edit(slowmode_delay=tim, reason="slowmode invoked by {}".format(ctx.author))
     return await ctx.success(f"Slowmode for {channel.mention} set to **{humanfriendly.format_timespan(tim)}**")
   
-  @commands.group(name='lock')
-  async def lock(self, ctx: commands.Context, channel : discord.TextChannel=None):
-    channel = channel or ctx.channel
-    overwrite = channel.overwrites_for(ctx.guild.default_role)
-    overwrite.send_messages = False
-    await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
-    await ctx.success(f"Locked {channel.mention}")
-    if channel is None: return await ctx.create_pages()
+  @Mod.is_mod_configured()
+  @commands.group(invoke_without_command=True)
+  @Permissions.has_permission(manage_channels=True) 
+  async def lock(self, ctx: commands.Context, channel: discord.TextChannel=None):
+      channel = channel or ctx.channel
+      overwrite = channel.overwrites_for(ctx.guild.default_role)
+      overwrite.send_messages = False
+      await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
+      await ctx.success(f"Locked {channel.mention}")
+      if channel is None: return await ctx.create_pages()
     
   @Mod.is_mod_configured()
   @Permissions.has_permission(manage_channels=True)
@@ -446,7 +448,7 @@ class moderation(commands.Cog):
     
   @Mod.is_mod_configured()
   @Permissions.has_permission(manage_channels=True)
-  @lock.command(aliases=['lockall'], description="lock all channels", brief="manage channels")
+  @lock.command(description="lock all channels", brief="manage channels")
   async def all(self, ctx: commands.Context):
     for c in ctx.guild.channels:
       overwrite = c.overwrites_for(ctx.guild.default_role)
@@ -455,9 +457,9 @@ class moderation(commands.Cog):
     await ctx.success("Locked all channels.")
 
   @Mod.is_mod_configured()
-  @commands.group(name='unlock')
+  @commands.group(invoke_without_command=True, name='unlock')
   @Permissions.has_permission(manage_channels=True) 
-  async def unlock(self, ctx: commands.Context, channel : discord.TextChannel=None):
+  async def unlock(self, ctx: commands.Context, channel: discord.TextChannel=None):
     channel = channel or ctx.channel
     overwrite = channel.overwrites_for(ctx.guild.default_role)
     overwrite.send_messages = True

@@ -57,7 +57,7 @@ class Evict(commands.Bot):
         self.support_server = os.environ.get("support_server")
         
   async def create_db_pool(self):
-        self.db = await asyncpg.create_pool(port="5432", database="testing", user="postgres", host="localhost", password="admin")
+        self.db = await asyncpg.create_pool(port="5432", database="evict", user="postgres", host="localhost", password="admin")
       
   async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
       if isinstance(error, commands.CommandNotFound): return 
