@@ -66,35 +66,31 @@ class utility(commands.Cog):
      user = await self.bot.fetch_user(member.id)
      badges = []
      if user.id in self.bot.owner_ids: 
-       badges.append("<a:developer:1208257462549880913>")
+       badges.append("<:developer:1259612701030748303>")
      if user.public_flags.active_developer: 
-      badges.append("<:activedev:1208463590336503880>")
+      badges.append("<:activedev:1259615920297349180>")
      if user.public_flags.early_supporter:
       badges.append("<:early:1208465674318647306>")
      if user.public_flags.verified_bot_developer:
-       badges.append("<:developer:1208463282814455959>")
+       badges.append("<:developer:1259621097146548256>")
      if user.public_flags.staff: 
-      badges.append("<:tl_staff:1208466222791000094>")
+      badges.append("<:staff:1259616506107400394>")
      if user.public_flags.bug_hunter:
-      badges.append("<:bughunter:1208466356274470997>") 
+      badges.append("<:bughunter:1259619531517726901>") 
      if user.public_flags.bug_hunter_level_2:
-      badges.append("<:bughunter1:1192460270753284136>")   
+      badges.append("<:bughunterlvl2:1259619689991110744>")   
      if user.public_flags.partner:
-      badges.append("<:partner:1208463582925426791>")
+      badges.append("<:partner:1259620028576432221>")
 
 # CUSTOM BADGES 
      if user.id == 987183275560820806:
        badges.append("<a:odecy:1220454736906682468>") # - odecy
-     if user.id == 926419256785109013:
-       badges.append("<:fwHuggies:1224620621217140797>") # - angie
-     if user.id == 1219003112874967250:
-       badges.append("<:Apandi:1224620924167393330>") # - rofl
 
      for guild in self.bot.guilds: 
       mem = guild.get_member(user.id)
       if mem is not None:
        if mem.premium_since is not None:
-         badges.append("<:boosts:1208463280918765688>")
+         badges.append("<:boosts:1259616471810838588>")
          break
      
      async def tz_find(mem: discord.Member): 
@@ -114,10 +110,10 @@ class utility(commands.Cog):
      def vc(mem: Member):
         if mem.voice: 
           channelname = mem.voice.channel.name 
-          deaf = "<:deafened:1208464929028575284>" if mem.voice.self_deaf or mem.voice.deaf else "<:undeafened:1208464410725715998>"
-          mute = "<:muted:1208464412571344900>" if mem.voice.self_mute or mem.voice.mute else "<:unmuted:1208464547002847242>"
-          stream = "<:stream:1208463585018249228>" if mem.voice.self_stream else ""
-          video = "<:video:1208234115682533416>" if mem.voice.self_video else ""
+          deaf = "<:deafen:1259614676417908817>" if mem.voice.self_deaf or mem.voice.deaf else "<:undeafen:1259613737241804821>"
+          mute = "<:mute:1259617185530384560>" if mem.voice.self_mute or mem.voice.mute else "<:unmute:1259614028070780969>"
+          stream = "<:streaming:1259617539634364428>" if mem.voice.self_stream else ""
+          video = "<:video:1259617723843874856>" if mem.voice.self_video else ""
           channelmembers = f"with {len(mem.voice.channel.members)-1} other member{'s' if len(mem.voice.channel.members) > 2 else ''}" if len(mem.voice.channel.members) > 1 else ""
           return f"{deaf} {mute} {stream} {video} **in Voice** {channelname} {channelmembers}"
         return ""  
@@ -526,7 +522,7 @@ class utility(commands.Cog):
        "key": self.weather_key,
        "q": location 
      }  
-     data = await self.bot.session.json(url, params=params)
+     data = await self.bot.session.get_json(url, params=params)
      place = data["location"]["name"]
      country = data["location"]["country"]
      temp_c = data["current"]["temp_c"]

@@ -10,84 +10,113 @@ class donor(commands.Cog):
   @commands.command(description="revoke the hardban from an user", usage="[user]", brief="administrator")
   @Permissions.has_permission(administrator=True)
   async def hardunban(self, ctx: commands.Context, *, member: discord.User):     
+    
     che = await self.bot.db.fetchrow("SELECT * FROM hardban WHERE guild_id = {} AND banned = {}".format(ctx.guild.id, member.id))      
     if che is None: return await ctx.warning(f"{member} is **not** hardbanned") 
+    
     await self.bot.db.execute("DELETE FROM hardban WHERE guild_id = {} AND banned = {}".format(ctx.guild.id, member.id))
+    
     await ctx.guild.unban(member, reason="unhardbanned by {}".format(ctx.author)) 
     await ctx.message.add_reaction("<:approved:1209081187679862784>")   
 
   @commands.command(description="hardban a user from the server", usage="[user]", brief="administrator")
   @Permissions.has_permission(administrator=True)
   async def hardban(self, ctx: commands.Context, *, member: Union[discord.Member, discord.User]): 
+      
       if isinstance(member, discord.Member) and not Permissions.check_hierarchy(self.bot, ctx.author, member): return await ctx.warning(f"You cannot hardban*{member.mention}")
+      
       che = await self.bot.db.fetchrow("SELECT * FROM hardban WHERE guild_id = {} AND banned = {}".format(ctx.guild.id, member.id))
       if che is not None: return await ctx.warning(f"**{member}** has been hardbanned by **{await self.bot.fetch_user(che['author'])}**")
-      await ctx.guild.ban(member, reason="hardbanned by {}".format(ctx.author))
+      
       await self.bot.db.execute("INSERT INTO hardban VALUES ($1,$2,$3)", ctx.guild.id, member.id, ctx.author.id)
+      
+      await ctx.guild.ban(member, reason="hardbanned by {}".format(ctx.author))
       await ctx.message.add_reaction("<:approved:1209081187679862784>")
     
   @Permissions.has_permission(administrator=True)
   @commands.command(description="check hardban list", brief='administrator')
   async def hardbanlist(self, ctx: commands.Context): 
+          
           i=0
           k=1
           l=0
+          
           mes = ""
           number = []
           messages = []
           results = await self.bot.db.fetch("SELECT * FROM hardban WHERE guild_id = $1", ctx.guild.id)
+          
           if len(results) == 0: return await ctx.warning("no **hardbanned** members found")
           for result in results:
+              
               mes = f"{mes}`{k}` {await self.bot.fetch_user(result['banned'])}\n"
+              
               k+=1
               l+=1
+              
               if l == 10:
+               
                messages.append(mes)
                number.append(discord.Embed(color=self.bot.color, title=f"hardban list [{len(results)}]", description=messages[i]))
+               
                i+=1
                mes = ""
                l=0
     
           messages.append(mes)          
           number.append(discord.Embed(color=self.bot.color, title=f"hardban list [{len(results)}]", description=messages[i]))
+          
           await ctx.paginator(number)
         
   @commands.command(description="uwuify a person's messages", usage="[member]", brief="manage messages")
   @Permissions.has_permission(manage_messages=True)
   async def uwulock(self, ctx: commands.Context, *, member: discord.Member):
+    
     if isinstance(member, discord.Member) and not Permissions.check_hierarchy(self.bot, ctx.author, member): return await ctx.warning(f"You cannot uwulock*{member.mention}")
     if member.id == ctx.bot.user.id: return await ctx.warning("do not uwulock me.")
+    
     check = await self.bot.db.fetchrow("SELECT user_id FROM uwulock WHERE user_id = {} AND guild_id = {}".format(member.id, ctx.guild.id))
     check1 = await self.bot.db.fetchrow("SELECT user_id FROM guwulock WHERE user_id = {}".format(member.id))
+    
     if check1 is not None: return await ctx.warning(f"**{member}** is already globaluwulocked, this must be removed by bot owner.")
     if check is None: await self.bot.db.execute("INSERT INTO uwulock VALUES ($1,$2)", ctx.guild.id, member.id)
+    
     else: await self.bot.db.execute("DELETE FROM uwulock WHERE user_id = {} AND guild_id = {}".format(member.id, ctx.guild.id))    
     return await ctx.message.add_reaction("<:approved:1209081187679862784>")
   
   @Permissions.has_permission(manage_messages=True)
   @commands.command(description="check uwulock list", brief='manage messages')
   async def uwulocklist(self, ctx: commands.Context): 
+          
           i=0
           k=1
           l=0
+          
           mes = ""
           number = []
           messages = []
           results = await self.bot.db.fetch("SELECT * FROM uwulock WHERE guild_id = $1", ctx.guild.id)
+          
           if len(results) == 0: return await ctx.warning("no **uwulocked** members found")
+          
           for result in results:
+              
               mes = f"{mes}`{k}` {await self.bot.fetch_user(result['user_id'])}\n"
               k+=1
               l+=1
+              
               if l == 10:
+               
                messages.append(mes)
                number.append(discord.Embed(color=self.bot.color, title=f"uwulock list [{len(results)}]", description=messages[i]))
+               
                i+=1
                mes = ""
                l=0
     
           messages.append(mes)          
           number.append(discord.Embed(color=self.bot.color, title=f"uwulock list [{len(results)}]", description=messages[i]))
+          
           await ctx.paginator(number)
   
   @Permissions.server_owner()

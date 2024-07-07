@@ -99,7 +99,7 @@ class information(commands.Cog):
     @commands.command(aliases=["gbanner"], description="gets the banner from a server based by invite code", usage="[invite code]")
     async def guildbanner(self, ctx, *, link: str):
      invite_code = link
-     data = await self.bot.session.json(DISCORD_API_LINK + invite_code)
+     data = await self.bot.session.get_json(DISCORD_API_LINK + invite_code)
      format = ".gif" if "a_" in data["guild"]["banner"] else ".png"
      embed = Embed(color=self.bot.color, title=data["guild"]["name"] + "'s banner")
      embed.set_image(url="https://cdn.discordapp.com/banners/" + data["guild"]["id"] + "/" + data["guild"]["banner"] + f"{format}?size=1024")
@@ -108,7 +108,7 @@ class information(commands.Cog):
     @commands.command(aliases=["gsplash"],description="gets the splash from a server based by invite code", usage="[invite code]")
     async def guildsplash(self, ctx, *, link: str):
       invite_code = link
-      data = await self.bot.session.json(DISCORD_API_LINK + invite_code)
+      data = await self.bot.session.get_json(DISCORD_API_LINK + invite_code)
       embed = Embed(color=self.bot.color, title=data["guild"]["name"] + "'s splash")
       embed.set_image(url="https://cdn.discordapp.com/splashes/" + data["guild"]["id"] + "/" + data["guild"]["splash"] + ".png?size=1024")
       if data == None: return await ctx.warning("this server doesn't have a splash set.")
@@ -117,7 +117,7 @@ class information(commands.Cog):
     @commands.command(aliases=["gicon"], description="gets the icon from a server based by invite code", usage="[invite code]")
     async def guildicon(self, ctx, *, link: str):
       invite_code = link
-      data = await self.bot.session.json(DISCORD_API_LINK + invite_code)
+      data = await self.bot.session.get_json(DISCORD_API_LINK + invite_code)
       format = ".gif" if "a_" in data["guild"]["icon"] else ".png"
       embed = Embed(color=self.bot.color, title=data["guild"]["name"] + "'s icon")
       embed.set_image(url="https://cdn.discordapp.com/icons/" + data["guild"]["id"] + "/" + data["guild"]["icon"] + f"{format}?size=1024")
@@ -127,7 +127,7 @@ class information(commands.Cog):
     async def urban(self, ctx, *, word):
       embeds = []
       try:
-       data = await self.bot.session.json("http://api.urbandictionary.com/v0/define", params={"term": word})
+       data = await self.bot.session.get_json("http://api.urbandictionary.com/v0/define", params={"term": word})
        defs = data["list"]
        for defi in defs: 
         e = discord.Embed(color=self.bot.color, description=defi["definition"], timestamp=dateutil.parser.parse(defi["written_on"]))
@@ -140,7 +140,7 @@ class information(commands.Cog):
 
     @commands.command(description="gets information about a github user", aliases=["gh"], usage="[user]")
     async def github(self, ctx, *, user: str):
-        res = await self.bot.session.json(f'https://api.github.com/users/{user}') 
+        res = await self.bot.session.get_json(f'https://api.github.com/users/{user}') 
         name=res['login']
         avatar_url=res['avatar_url']
         html_url=res['html_url']

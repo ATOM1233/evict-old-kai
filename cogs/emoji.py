@@ -76,7 +76,7 @@ class emoji(commands.Cog):
    @Permissions.has_permission(manage_expressions=True) 
    async def deleteemoji(self, ctx: commands.Context, emoji: discord.Emoji): 
     await emoji.delete()
-    await ctx.success("Deleted the emoji")  
+    await ctx.success(f"deleted the emoji {emoji.name}.")  
 
    @commands.command(description="add an emoji", usage="[emoji] <name>", brief="manage emojis")
    @Permissions.has_permission(manage_expressions=True) 
@@ -319,6 +319,36 @@ class emoji(commands.Cog):
                     await ctx.message.add_reaction(added)
                 except:
                     pass
+                
+   # @commands.cooldown(rate=1, per=15)
+   @commands.command(name="fromimage", description="add an emoji from an image", brief="manage expressions")
+   @commands.has_permissions(manage_expressions=True)
+   async def _add_from_image(self, ctx: commands.Context, name: str = None):
+
+        async with ctx.typing():
+            if len(ctx.message.attachments) > 1:
+                return await ctx.warning("only attach 1 file.")
+
+            if not ctx.message.attachments[0].filename.endswith((".png", ".jpg", ".gif")):
+                return await ctx.warning("Please make sure the uploaded image is a `.png`, `.jpg`, or `.gif` file.")
+
+            image = await ctx.message.attachments[0].read()
+
+            try:
+                new = await asyncio.wait_for(
+                    ctx.guild.create_custom_emoji(
+                        name=name or ctx.message.attachments[0].filename[:-4],
+                        image=image,
+                        reason=f"emoji added by {ctx.author.name}",
+                    ),
+                    timeout=10,
+                )
+            except asyncio.TimeoutError:
+                return await ctx.warning("your request has **timed out**.")
+            except discord.HTTPException:
+                return await ctx.warning("something went wrong while adding emojis.")
+
+        return await ctx.success(f"{new} has been added to the server.")
 
 async def setup(bot) -> None:
     await bot.add_cog(emoji(bot))   

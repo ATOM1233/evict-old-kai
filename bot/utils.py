@@ -18,7 +18,7 @@ class PaginatorView(discord.ui.View):
       self.ctx = ctx
       self.i = 0
  
-    @discord.ui.button(emoji="<:filter:1208241278891073547>")
+    @discord.ui.button(emoji="<:filter:1259609300221821039>")
     async def goto(self, interaction: discord.Interaction, button: discord.ui.Button): 
      if interaction.user.id != self.ctx.author.id: return await interaction.client.ext.warning(interaction, "You are not the author of this embed")     
      modal = GoToModal()
@@ -29,7 +29,7 @@ class PaginatorView(discord.ui.View):
       self.i = int(modal.page.value)-1
      except: pass 
      
-    @discord.ui.button(emoji="<:left:1208240393167048724>", style=discord.ButtonStyle.secondary)
+    @discord.ui.button(emoji="<:left:1259608758800220251>", style=discord.ButtonStyle.secondary)
     async def left(self, interaction: discord.Interaction, button: discord.ui.Button): 
       if interaction.user.id != self.ctx.author.id: return await interaction.client.ext.warning(interaction, "You are not the author of this embed")          
       if self.i == 0: 
@@ -39,7 +39,7 @@ class PaginatorView(discord.ui.View):
       self.i = self.i-1
       return await interaction.response.edit_message(embed=self.embeds[self.i])
 
-    @discord.ui.button(emoji="<:right:1208241034664878090>", style=discord.ButtonStyle.secondary)
+    @discord.ui.button(emoji="<:right:1259608897308721152>", style=discord.ButtonStyle.secondary)
     async def right(self, interaction: discord.Interaction, button: discord.ui.Button): 
       if interaction.user.id != self.ctx.author.id: return await interaction.client.ext.warning(interaction, "You are not the author of this embed")     
       if self.i == len(self.embeds)-1: 
@@ -49,7 +49,7 @@ class PaginatorView(discord.ui.View):
       self.i = self.i + 1  
       return await interaction.response.edit_message(embed=self.embeds[self.i])   
     
-    @discord.ui.button(emoji="<:stop:1227727077310992445>", style=discord.ButtonStyle.danger)
+    @discord.ui.button(emoji="<:false:1259606495234887740>", style=discord.ButtonStyle.secondary)
     async def delete(self, interaction: discord.Interaction, button: discord.ui.Button): 
       if interaction.user.id != self.ctx.author.id: return await interaction.client.ext.warning(interaction, "You are not the author of this embed")     
       await interaction.message.delete()

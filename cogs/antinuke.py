@@ -99,13 +99,16 @@ class antinuke(commands.Cog):
     @antinuke.command(description='List Anti-Nuke Admin', help="", usage="",  brief="Anti-Nuke Admin")
     @Permissions.has_permission(administrator=True)
     async def admins(self, ctx: commands.Context):
+        
         admins = await ctx.bot.db.fetch("SELECT * FROM antinuke_admins WHERE guild_id = $1", ctx.guild.id)
         if not admins: return await ctx.success("No users are **Anti-Nuke Admins** in this server.")
         
         embed = discord.Embed(title=f"Anti-Nuke Admins - {ctx.guild.name}", color=self.bot.color)
         embed.set_footer(icon_url=ctx.me.avatar.url, text=f"If you have any questions, please join our support server: {self.bot.support_server}")
         embed.add_field(name="Support", value=f"**[Support Server]({self.bot.support_server})**", inline=True)
+        
         if ctx.guild.icon: embed.set_thumbnail(url=ctx.guild.icon.url)
+        
         embed.description = '\n'.join([f"{ctx.guild.get_member(user['user_id']).name} ({user['user_id']})" for user in admins])
         return await ctx.send(embed=embed)
     

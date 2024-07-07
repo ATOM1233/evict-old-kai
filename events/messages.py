@@ -10,10 +10,6 @@ class Messages(commands.Cog):
   def __init__(self, bot: commands.Bot): 
     self.bot = bot 
     
-  def good_message(message: discord.Message) -> bool: 
-   if not message.guild or message.author.bot or message.content == "": return False 
-   return True
-    
   async def webhook(self, channel) -> discord.Webhook:
       for webhook in await channel.webhooks():
         if webhook.user == self.bot.user:
@@ -39,32 +35,6 @@ class Messages(commands.Cog):
     if member.guild.id == 1208651928507129887:
       check = await self.bot.db.fetchrow("SELECT * FROM authorize WHERE buyer = $1", member.id)
       if check: await member.add_roles(member.guild.get_role(1209127936414842990))
-    
-  @commands.Cog.listener('on_message')
-  async def autoresponses(self, message: discord.Message):
-        if message.author.bot: return
-        if message.guild is None: return
-        
-        autoresponses = await self.bot.db.fetch("SELECT * FROM autoresponses WHERE guild_id = $1", message.guild.id)
-        if autoresponses is None: return
-        
-        for autoresponse in autoresponses:
-            if message.content.lower().startswith(autoresponse['key'].lower()) or message.content.lower() == autoresponse['key'].lower():
-                embed = Embed.from_variable(autoresponse['response'], message.author)
-                if embed.only_content: return await message.channel.send(embed.content)
-                else: return await message.channel.send(content=embed.content, embed=embed.to_embed(), view=embed.to_view())
-  
-  @commands.Cog.listener('on_message')
-  async def autoreacts(self, message: discord.Message): 
-   if self.good_message(message): 
-    check = await self.bot.db.fetchrow("SELECT emojis FROM autoreact WHERE guild_id = $1 AND trigger = $2", message.guild.id, message.content)
-    if check: 
-     retry_after = self.get_ratelimit(message)
-     if retry_after: return
-     emojis = json.loads(check['emojis'])   
-     for emoji in emojis: 
-       try: await message.add_reaction(emoji)
-       except: continue
 
   @commands.Cog.listener('on_message')
   async def boost_listener(self, message: discord.Message): 

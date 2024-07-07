@@ -4,7 +4,7 @@ from utils.utils import Pack
 from random import randrange
 from io import BytesIO
 from patches.permissions import Permissions
-from ResentAPI import API
+from kureAPI import API
 from bot.headers import Session
 from patches.fun import RockPaperScissors, BlackTea, TicTacToe
 
@@ -113,27 +113,27 @@ class fun(commands.Cog):
 
     @commands.command(description="send a random bird image", help="fun")
     async def bird(self, ctx): 
-      data = await self.bot.session.json("https://api.alexflipnote.dev/birb")
+      data = await self.bot.session.get_json("https://api.alexflipnote.dev/birb")
       await ctx.reply(file=discord.File(fp=BytesIO(await self.bot.session.read(data['file'])), filename="bird.png"))
 
     @commands.command(description="send a random dog image", help="fun")
     async def dog(self, ctx):
-        data = await self.bot.session.json("https://random.dog/woof.json")
+        data = await self.bot.session.get_json("https://random.dog/woof.json")
         await ctx.reply(file=discord.File(fp=BytesIO(await self.bot.session.read(data['url'])), filename=f"dog{data['url'][-4:]}"))
 
     @commands.command(description="send a random cat image", help="fun")
     async def cat(self, ctx):
-        data = (await self.bot.session.json("https://api.thecatapi.com/v1/images/search"))[0]
+        data = (await self.bot.session.get_json("https://api.thecatapi.com/v1/images/search"))[0]
         await ctx.reply(file=discord.File(fp=BytesIO(await self.bot.session.read(data['url'])), filename="cat.png"))
     
     @commands.command(description="send a random capybara image", help="fun")
     async def capybara(self, ctx):
-      data = await self.bot.session.json('https://api.capy.lol/v1/capybara?json=true')
+      data = await self.bot.session.get_json('https://api.capy.lol/v1/capybara?json=true')
       await ctx.reply(file=discord.File(fp=BytesIO(await self.bot.session.read(data['data']['url'])), filename="cat.png"))
     
     @commands.command(description="return an useless fact", help="fun", aliases=["fact", "uf"])
     async def uselessfact(self, ctx):
-      data = (await self.bot.session.json("https://uselessfacts.jsph.pl/random.json?language=en"))['text']
+      data = (await self.bot.session.get_json("https://uselessfacts.jsph.pl/random.json?language=en"))['text']
       await ctx.reply(data) 
 
     @commands.command(description='screenshot a website', usage='[url]', help='fun', aliases=['ss', 'screen'])
@@ -145,7 +145,7 @@ class fun(commands.Cog):
 
     @commands.command(description='grab info on a snapchat profile', usage='[username]', help='fun')
     async def snapchat(self, ctx: commands.Context, *, username: str):
-      results = await self.bot.session.json("https://v1.pretend.best/snapstory", headers=self.pretend_api, params={"username": username})
+      results = await self.bot.session.get_json("https://v1.pretend.best/snapstory", headers=self.pretend_api, params={"username": username})
       if results.get('detail'):
         return await ctx.error(results['detail'])
       await ctx.paginator(list(map(lambda s: s['url'], results['stories']))) 

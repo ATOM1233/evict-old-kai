@@ -31,12 +31,12 @@ class Evict(commands.Bot):
         
         self.color = 0xCCCCFF
         self.error_color= 0xFFFFED
-        self.yes = "<:approved:1250418891373412374>"
-        self.no = "<:false:1250429646000881789>"
-        self.warning = "<:warning:1250418903079718912>"
-        self.left = "<:left:1250428984693362792>"
-        self.right = "<:right:1250418914072989855>"
-        self.goto = "<:filter:1250429945998479431>"
+        self.yes = "<:approved:1259606226535317615>"
+        self.no = "<:false:1259606495234887740>"
+        self.warning = "<:warning:1259608056832987248>"
+        self.left = "<:left:1259608758800220251>"
+        self.right = "<:right:1259608897308721152>"
+        self.goto = "<:filter:1259609300221821039>"
         
         self.ext = Client(self)
         

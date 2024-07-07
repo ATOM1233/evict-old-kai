@@ -3,16 +3,16 @@ from discord.ext import commands
 from discord.ui import Modal, Select, View
 from patches.permissions import Permissions
 
-unlockemoji = "<:Unlock:1209076745974718484>"
-lockemoji = "<:lock:1209076696322674688>"
-plusemoji = "<:increase:1209076694107955241>"
-minusemoji = "<:decrease:1209076691197235211>"
-channelemoji = "<:rename:1209076697324986378>"
-unghostemoji = "<:Reveal:1209076698314706954>"
-ghostemoji = "<:hide:1209076693009043456>"
-claimemoji = "<:claim:1209076689380843540>"
-hammeremoji = "<:moderate:1209078084553277440>"
-manemoji = "<:info:1209076695240544337>" 
+unlockemoji = "<:unlock:1259608094846091274>"
+lockemoji = "<:lock:1259606786852524132>"
+plusemoji = "<:increase:1259607993721290762>"
+minusemoji = "<:decrease:1259611871850266656>"
+channelemoji = "<:rename:1259612690674876466>"
+unghostemoji = "<:reveal:1259611416290263111>"
+ghostemoji = "<:hide:1259607803278917674>"
+claimemoji = "<:claim:1259613008032829500>"
+hammeremoji = "<:moderate:1259607271290441829>"
+manemoji = "<:info:1259607090217877534>" 
 
 async def check_owner(ctx: commands.Context):
             check = await ctx.bot.db.fetchrow("SELECT * FROM vcs WHERE voice = $1 AND user_id = $2", ctx.author.voice.channel.id, ctx.author.id)
@@ -229,27 +229,27 @@ class vmbuttons(discord.ui.View):
                discord.SelectOption(
                   label="mute",
                   description="mute member in the voice channel",
-                  emoji="<:muted:1208464412571344900>"
+                  emoji="<:mute:1259614393604243517>"
                ),
                discord.SelectOption(
                   label="unmute",
                   description="unmute members in the voice channel",
-                  emoji="<:unmuted:1208464547002847242>"
+                  emoji="<:unmute:1259614028070780969>"
                ),
                discord.SelectOption(
                   label="deafen",
                   description="deafen members in your voice channel",
-                  emoji="<:deafened:1208464929028575284>"
+                  emoji="<:deafen:1259614676417908817>"
                ),
                discord.SelectOption(
                   label="undeafen",
-                  emoji="<:undeafened:1208464410725715998>",
+                  emoji="<:undeafen:1259613737241804821>",
                   description="undeafen members in your voice channel"
                ),
                discord.SelectOption(
                   label="kick",
                   description="kick members from your voice channel",
-                  emoji="<:moderate:1209078084553277440>"
+                  emoji="<:moderate:1259607271290441829>"
                )
             ]
             select = discord.ui.Select(options=options, placeholder="select category...")
