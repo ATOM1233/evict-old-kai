@@ -1,30 +1,30 @@
-from typing import Optional, orjson
-import aiohttp, humanize
+from typing import Optional
+import aiohttp, humanize, orjson, random, os
 from io import BytesIO
 
 class Session:
-  def __init__(self):
+  def __init__(self, headers: Optional[dict] = None, proxy: bool = False) -> None:
+   
    self.headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36"}
+   self.get = self.json
+   
+   if proxy:self.proxy = lambda: random.choice(os.environ.get("PROXIES", "").split("||"))
+   else:self.proxy = lambda: None
   
   async def post_json(self, url: str, headers: Optional[dict]=None, params: Optional[dict]=None, proxy: Optional[str]=None):
-    """
-    Use the post method to get the json response
-    """
 
     async with aiohttp.ClientSession(headers=headers or self.headers) as cs: 
      async with cs.post(url, headers=headers, params=params, proxy=proxy) as r: 
        return await r.json()
      
   async def post_text(self, url: str, data: Optional[dict] = None, headers: Optional[dict] = None, params: Optional[dict] = None, proxy: bool = False, ssl: Optional[bool] = None) -> str:
-        """Send a POST request and get the HTML response"""
-        
+
         async with aiohttp.ClientSession(headers=headers or self.headers, json_serialize=orjson.dumps) as session:
             async with session.post(url, data=data, params=params, proxy=self.proxy(), ssl=ssl) as response:
                 return await response.text()
               
   async def async_post_bytes(self, url: str, data: Optional[dict] = None, headers: Optional[dict] = None, params: Optional[dict] = None, proxy: bool = False, ssl: Optional[bool] = None) -> bytes:
-        """Send a POST request and get the response in bytes"""
-        
+
         async with aiohttp.ClientSession(headers=headers or self.headers, json_serialize=orjson.dumps) as session: 
             async with session.post(url, data=data, params=params, proxy=self.proxy(), ssl=ssl) as response:
                 return await response.read()
@@ -45,45 +45,34 @@ class Session:
                 return data
               
   async def text(self, url: str, headers: Optional[dict] = None, params: Optional[dict] = None, proxy: bool = False, ssl: Optional[bool] = False) -> str:
-        """Send a GET request and get the HTML response"""
-        
+
         data = await self._dl(url, headers, params, proxy, ssl)
         if data: return data.decode("utf-8")   
         return data
 
   async def json(self, url: str, headers: Optional[dict] = None, params: Optional[dict] = None, proxy: bool = False, ssl: Optional[bool] = False) -> dict:
-        """Send a GET request and get the JSON response"""
         
         data = await self._dl(url, headers, params, proxy, ssl)
         if data: return orjson.loads(data)
         return data
 
   async def read(self, url: str, headers: Optional[dict] = None, params: Optional[dict] = None, proxy: bool = False, ssl: Optional[bool] = False) -> bytes:
-        """Send a GET request and get the response in bytes"""
+    
         return await self._dl(url, headers, params, proxy, ssl)
   
   async def get_json(self, url: str, headers: Optional[dict]=None, params: Optional[dict]=None, proxy: Optional[str]=None):
-   """
-   Use the get method to get the json response
-   """
-
+    
    async with aiohttp.ClientSession(headers=headers or self.headers) as cs: 
      async with cs.get(url, headers=headers, params=params, proxy=proxy) as r: 
        return await r.json()
 
   async def get_text(self, url: str, headers: Optional[dict]=None, params: Optional[dict]=None, proxy: Optional[str]=None): 
-   """
-   Use the get method to get the text response
-   """
 
    async with aiohttp.ClientSession(headers=headers or self.headers) as cs: 
      async with cs.get(url, headers=headers, params=params, proxy=proxy) as r: 
        return await r.text()
 
   async def get_bytes(self, url: str, headers: Optional[dict]=None, params: Optional[dict]=None, proxy: Optional[str]=None):
-    """
-    Use the get method to get the bytes response
-    """
     
     async with aiohttp.ClientSession(headers=headers or self.headers) as cs: 
       async with cs.get(url, headers=headers, params=params, proxy=proxy) as r: 
