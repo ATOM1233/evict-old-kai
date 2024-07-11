@@ -401,15 +401,6 @@ class owner(commands.Cog):
           messages.append(mes)          
           number.append(discord.Embed(color=self.bot.color, title=f"globaluwulocked list [{len(results)}]", description=messages[i]))
           await ctx.paginator(number)
-
-   @commands.is_owner()
-   @commands.command(description="leave servers manually that aren't authorized.", brief='bot owner')
-   async def dleave(self, ctx):
-    for guild in self.bot.guilds:
-        check = await self.bot.db.execute("SELECT * FROM authorize")
-        if check is not None: continue
-        try: await guild.leave()
-        except discord.NotFound: return
             
    @commands.is_owner()
    @commands.command(aliases=["globalbanned"], description='globalbanned members', brief='bot owner')

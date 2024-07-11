@@ -119,11 +119,13 @@ class Evict(commands.Bot):
         await self.process_commands(message) 
     
   async def setup_hook(self):
+        
         self.add_view(vmbuttons())
         self.add_dynamic_items(DynamicRoleButton)
         self.add_view(CreateTicket())
         self.add_view(DeleteTicket())
         self.add_view(GiveawayView())
+        
         await self.load_extension('jishaku')
         await StartUp.loadcogs(self)
         await self.create_db_pool()

@@ -22,7 +22,6 @@ class PaginatorView(discord.ui.View):
     async def goto(self, interaction: discord.Interaction, button: discord.ui.Button): 
      if interaction.user.id != self.ctx.author.id: return await interaction.client.ext.warning(interaction, "You are not the author of this embed")     
      modal = GoToModal()
-     modal.embeds = self.embeds
      await interaction.response.send_modal(modal)
      await modal.wait()
      try:

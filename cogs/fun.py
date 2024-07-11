@@ -33,7 +33,7 @@ class fun(commands.Cog):
     @Permissions.has_permission(manage_messages=True)
     @commands.command(name="poll", description="start a quick poll", help="fun", brief="manage messages")
     async def poll(self, ctx: commands.Context, *, question: str): 
-      message = await ctx.reply(embed=discord.Embed(color=self.bot.color, description=question).set_author(name=f"{ctx.author} asked"))
+      message = await ctx.send(embed=discord.Embed(color=self.bot.color, description=question).set_author(name=f"{ctx.author} asked"))
       await message.add_reaction("👍")
       await message.add_reaction("👎")
 
@@ -69,7 +69,7 @@ class fun(commands.Cog):
     
     @commands.command(description="retard rate an user", help="fun", usage="<member>")
     async def howretarded(self, ctx, member: discord.Member=commands.Author):
-     if member.id in self.bot.owner_ids: await ctx.reply(embed=discord.Embed(color=self.bot.color, title="how retarded", description=f"{member.mention} is 0% retarded <a:retard:1216970788259893381>"))
+     if member.id in self.bot.owner_ids: await ctx.reply(embed=discord.Embed(color=self.bot.color, title="how retarded", description=f"{member.mention} is `0%` retarded <a:retard:1216970788259893381>"))
      else: await ctx.reply(embed=discord.Embed(color=self.bot.color, title="how retarded", description=f"{member.mention} is `{randrange(101)}%` retarded <a:retard:1216970788259893381>"))
 
     @commands.command(description="gay rate an user", help="fun", usage="<member>")
@@ -113,42 +113,51 @@ class fun(commands.Cog):
 
     @commands.command(description="send a random bird image", help="fun")
     async def bird(self, ctx): 
-      data = await self.bot.session.get_json("https://api.alexflipnote.dev/birb")
+      data = await self.bot.session.json("https://api.alexflipnote.dev/birb")
       await ctx.reply(file=discord.File(fp=BytesIO(await self.bot.session.read(data['file'])), filename="bird.png"))
 
     @commands.command(description="send a random dog image", help="fun")
     async def dog(self, ctx):
-        data = await self.bot.session.get_json("https://random.dog/woof.json")
+        data = await self.bot.session.json("https://random.dog/woof.json")
         await ctx.reply(file=discord.File(fp=BytesIO(await self.bot.session.read(data['url'])), filename=f"dog{data['url'][-4:]}"))
 
     @commands.command(description="send a random cat image", help="fun")
     async def cat(self, ctx):
-        data = (await self.bot.session.get_json("https://api.thecatapi.com/v1/images/search"))[0]
+        data = (await self.bot.session.json("https://api.thecatapi.com/v1/images/search"))[0]
         await ctx.reply(file=discord.File(fp=BytesIO(await self.bot.session.read(data['url'])), filename="cat.png"))
     
     @commands.command(description="send a random capybara image", help="fun")
     async def capybara(self, ctx):
-      data = await self.bot.session.get_json('https://api.capy.lol/v1/capybara?json=true')
+      data = await self.bot.session.json('https://api.capy.lol/v1/capybara?json=true')
       await ctx.reply(file=discord.File(fp=BytesIO(await self.bot.session.read(data['data']['url'])), filename="cat.png"))
     
     @commands.command(description="return an useless fact", help="fun", aliases=["fact", "uf"])
     async def uselessfact(self, ctx):
-      data = (await self.bot.session.get_json("https://uselessfacts.jsph.pl/random.json?language=en"))['text']
+      data = (await self.bot.session.json("https://uselessfacts.jsph.pl/random.json?language=en"))['text']
       await ctx.reply(data) 
 
     @commands.command(description='screenshot a website', usage='[url]', help='fun', aliases=['ss', 'screen'])
     async def screenshot(self, ctx: commands.Context, url: str):
-      data = await api.screenshot(f"{url}")
-      embed = discord.Embed(color=self.bot.color)
-      embed.set_image(url=data.image_url)
-      await ctx.reply(embed=embed)
+      try:
+        data = await api.screenshot(f"{url}")
+        embed = discord.Embed(color=self.bot.color)
+        embed.set_image(url=data.image_url)
+        await ctx.reply(embed=embed)
+      except Exception: return await ctx.warning(f"This site **does not** appear to be valid.")
 
     @commands.command(description='grab info on a snapchat profile', usage='[username]', help='fun')
     async def snapchat(self, ctx: commands.Context, *, username: str):
-      results = await self.bot.session.get_json("https://v1.pretend.best/snapstory", headers=self.pretend_api, params={"username": username})
-      if results.get('detail'):
-        return await ctx.error(results['detail'])
-      await ctx.paginator(list(map(lambda s: s['url'], results['stories']))) 
+      try:
+        results = await self.bot.session.json("https://api.resent.dev/snapstory", headers=self.bot.resent_api, params={"username": username})
+        if results.get('detail'):
+          return await ctx.send_error(results['detail'])
+        await ctx.paginator(list(map(lambda s: s['url'], results['stories'])))
+      except Exception: return await ctx.warning(f"{username} **does not** appear to be valid.")
+      
+    @commands.command(description='make an image transparent', usage='[image url]', help='fun')
+    async def transparent(self, ctx: commands.Context, *, image: str):
+      results = await self.bot.session.json("https://api.resent.dev/transparent", headers=self.bot.resent_api, params={"url": image})
+      return await ctx.send(f"``{results}``")
 
     @commands.command(description='get a random TikTok video', aliases=["foryou", "foryoupage"])
     async def fyp(self, ctx: commands.Context):
@@ -177,60 +186,70 @@ class fun(commands.Cog):
 
     @commands.command(description='grab info on a roblox profile', usage='[username]', help='fun')
     async def roblox(self, ctx: commands.Context, profile: str):
-      data = await api.get_roblox_user(f"{profile}")
-      url = data.url
-      embed = discord.Embed(color=self.bot.color, description=f'{data.bio}', title=f'{data.username}', url=f'{url}')
-      embed.add_field(name='friends:', value=f'{data.friends}', inline=True)
-      embed.add_field(name='following:', value=f'{data.followings}', inline=True)
-      embed.add_field(name='followers:', value=f'{data.followers}', inline=True)
-      embed.set_thumbnail(url=data.avatar_url)
-      embed.set_footer(text='Roblox', icon_url='https://cdn.resent.dev/roblox.jpg')
-      await ctx.reply(embed=embed)
+      try:
+        data = await api.get_roblox_user(f"{profile}")
+        url = data.url
+        embed = discord.Embed(color=self.bot.color, description=f'{data.bio}', title=f'{data.username}', url=f'{url}')
+        embed.add_field(name='friends:', value=f'{data.friends}', inline=True)
+        embed.add_field(name='following:', value=f'{data.followings}', inline=True)
+        embed.add_field(name='followers:', value=f'{data.followers}', inline=True)
+        embed.set_thumbnail(url=data.avatar_url)
+        embed.set_footer(text='Roblox', icon_url='https://cdn.resent.dev/roblox.jpg')
+        await ctx.reply(embed=embed)
+      except Exception: return await ctx.warning(f"{profile} **does not** appear to be valid.")  
 
     @commands.command(description='grab info on a snapchat profile', usage='[username]', help='fun')
-    async def snap(self, ctx: commands.Context, profile: str):
-      data = await api.get_snapchat_user(f"{profile}")
-      embed = discord.Embed(color=self.bot.color, description=f'{data.bio}')
-      embed.set_author(name=f'{data.username}', icon_url=f'{data.avatar}')
-      embed.set_image(url=data.snapcode)
-      embed.set_thumbnail(url=data.avatar)
-      embed.set_footer(text='Snapchat', icon_url='https://cdn.resent.dev/snapchat.jpg')
-      await ctx.reply(embed=embed)
+    async def snapchatuser(self, ctx: commands.Context, profile: str):
+      try:  
+        data = await api.get_snapchat_user(f"{profile}")
+        embed = discord.Embed(color=self.bot.color, description=f'{data.bio}')
+        embed.set_author(name=f'{data.username}', icon_url=f'{data.avatar}')
+        embed.set_image(url=data.snapcode)
+        embed.set_thumbnail(url=data.avatar)
+        embed.set_footer(text='Snapchat', icon_url='https://cdn.resent.dev/snapchat.jpg')
+        await ctx.reply(embed=embed)
+      except Exception: return await ctx.warning(f"{profile} **does not** appear to be valid.")  
 
     @commands.command(description='grab info on a tiktok profile', usage='[username]', help='fun')
     async def tiktok(self, ctx: commands.Context, profile: str):
-      data = await api.get_tiktok_user(f"{profile}")
-      url = data.url
-      embed = discord.Embed(color=self.bot.color, description=f'{data.bio}', title=f'{data.username}', url=f'{url}')
-      embed.set_author(name=f'{data.username}', icon_url=f'{data.avatar}')
-      embed.add_field(name='friends:', value=f'{data.friends}', inline=True)
-      embed.add_field(name='followers:', value=f'{data.followers}', inline=True)
-      embed.add_field(name='following:', value=f'{data.following}', inline=True)
-      embed.add_field(name='likes:', value=f'{data.hearts}', inline=True)
-      if data.verified: embed.add_field(name='verified:', value=f'{data.verified}', inline=True)
-      if data.private: embed.add_field(name='private:', value=f'{data.private}')
-      embed.set_thumbnail(url=data.avatar)
-      embed.set_footer(text='TikTok', icon_url='https://cdn.resent.dev/tiktok.png')
-      await ctx.reply(embed=embed)
+      try:
+        data = await api.get_tiktok_user(f"{profile}")
+        url = data.url
+        embed = discord.Embed(color=self.bot.color, description=f'{data.bio}', title=f'{data.username}', url=f'{url}')
+        embed.set_author(name=f'{data.username}', icon_url=f'{data.avatar}')
+        embed.add_field(name='friends:', value=f'{data.friends}', inline=True)
+        embed.add_field(name='followers:', value=f'{data.followers}', inline=True)
+        embed.add_field(name='following:', value=f'{data.following}', inline=True)
+        embed.add_field(name='likes:', value=f'{data.hearts}', inline=True)
+        if data.verified: embed.add_field(name='verified:', value=f'{data.verified}', inline=True)
+        if data.private: embed.add_field(name='private:', value=f'{data.private}')
+        embed.set_thumbnail(url=data.avatar)
+        embed.set_footer(text='TikTok', icon_url='https://cdn.resent.dev/tiktok.png')
+        await ctx.reply(embed=embed)
+      except Exception: return await ctx.warning(f"{profile} **does not** appear to be valid.")  
 
     @commands.command(description='grab info on a instagram profile', usage='[username]', help='fun')
     async def instagram(self, ctx: commands.Context, profile: str):
-      data = await api.get_instagram_user(f"{profile}")
-      url = data.url
-      embed = discord.Embed(color=self.bot.color, description=f'{data.bio}', title=f'{data.full_name}', url=f'{url}')
-      embed.set_author(name=f'{data.username}', icon_url=f'{data.profile_pic}')
-      embed.add_field(name='followers:', value=f'{data.followers}', inline=True)
-      embed.add_field(name='following:', value=f'{data.following}', inline=True)
-      embed.add_field(name='posts:', value=f'{data.posts}', inline=True)
-      embed.add_field(name='highlights:', value=f'{data.highlights}', inline=True)
-      embed.set_thumbnail(url=data.profile_pic)
-      embed.set_footer(text='Instagram', icon_url='https://cdn.resent.dev/instagram.png')
-      await ctx.reply(embed=embed)
-      
+      try:  
+        data = await api.get_instagram_user(f"{profile}")
+        url = data.url
+        embed = discord.Embed(color=self.bot.color, description=f'{data.bio}', title=f'{data.full_name}', url=f'{url}')
+        embed.set_author(name=f'{data.username}', icon_url=f'{data.profile_pic}')
+        embed.add_field(name='followers:', value=f'{data.followers}', inline=True)
+        embed.add_field(name='following:', value=f'{data.following}', inline=True)
+        embed.add_field(name='posts:', value=f'{data.posts}', inline=True)
+        embed.add_field(name='highlights:', value=f'{data.highlights}', inline=True)
+        embed.set_thumbnail(url=data.profile_pic)
+        embed.set_footer(text='Instagram', icon_url='https://cdn.resent.dev/instagram.png')
+        await ctx.reply(embed=embed)
+      except Exception: return await ctx.warning(f"{profile} **does not** appear to be valid.")  
+
     @commands.command(description='ask chatgpt a question', usage='text', help='fun')
     async def chatgpt(self, ctx: commands.Context, *, text: str):
-      data = await api.ask_chatgpt(f"{text}")
-      await ctx.reply(data)
+      try:  
+        data = await api.ask_chatgpt(f"{text}")
+        await ctx.reply(data)
+      except Exception: return await ctx.warning(f"API is either down or I have no ChatGPT credits. Please join https://discord.gg/resent and report this.")  
 
     @commands.command(description="ship rate an user", help="fun", usage="[member]")
     async def ship(self, ctx, member: discord.Member):
@@ -347,10 +366,10 @@ class fun(commands.Cog):
     ):
       try:
         async with aiohttp.ClientSession() as session:
-          async with session.post("https://vile.bot/api/browser/images", data=query, params={"colors": "true"}, headers={"api-key": self.bot.rival_api}) as response:
+          async with session.post("https://api.rival.rocks/google/image", data=query, params={"safe": "true"}, headers={"api-key": self.bot.rival_api}) as response:
             response = await response.json()
             embeds = [discord.Embed(title=res.get('title', 'Untitled'), url="https://" + res.get('domain', ''), color=res.get('color', discord.Color.default())).set_image(url=res.get('url', '')) for res in response]
-          if len(embeds) == 0: return await ctx.warning("Nothing found.")
+          # if len(embeds) == 0: return await ctx.warning("Nothing found.")
           return await ctx.paginator(embeds=embeds)
       except Exception:
         return await ctx.warning(f"Could not find anything with this query")

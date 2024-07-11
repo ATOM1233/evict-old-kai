@@ -614,13 +614,16 @@ class config(Cog):
      if message.guild != ctx.guild: return await ctx.warning("This **message** is not from this server")
      
      elif message.channel.type != ChannelType.text: return await ctx.error("I can only react in text channels")
+     
      try: 
+      
       await message.add_reaction(reaction)
       
       v = View()
       v.add_item(Button(label="jump to message", url=message.jump_url))
       
       return await ctx.reply(view=v)  
+     
      except: return await ctx.warning("Unable to add the reaction to that message") 
     
     @commands.group(invoke_without_command=True, name="counter", description="create stats counters for your server")

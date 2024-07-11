@@ -5,6 +5,7 @@ from patches.classes import Mod
 from utils.utils import EmbedScript
 from bot.helpers import EvictContext
 from patches.classes import ValidWebhookCode
+from bot.headers import Session
 
 def is_detention(): 
  async def predicate(ctx: commands.Context): 
@@ -125,27 +126,31 @@ class misc(commands.Cog):
   @webhook_edit.command(name="avatar", aliases=["icon"],  description="edit a webhook's avatar", usage="[code] [image url / attachment]", brief="manage server")
   @Permissions.has_permission(manage_guild=True)
   async def webhook_avatar(self, ctx: commands.Context, code: str, link: str=None): 
+   
    check = await self.bot.db.fetchrow("SELECT * FROM webhook WHERE code = $1 AND guild_id = $2", code, ctx.guild.id)
    if not check: return ctx.error("No **webhook** associated with this code")
+   
    webhook = discord.Webhook.from_url(check['url'], session=self.bot.session)
    if webhook: 
+    
     if link is None and len(ctx.message.attachments) == 0: return await self.bot.help_command.send_command_help(ctx.command)
     if link: link = link 
+    
     elif not link and ctx.message.attachments: link = ctx.message.attachments[0].url
-    try: 
-      avatar = (await self.bot.getbyte(link)).getvalue()
-      await webhook.edit(avatar=avatar, reason=f"webhook avatar changed by {ctx.author}")
-      return await ctx.success(f"Webhook avatar changed")
-    except: return await ctx.warning("Unable to change the **webhook's** avatar")
-   else: return ctx.error(f"No **webhook** found")   
+    
+    avatar = await self.bot.session.getbyte(link).getvalue()
+    await webhook.edit(avatar=avatar, reason=f"webhook avatar changed by {ctx.author}")
+    
+    return await ctx.success(f"webhook avatar changed")
+   else: return ctx.error(f"no **webhook** found")   
 
   @webhook.command(name="create", aliases=['add'],  description="create a webhook in a channel", usage="[channel] <name>", brief="manage server")
   @Permissions.has_permission(manage_guild=True)
   async def webhook_create(self, ctx: commands.Context, channel: discord.TextChannel, *, name: str="evict"): 
-   webhook = await channel.create_webhook(name=name, avatar=await self.bot.session.read(ctx.guild.me.display_avatar.url), reason=f"webhook created by {ctx.author}") 
+   webhook = await channel.create_webhook(name=name, reason=f"webhook created by {ctx.author}") 
    code = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(5)) 
    await self.bot.db.execute("INSERT INTO webhook VALUES ($1,$2,$3,$4)", ctx.guild.id, channel.id, code, webhook.url)
-   return await ctx.success(f"Webhook created in {channel.mention} with the code `{code}`")
+   return await ctx.success(f"webhook created in {channel.mention} with the code `{code}`")
   
   @webhook.command(name="delete", aliases=['remove'], brief="manage server", description="delete a webhook from a channel", usage="[code]")
   @Permissions.has_permission(manage_guild=True)
@@ -157,7 +162,7 @@ class misc(commands.Cog):
     try: await webhook.delete(reason=f"webhook deleted by {ctx.author}")
     except: pass  
    await self.bot.db.execute("DELETE FROM webhook WHERE code = $1 AND guild_id = $2", code, ctx.guild.id)
-   await ctx.success("Deleted the webhook")
+   await ctx.success(f"deleted the webhook ``{code}``.")
   
   @webhook.command(name="send", aliases=["post"], description="send a message via a webhook using a code", brief="manage server")
   @Permissions.has_permission(manage_guild=True)
@@ -173,11 +178,11 @@ class misc(commands.Cog):
       webhook = discord.Webhook.from_url(url=check['url'], session=session)
       
       if not webhook: 
-        return await ctx.error("No webhook found with this code")
+        return await ctx.error("no webhook found with this code")
       
       w = await self.bot.fetch_webhook(webhook.id)
       await w.send(**script)
-      await ctx.success(f"Sent webhook -> {w.channel.mention}")
+      await ctx.success(f"sent webhook -> {w.channel.mention}")
 
   @webhook.command(name="list", description="shows a list of available webhooks in the server", aliases=['view'])
   async def webhook_list(self, ctx: commands.Context): 
@@ -204,7 +209,7 @@ class misc(commands.Cog):
    number.append(discord.Embed(color=self.bot.color, title=f"webhooks in {ctx.guild.name} ({len(results)})", description=messages[i]))
    await ctx.paginator(number) 
 
-  @commands.command()
+  @commands.command(description='make a channel nsfw for 30 seconds', brief='manage channels', usage='[chan]')
   @commands.has_permissions(manage_channels=True)
   async def naughty(self, ctx):
         

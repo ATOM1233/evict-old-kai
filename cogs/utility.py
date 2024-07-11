@@ -10,6 +10,7 @@ from typing import Union
 from io import BytesIO
 from patches.classes import Timezone, TimeConverter
 from events.tasks import is_there_a_reminder, bday_task, reminder_task
+import button_paginator as pg
 
 DISCORD_API_LINK = "https://discord.com/api/invite/"
 
@@ -84,7 +85,7 @@ class utility(commands.Cog):
 
 # CUSTOM BADGES 
      if user.id == 987183275560820806:
-       badges.append("<a:odecy:1220454736906682468>") # - odecy
+       badges.append("<a:odecy:1259624643325591674>") # - odecy
 
      for guild in self.bot.guilds: 
       mem = guild.get_member(user.id)
@@ -192,7 +193,12 @@ class utility(commands.Cog):
          embed = Embed(description = auto, color = self.bot.color)
          embed.set_author(name = f"{member}'s past usernames", icon_url = member.display_avatar)
          number.append(embed)
-         return await ctx.paginator( number)     
+         if len(number) > 1:
+          paginator = pg.Paginator(self.bot, number, ctx, invoker=ctx.author.id)
+          paginator.add_button('prev', emoji= "<:left:1018156480991612999>")
+          paginator.add_button('goto', emoji = "<:filter:1073308758945562705>")
+          paginator.add_button('next', emoji="<:right:1018156484170883154>")
+          await paginator.start()     
        else: return await ctx.warning( f"no logged usernames for **{member}**".capitalize())
 
     @commands.command(usage="[message]", description="uwify a message", aliases=["uwu"])
@@ -273,7 +279,7 @@ class utility(commands.Cog):
            except: pass 
         return await ctx.reply(embed=em)
     
-    @commands.command(aliases=["mc"], description="check how many members does your server have")
+    @commands.command(aliases=["mc"], description="check member count")
     async def membercount(self, ctx: Context):
       b=len(set(b for b in ctx.guild.members if b.bot))
       h=len(set(b for b in ctx.guild.members if not b.bot))
@@ -303,9 +309,9 @@ class utility(commands.Cog):
     async def inrole(self, ctx: Context, *, role: Union[Role, str]):
             if isinstance(role, str): 
               role = ctx.find_role(role)
-              if role is None: return await ctx.warning( "This isn't a valid role")
+              if role is None: return await ctx.warning("this **isn't** a valid role")
 
-            if len(role.members) == 0: return await ctx.error("Nobody (even u) has this role") 
+            if len(role.members) == 0: return await ctx.error("no one has this role") 
             i=0
             k=1
             l=0
@@ -422,7 +428,7 @@ class utility(commands.Cog):
             number = []
             messages = []
             for member in ctx.guild.premium_subscriber_role.members: 
-              mes = f"{mes}`{k}` {member} - <t:{int(member.premium_since.timestamp())}:R> \n"
+              mes = f"{mes}`{k}` {member} ``({member.id})`` - <t:{int(member.premium_since.timestamp())}:R> \n"
               k+=1
               l+=1
               if l == 10:
@@ -466,27 +472,9 @@ class utility(commands.Cog):
     @Permissions.has_permission(manage_roles=True)
     @commands.command(description="see all server roles")
     async def roles(self, ctx: Context):
-            i=0
-            k=1
-            l=0
-            mes = ""
-            number = []
-            messages = []
-            for role in ctx.guild.roles: 
-              mes = f"{mes}`{k}` {role.mention} - <t:{int(role.created_at.timestamp())}:R> ({len(role.members)} members)\n"
-              k+=1
-              l+=1
-              if l == 10:
-               messages.append(mes)
-               number.append(Embed(color=self.bot.color, title=f"roles [{len(ctx.guild.roles)}]", description=messages[i]))
-               i+=1
-               mes = ""
-               l=0
-    
-            messages.append(mes)
-            embed = Embed(color=self.bot.color, title=f"roles [{len(ctx.guild.roles)}]", description=messages[i])
-            number.append(embed)
-            await ctx.paginator(number)
+            role_list = [f"{role.mention} - {len(role.members)} member{'s' if len(role.members) != 1 else ''}" 
+            for role in ctx.guild.roles[1:][::-1]] 
+            return await ctx.pages(role_list, f"roles [{len(ctx.guild.roles[1:])}]")   
 
     @Permissions.has_permission(moderate_members=True)
     @commands.command(description="see all server's bots")

@@ -396,6 +396,11 @@ class settings(commands.Cog):
                 
                 try: await channel.send(embed=embed)
                 except discord.Forbidden: return
+                
+    @commands.Cog.listener('on_guild_channel_create')
+    async def jail(self, channel: discord.abc.GuildChannel):
+        check = await self.bot.db.fetchrow("SELECT * FROM mod WHERE guild_id = {}".format(channel.guild.id))
+        if check: await channel.set_permissions(channel.guild.get_role(int(check['role_id'])), view_channel=False, reason="overwriting permissions for jail role")
     
     @commands.Cog.listener()
     async def on_guild_channel_create(self, after: discord.abc.GuildChannel) -> None:

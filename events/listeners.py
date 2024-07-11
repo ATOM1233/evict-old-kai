@@ -52,12 +52,12 @@ class listeners(commands.Cog):
         if data: return 
         await self.bot.db.execute("INSERT INTO oldusernames VALUES ($1,$2,$3,$4)", before.name, before.discriminator, int(datetime.datetime.now().timestamp()), before.id)
   
-  @commands.Cog.listener('on_member_ban')
+  @commands.Cog.listener('on_member_unban')
   async def hardban_check(self, guild: discord.Guild, user: discord.User):
-         check = await self.bot.db.fetchrow("SELECT * FROM hardban WHERE guild_id = {} AND banned = {}".format(guild.id, user.id))
-         if check is not None: 
-            try: await guild.ban(user, reason=f"hardbanned by {await self.bot.fetch_user(check['author'])}")
-            except discord.Forbidden: return
+    check = await self.bot.db.fetchrow("SELECT * FROM hardban WHERE guild_id = {} AND banned = {}".format(guild.id, user.id))
+    if check is not None: 
+      try: await guild.ban(user, reason=f"hardbanned by {await self.bot.fetch_user(check['author'])}")
+      except discord.Forbidden: return
    
   """@commands.Cog.listener('on_member_remove')
   async def booster_left(self, member: discord.Member): 
@@ -78,27 +78,6 @@ class listeners(commands.Cog):
         if user.id in self.bot.owner_ids:
           try: await guild.unban(user, reason="User cannot be banned. Kick evict to ban this user.",)
           except discord.Forbidden: await guild.leave()
-
-  """@commands.Cog.listener('on_member_unban')
-  async def globalban_check1(self, guild: discord.Guild, user: discord.User):
-    check = await self.bot.db.fetchrow("SELECT * FROM globalban WHERE banned = {}".format(user.id)) 
-    if check is not None: 
-      try:
-            await guild.ban(user, reason=f"{user} cannot be unbanned. globalban enforced for this user.")
-      except (discord.HTTPException, discord.Forbidden):
-            pass
-
-  @commands.Cog.listener('on_member_join')
-  async def globalban_check(self, member: discord.Member):
-    guild = member.guild
-    check = await self.bot.db.fetchrow("SELECT * FROM globalban WHERE banned = {}".format(member.id)) 
-    check1 = await self.bot.db.fetchrow("SELECT * FROM mwhitelist WHERE guild_id = {}".format(guild.id))
-    if check1: return
-    if check is not None: 
-        try:
-            await guild.ban(member, reason=f"{member} cannot be unbanned. globalban enforced for this user.")
-        except (discord.HTTPException, discord.Forbidden):
-            pass"""
 
   @commands.Cog.listener('on_member_join')
   async def autokick_check(self, member: discord.User):
@@ -297,6 +276,50 @@ class listeners(commands.Cog):
       role = member.guild.get_role(int(result['role_id']))
       if role:
        if role.is_assignable(): await member.add_roles(role, reason="giving level roles back to this member")
+       
+  @commands.Cog.listener('on_raw_reaction_add')
+  async def reaction_roles_add(self, payload: discord.RawReactionActionEvent): 
+      if payload.member.bot: return   
+      if payload.emoji.is_custom_emoji():       
+       check = await self.bot.db.fetchrow("SELECT role_id FROM reactionrole WHERE guild_id = $1 AND message_id = $2 AND channel_id = $3 AND emoji_id = $4", payload.guild_id, payload.message_id, payload.channel_id, payload.emoji.id) 
+       if check:
+        roleid = check['role_id']
+        guild = self.bot.get_guild(payload.guild_id)
+        role = guild.get_role(roleid)
+        if not role in payload.member.roles: await payload.member.add_roles(role, reason='reactionroles')
+      elif payload.emoji.is_unicode_emoji():
+        try:
+          check = await self.bot.db.fetchrow("SELECT role_id FROM reactionrole WHERE guild_id = $1 AND message_id = $2 AND channel_id = $3 AND emoji_id = $4", payload.guild_id, payload.message_id, payload.channel_id, ord(str(payload.emoji))) 
+          if check:
+            roleid = check["role_id"]
+          guild = self.bot.get_guild(payload.guild_id)
+          role = guild.get_role(roleid)
+          if not role in payload.member.roles: await payload.member.add_roles(role, reason='reactionroles')     
+        except TypeError: pass 
+
+  @commands.Cog.listener('on_raw_reaction_remove')
+  async def reaction_roles_remove(self, payload: discord.RawReactionActionEvent): 
+   mem = self.bot.get_guild(payload.guild_id).get_member(payload.user_id)
+   if not mem: return
+   if mem.bot: return 
+   if payload.emoji.is_custom_emoji(): 
+    check = await self.bot.db.fetchrow("SELECT role_id FROM reactionrole WHERE guild_id = $1 AND message_id = $2 AND channel_id = $3 AND emoji_id = $4", payload.guild_id, payload.message_id, payload.channel_id, payload.emoji.id) 
+    if check: 
+      roleid = check["role_id"]
+      guild = self.bot.get_guild(payload.guild_id)
+      member = guild.get_member(payload.user_id)
+      role = guild.get_role(int(roleid))
+      if role in member.roles: await member.remove_roles(role, reason='reactionroles')
+   elif payload.emoji.is_unicode_emoji(): 
+    try: 
+      check = await self.bot.db.fetchrow("SELECT role_id FROM reactionrole WHERE guild_id = $1 AND message_id = $2 AND channel_id = $3 AND emoji_id = $4", payload.guild_id, payload.message_id, payload.channel_id, ord(str(payload.emoji)))
+      if check: 
+       roleid = check["role_id"]
+       guild = self.bot.get_guild(payload.guild_id)
+       member = guild.get_member(payload.user_id)
+       role = guild.get_role(int(roleid))
+       if role in member.roles: await member.remove_roles(role, reason='reactionroles')
+    except TypeError: pass  
 
 async def setup(bot: commands.Bot):
   await bot.add_cog(listeners(bot))

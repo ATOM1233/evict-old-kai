@@ -1,4 +1,4 @@
-import discord
+import discord, Paginator
 from discord.ext.commands import Context 
 from discord import Embed, utils
 from typing import Any, Union, Dict, Optional, List, Sequence
@@ -41,7 +41,11 @@ class EvictContext(Context):
    for command in self.command.commands: 
     commandname = f"{str(command.parent)} {command.name}" if str(command.parent) != "None" else command.name
     i+=1 
-    embeds.append(discord.Embed(color=self.bot.color, title=f"{commandname}", description=command.description).set_author(name=self.author.name, icon_url=self.author.display_avatar.url if not None else '').add_field(name="usage", value=f"```{commandname} {command.usage if command.usage else ''}```", inline=False).set_footer(text=f"module: {command.cog_name} • aliases: {', '.join(a for a in command.aliases) if len(command.aliases) > 0 else 'none'} ・ {i}/{len(self.command.commands)}"))
+    embeds.append(discord.Embed(color=self.bot.color, title=f"{commandname}", description=command.description).set_author(name=self.author.name, icon_url=self.author.display_avatar.url if not None else '')
+    .add_field(name="aliases", value=', '.join(map(str, command.aliases)) or "none")
+    .add_field(name="permissions", value=command.brief or "any")
+    .add_field(name="usage", value=f"```{commandname} {command.usage if command.usage else ''}```", inline=False)
+    .set_footer(text=f"module: {command.cog_name} ・ page {i}/{len(self.command.commands)}", icon_url=self.author.display_avatar.url if not None else ''))
      
    return await self.paginator(embeds)  
 
@@ -54,6 +58,41 @@ class EvictContext(Context):
     if len(embeds) == 1: return await self.send(embed=embeds[0]) 
     view = PaginatorView(self, embeds)
     view.message = await self.reply(embed=embeds[0], view=view) 
+    
+  async def pagess(self, embeds: List[Union[discord.Embed, str]]) -> discord.Message:
+        """Sends some paginated embeds to the channel"""
+        if len(embeds) == 1:
+            if isinstance(embeds[0], discord.Embed):
+                return await self.send(embed=embeds[0])
+            elif isinstance(embeds[0], str):
+                return await self.send(embeds[0])
+
+        GotoButton = discord.ui.Button(style=discord.ButtonStyle.grey, emoji="<:filter:1259609300221821039>")
+        PreviousButton = discord.ui.Button(style=discord.ButtonStyle.grey, emoji="<:left:1259608758800220251>")
+        NextButton = discord.ui.Button(style=discord.ButtonStyle.grey, emoji="<:right:1259608897308721152>")
+        DeleteButton = discord.ui.Button(style=discord.ButtonStyle.grey, emoji="<:false:1259606495234887740>")
+
+        await Paginator.Simple(
+            GoToButton=GotoButton,
+            PreviousButton=PreviousButton,
+            NextButton=NextButton,
+            DeleteButton=DeleteButton,
+            InitialPage=0,
+            timeout=60
+        ).start(self, pages=embeds)
+        
+  async def pages(self, contents: List[str], title: str = None, author: dict = {'name': '', 'icon_url': None}):
+        """Paginate a list of contents in multiple embeds"""
+        iterator = [m for m in utils.as_chunks(contents, 10)]
+        embeds = [
+            Embed(
+                color=self.bot.color,
+                title=title,
+                description='\n'.join([f"`{(m.index(f)+1)+(iterator.index(m)*10)}.` {f}" for f in m])
+            ).set_author(**author)
+            for m in iterator
+        ]
+        return await self.pagess(embeds)
 
   async def reply(self, content: Optional[str] = None, *, embed: Optional[discord.Embed] = None, view: Optional[View] = None, mention_author: Optional[bool] = False, file: Optional[discord.File] = discord.utils.MISSING,
         files: Optional[Sequence[discord.File]] = discord.utils.MISSING) -> discord.Message:
@@ -91,7 +130,7 @@ class EvictContext(Context):
     
 class HelpCommand(commands.HelpCommand):
   def __init__(self, **kwargs):
-   self.ec_color = 0xffffff
+   self.ec_color = 0xCCCCFF
    super().__init__(**kwargs)
 
   async def send_bot_help(self, ctx: commands.Context) -> None:

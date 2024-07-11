@@ -408,14 +408,18 @@ class moderation(commands.Cog):
   @Permissions.has_permission(manage_channels=True) 
   async def unjail(self, ctx: commands.Context, member: discord.Member, *, reason: str="No reason provided"):   
       check = await self.bot.db.fetchrow("SELECT * FROM jail WHERE guild_id = $1 AND user_id = $2", ctx.guild.id, member.id)      
-      if not check: return await ctx.warning( f"**{member}** is not jailed")     
+      if not check: return await ctx.warning( f"**{member}** is not jailed")
+      chec = await self.bot.db.fetchrow("SELECT * FROM mod WHERE guild_id = $1", ctx.guild.id)   
+      roleid = chec["role_id"]   
       sq = check['roles']
       roles = json.loads(sq)
+      jail = ctx.guild.get_role(roleid)
       try: await member.edit(roles=[ctx.guild.get_role(role) for role in roles if ctx.guild.get_role(role)], reason=f"unjailed by {ctx.author}")
       except: pass
       await self.bot.db.execute("DELETE FROM jail WHERE user_id = {} AND guild_id = {}".format(member.id, ctx.guild.id))
       if not await InvokeClass.invoke_send(ctx, member, reason): await ctx.success(f"Unjailed **{member}**")
       await ModConfig.sendlogs(self.bot, "unjail", ctx.author, member, reason)
+      await member.remove_roles(jail)
   
   @commands.command(aliases=["sm"], description="add slowmode to a channel", usage="[seconds] <channel>", brief="manage channelss")  
   @Permissions.has_permission(manage_channels=True) 

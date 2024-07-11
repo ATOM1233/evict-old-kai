@@ -182,7 +182,7 @@ class boosters(commands.Cog):
             discord.SelectOption( 
             label="delete",
             description="delete your booster role",
-            emoji="<:trash:1208240459462483978>"
+            emoji="<:trash:1259607670113960067>"
           ),
             discord.SelectOption(
             label="cancel",
@@ -194,22 +194,22 @@ class boosters(commands.Cog):
           discord.SelectOption(
             label="name",
             description="change the booster role name",
-            emoji="<:rename:1209076697324986378>"
+            emoji="<:rename:1259612690674876466>"
           ),
           discord.SelectOption(
             label="color",
             description="change the color of your role",
-            emoji="<:color:1228032609590968390>"
+            emoji="<:color:1259622682799116298>"
           ),
           discord.SelectOption(
             label="icon",
             description="change the role icon",
-            emoji="<a:user:1228031981468651593>"
+            emoji="<:user:1259608364057497622>"
           ),
           discord.SelectOption( 
             label="delete",
             description="delete your booster role",
-            emoji="<:trash:1209432918523645983>"
+            emoji="<:trash:1259607670113960067>"
           ),
             discord.SelectOption(
             label="cancel",
@@ -228,11 +228,6 @@ class boosters(commands.Cog):
           
           if ctx.author != interaction.user: return await self.bot.ext.warning(interaction, "You are not the author of this embed", ephemeral=True)
           if select.values[0] == "cancel": return await interaction.response.edit_message(view=None)  
-          
-          elif select.values[0] == "hoist": 
-            
-            await role.edit(hoist=False if role.hoist else True)
-            return await interaction.client.ext.success(interaction, "changed your role hoist status", ephemeral=True)
 
           elif select.values[0] == "delete": 
              

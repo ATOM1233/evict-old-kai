@@ -80,7 +80,7 @@ async def blacklist(ctx: commands.Context):
     if interaction.user != ctx.author: return await interaction.response.send_message(embed=discord.Embed(color=bot.color, description=f"{bot.warning} {interaction.user.mention}: This is not your message"), ephemeral=True)
     
     await bot.db.execute("INSERT INTO nodata VALUES ($1,$2)", ctx.author.id, "false")                        
-    await interaction.response.edit_message(embed=discord.Embed(color=bot.color, description=f"You got blacklisted from using bot's commands. If this is a mistake, please check our [**support server**](https://discord.gg/resent)"), view=None)
+    await interaction.response.edit_message(embed=discord.Embed(color=bot.color, description=f"You got blacklisted from using bot's commands. If this is a mistake, please check our [**support server**](https://discord.gg/evict)"), view=None)
     
     embed = discord.Embed(title="Evict Logs", description="User got blacklisted for saying no on callback.", color=bot.color)
     embed.add_field(name="User", value=f"{interaction.user}", inline=False)
