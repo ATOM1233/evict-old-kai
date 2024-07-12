@@ -64,37 +64,19 @@ class antiraid(commands.Cog):
         await self.bot.db.execute("DELETE FROM whitelist WHERE guild_id = $1 AND object_id = $2 AND module = $3", ctx.guild.id, member.id, "antiraid")
         return await ctx.success(f"**{member}** can no longer use **antiraid** commands")
     
-    @antiraid.command(description="check whitelisted users of antiraid commands", help="antiraid")
-    async def whitelisted(self, ctx: commands.Context): 
+    @antiraid.command(brief="manage guild")      
+    @Permissions.has_permission(manage_guild=True)
+    async def whitelisted(self, ctx: commands.Context):
+      
+      results = await self.bot.db.fetch("SELECT * FROM whitelist WHERE guild_id = $1 AND module = $2 AND mode = $3", ctx.guild.id, "antiraid", "user")
           
-          i=0
-          k=1
-          l=0
-          
-          mes = ""
-          number = []
-          messages = []
-          results = await self.bot.db.fetch("SELECT * FROM whitelist WHERE guild_id = $1 AND module = $2 AND mode = $3", ctx.guild.id, "antiraid", "user")
-          
-          if len(results) == 0: return await ctx.warning("No **whitelisted** members found")
-          for result in results:
-              mes = f"{mes}`{k}` {await self.bot.fetch_user(result['object_id'])}\n"
-              
-              k+=1
-              l+=1
-              if l == 10:
-               
-               messages.append(mes)
-               number.append(discord.Embed(color=self.bot.color, title=f"antiraid whitelisted ({len(results)})", description=messages[i]))
-               
-               i+=1
-               mes = ""
-               l=0
-    
-          messages.append(mes)          
-          number.append(discord.Embed(color=self.bot.color, title=f"antiraid whitelisted ({len(results)})", description=messages[i]))
-          
-          await ctx.paginator(number)
+      if len(results) == 0: return await ctx.warning("no **whitelisted** members found")
+      
+      for result in results:
+        
+        whitelisted = [f"{await self.bot.fetch_user(result['object_id'])}"]
+            
+      await ctx.paginator(whitelisted)  
     
     @antiraid.group(invoke_without_command=True, description="prevend join raids", help="antiraid", usage="[status (enable/disable)] [punishment] [joins per 10 seconds]\nexample: antiraid massjoin enable 10")
     async def massjoin(self, ctx: commands.Context): 

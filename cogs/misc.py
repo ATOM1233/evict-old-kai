@@ -77,32 +77,20 @@ class misc(commands.Cog):
     if not check: return await ctx.warning("This member is **not** in the naughty corner")
     await self.bot.db.execute("DELETE FROM naughtycorner_members WHERE guild_id = $1 AND user_id = $2", ctx.guild.id, member.id)
     return await ctx.success(f"Removed **{member}** from **Naughty Corner**") 
-  
-  @naughtycorner.command( name="members", aliases=['list'], description="returns members from the naughty corner")
+   
+  @naughtycorner.command(name="members", aliases=['list'], description="returns members from the naughty corner")      
   @is_detention()
-  async def nc_list(self, ctx: commands.Context): 
-   results = await self.bot.db.fetch("SELECT user_id FROM naughtycorner_members WHERE guild_id = $1", ctx.guild.id)
-   if len(results) == 0: return await ctx.warning("There are no **naughty** members in this server")
-   i=0
-   k=1
-   l=0
-   mes = ""
-   number = []
-   messages = []
-   for result in results:     
-     mes = f"{mes}`{k}` <@!{result['user_id']}>\n"
-     k+=1
-     l+=1
-     if l == 10:
-       messages.append(mes)
-       number.append(discord.Embed(color=self.bot.color, title=f"naughty members in {ctx.guild.name} ({len(results)})", description=messages[i]))
-       i+=1
-       mes = ""
-       l=0
-    
-   messages.append(mes)
-   number.append(discord.Embed(color=self.bot.color, title=f"naughty members in {ctx.guild.name} ({len(results)})", description=messages[i]))
-   await ctx.paginator(number)  
+  async def nc_list(self, ctx: commands.Context):
+      
+      results = await self.bot.db.fetch("SELECT user_id FROM naughtycorner_members WHERE guild_id = $1", ctx.guild.id)
+          
+      if len(results) == 0: return await ctx.warning("no **whitelisted** members found")
+      
+      for result in results:
+        
+        nc_list = [f"<@!{result['user_id']}>"]
+            
+      await ctx.paginator(nc_list, f"members in naughty corner [{len(results)}]")  
 
   @commands.group(name="webhook", invoke_without_command=True)
   async def webhook(self, ctx):
@@ -183,31 +171,20 @@ class misc(commands.Cog):
       w = await self.bot.fetch_webhook(webhook.id)
       await w.send(**script)
       await ctx.success(f"sent webhook -> {w.channel.mention}")
-
-  @webhook.command(name="list", description="shows a list of available webhooks in the server", aliases=['view'])
+   
+  @webhook.command(name="list", brief="manage guild", description="shows a list of available webhooks in the server", aliases=['view']) 
+  @Permissions.has_permission(manage_guild=True) 
   async def webhook_list(self, ctx: commands.Context): 
-   results = await self.bot.db.fetch("SELECT * FROM webhook WHERE guild_id = $1", ctx.guild.id)
-   if len(results) == 0: return await ctx.warning("There are no **webhooks** created by the bot in this server")
-   i=0
-   k=1
-   l=0
-   mes = ""
-   number = []
-   messages = []
-   for result in results:     
-     mes = f"{mes}`{k}` <#{result['channel_id']}> - `{result['code']}`\n"
-     k+=1
-     l+=1
-     if l == 10:
-       messages.append(mes)
-       number.append(discord.Embed(color=self.bot.color, title=f"webhooks in {ctx.guild.name} ({len(results)})", description=messages[i]))
-       i+=1
-       mes = ""
-       l=0
-    
-   messages.append(mes)
-   number.append(discord.Embed(color=self.bot.color, title=f"webhooks in {ctx.guild.name} ({len(results)})", description=messages[i]))
-   await ctx.paginator(number) 
+      
+      results = await self.bot.db.fetch("SELECT * FROM webhook WHERE guild_id = $1", ctx.guild.id)
+      
+      if len(results) == 0: return await ctx.warning("there are no **webhooks** created by the bot in this server")
+      
+      for result in results:
+        
+        webhook_list = [f"<#{result['channel_id']}> - `{result['code']}`"]
+            
+      await ctx.paginator(webhook_list, f"webhooks in server [{len(results)}]")  
 
   @commands.command(description='make a channel nsfw for 30 seconds', brief='manage channels', usage='[chan]')
   @commands.has_permissions(manage_channels=True)

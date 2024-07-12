@@ -150,7 +150,7 @@ class fun(commands.Cog):
       try:
         results = await self.bot.session.json("https://api.resent.dev/snapstory", headers=self.bot.resent_api, params={"username": username})
         if results.get('detail'):
-          return await ctx.send_error(results['detail'])
+          return await ctx.error(results['detail'])
         await ctx.paginator(list(map(lambda s: s['url'], results['stories'])))
       except Exception: return await ctx.warning(f"{username} **does not** appear to be valid.")
       

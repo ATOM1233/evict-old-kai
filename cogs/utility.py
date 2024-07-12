@@ -360,59 +360,30 @@ class utility(commands.Cog):
       embed = Embed(color=self.bot.color, title=f"joined today [{len(members)}]", description=messages[i])
       number.append(embed)
       await ctx.paginator(number) 
-
-    @commands.command(description="see all muted members")
-    async def muted(self, ctx: Context): 
-            members = [m for m in ctx.guild.members if m.is_timed_out()]
-            if len(members) == 0: return await ctx.error("There are no muted members")
-            i=0
-            k=1
-            l=0
-            mes = ""
-            number = []
-            messages = []
-            for member in members: 
-              mes = f"{mes}`{k}` {member} - <t:{int(member.timed_out_until.timestamp())}:R> \n"
-              k+=1
-              l+=1
-              if l == 10:
-               messages.append(mes)
-               number.append(Embed(color=self.bot.color, title=f"{ctx.guild.name} muted members [{len(members)}]", description=messages[i]))
-               i+=1
-               mes = ""
-               l=0
-    
-            messages.append(mes)
-            embed = Embed(color=self.bot.color, title=f"{ctx.guild.name} muted members [{len(members)}]", description=messages[i])
-            number.append(embed)
-            await ctx.paginator(number)     
+            
+    @commands.command(description="see all the muted members in the server")
+    async def muted(self, ctx: Context):
+      
+      m=len(set(m for m in ctx.guild.members if m.is_timed_out()))
+      members = [m for m in ctx.guild.members if m.is_timed_out()]
+      
+      if len(members) == 0: return await ctx.error("there are no muted members")
+             
+      for member in members:
+          muted_list = [f"{member} - <t:{int(member.timed_out_until.timestamp())}:R>"]
+            
+      await ctx.paginator(muted_list, f"muted members [{m}]")     
     
     @Permissions.has_permission(ban_members=True)
-    @commands.command(description="see all banned members")
-    async def bans(self, ctx: Context): 
-     banned = [m async for m in ctx.guild.bans()]
-     if len(banned) == 0: return await ctx.warning( "There are no banned people in this server")  
-     i=0
-     k=1
-     l=0
-     mes = ""
-     number = []
-     messages = []
-     for m in banned: 
-       mes = f"{mes}`{k}` **{m.user}** - `{m.reason or 'No reason provided'}` \n"
-       k+=1
-       l+=1
-       if l == 10:
-        messages.append(mes)
-        number.append(Embed(color=self.bot.color, title=f"banned ({len(banned)})", description=messages[i]))
-        i+=1
-        mes = ""
-        l=0
-    
-     messages.append(mes)
-     embed = Embed(color=self.bot.color, title=f"banned ({len(banned)})", description=messages[i])
-     number.append(embed)
-     await ctx.paginator(number) 
+    @commands.command(description="see all server bans")
+    async def bans(self, ctx: Context):
+          
+          banned = [ban async for ban in ctx.guild.bans(limit=1000)]
+          if not banned:
+            return await ctx.warning("no one is banned.")
+
+          ban_list = [f"**{m.user}** - {m.reason or 'No reason provided'}" for m in banned]
+          await ctx.paginator(ban_list, f"bans [{len(banned)}]")
 
     @commands.group(invoke_without_command=True)
     async def boosters(self, ctx: commands.Context):
@@ -420,7 +391,7 @@ class utility(commands.Cog):
 
     @boosters.command(invoke_without_command=True, description="see all server boosters")
     async def list(self, ctx: Context):
-            if not ctx.guild.premium_subscriber_role or len(ctx.guild.premium_subscriber_role.members) == 0: return await ctx.warning( "this server doesn't have any boosters".capitalize())
+            if not ctx.guild.premium_subscriber_role or len(ctx.guild.premium_subscriber_role.members) == 0: return await ctx.warning("this server doesn't have any boosters")
             i=0
             k=1
             l=0
@@ -472,36 +443,25 @@ class utility(commands.Cog):
     @Permissions.has_permission(manage_roles=True)
     @commands.command(description="see all server roles")
     async def roles(self, ctx: Context):
-            role_list = [f"{role.mention} - {len(role.members)} member{'s' if len(role.members) != 1 else ''}" 
-            for role in ctx.guild.roles[1:][::-1]] 
-            return await ctx.pages(role_list, f"roles [{len(ctx.guild.roles[1:])}]")   
-
-    @Permissions.has_permission(moderate_members=True)
-    @commands.command(description="see all server's bots")
+      
+      role_list = [f"{role.mention} - {len(role.members)} member{'s' if len(role.members) != 1 else ''}" 
+      
+      for role in ctx.guild.roles[1:][::-1]] 
+      
+      await ctx.paginator(role_list, f"roles [{len(ctx.guild.roles[1:])}]")   
+  
+    @commands.command(description="see all the bots in the server")
     async def bots(self, ctx: Context):
-            i=0
-            k=1
-            l=0
-            b=len(set(b for b in ctx.guild.members if b.bot))
-            mes = ""
-            number = []
-            messages = []
-            for member in ctx.guild.members:
-             if member.bot:   
-              mes = f"{mes}`{k}` {member} - ({member.id})\n"
-              k+=1
-              l+=1
-              if l == 10:
-               messages.append(mes)
-               number.append(Embed(color=self.bot.color, title=f"bots [{b}]", description=messages[i]))
-               i+=1
-               mes = ""
-               l=0
-    
-            messages.append(mes)
-            embed = Embed(color=self.bot.color, title=f"{ctx.guild.name} bots [{b}]", description=messages[i])
-            number.append(embed)
-            await ctx.paginator(number)
+            
+      b=len(set(b for b in ctx.guild.members if b.bot))
+            
+      for member in ctx.guild.members:
+             
+        if member.bot:
+          bot_list = [f"{member.mention} (``{member.id}``)"
+                           for member in ctx.guild.members if member.bot] 
+            
+      await ctx.paginator(bot_list, f"bots [{b}]")  
     
     @commands.command(description="check the weather from a location", usage="[country]")
     async def weather(self, ctx: Context, *, location: str): 
@@ -531,7 +491,8 @@ class utility(commands.Cog):
  
     @commands.command(description="shows the number of invites an user has", usage="<user>")
     async def invites(self, ctx: Context, *, member: Member=None):
-      if member is None: member = ctx.author 
+      if member is None: 
+        member = ctx.author 
       invites = await ctx.guild.invites()
       await ctx.reply(f"{member} has **{sum(invite.uses for invite in invites if invite.inviter.id == member.id)}** invites")
     
@@ -693,58 +654,14 @@ class utility(commands.Cog):
      else: 
       try: await self.bot.db.execute("INSERT INTO reminder VALUES ($1,$2,$3,$4,$5)", ctx.author.id, ctx.channel.id, ctx.guild.id, (datetime.datetime.now() + datetime.timedelta(seconds=seconds)), task)
       except: return await ctx.warning("You already have a reminder set in this channel. Use `{ctx.clean_prefix}reminder stop` to cancel the reminder")
-
-    @commands.command(name='members', description="get an embed of all the members in a server by join date")
-    async def members(self, ctx: commands.Context):
-            members1 = [m for m in ctx.guild.members if not m.bot] 
-            members = sorted(members1, key=lambda m: m.joined_at)
-            i=0
-            k=1
-            l=0
-            mes = ""
-            number = []
-            messages = []
-            for member in members[::-1]: 
-              mes = f"{mes}`{k}` **{member}** joined <t:{int(member.joined_at.timestamp())}:f> (<t:{int(member.joined_at.timestamp())}:R>)\n"
-              k+=1
-              l+=1
-              if l == 10:
-               messages.append(mes)
-               number.append(discord.Embed(color=self.bot.color, title='total members', description=messages[i]))
-               i+=1
-               mes = ""
-               l=0
-    
-            messages.append(mes)
-            embed = Embed(color=self.bot.color, title='total members', description=messages[i])
-            number.append(embed)
-            await ctx.paginator(number)
-
-    @commands.command(name='oldestaccounts', description="get an embed of the oldest accounts in the server")
-    async def oldestaccounts(self, ctx: commands.Context):
-            members1 = [m for m in ctx.guild.members if not m.bot] 
-            members = sorted(members1, key=lambda m: m.created_at, reverse=True)
-            i=0
-            k=1
-            l=0
-            mes = ""
-            number = []
-            messages = []
-            for member in members[::-1]: 
-              mes = f"{mes}`{k}` **{member}** created <t:{int(member.created_at.timestamp())}:f> (<t:{int(member.created_at.timestamp())}:R>)\n"
-              k+=1
-              l+=1
-              if l == 10:
-               messages.append(mes)
-               number.append(discord.Embed(color=self.bot.color, title='oldest account by creation date', description=messages[i]))
-               i+=1
-               mes = ""
-               l=0
-    
-            messages.append(mes)
-            embed = Embed(color=self.bot.color, title='oldest account by creation date', description=messages[i])
-            number.append(embed)
-            await ctx.paginator(number)
+            
+    @commands.command(description="see all the members in the server")
+    async def members(self, ctx: Context):
+          
+      member_list = [f"**{member}** joined <t:{int(member.joined_at.timestamp())}:f> (<t:{int(member.joined_at.timestamp())}:R>)"
+                           for member in ctx.guild.members if not member.bot] 
+          
+      await ctx.paginator(member_list, f"members [{len(ctx.guild.members[1:])}]") 
 
 async def setup(bot):
     await bot.add_cog(utility(bot))
