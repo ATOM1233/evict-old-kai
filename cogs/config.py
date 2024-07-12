@@ -14,7 +14,8 @@ class config(Cog):
         self.bot = bot 
         self.perms = ["administrator", "manage_guild", "manage_roles", "manage_channels", "manage_messages", "manage_nicknames", "manage_expressions", "ban_members", "kick_members", "moderate_members"]
     
-    @command(name="createembed", aliases=['ce'], description="create embed", usage="[code]")
+    @Permissions.has_permission(manage_messages=True)
+    @command(name="createembed", aliases=['ce'], description="create embed", usage="[code]", brief="manage messages")
     async def createembed(self, ctx: Context,  *, code: EmbedScript):
      await ctx.send(**code)
 

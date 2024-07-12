@@ -18,42 +18,54 @@ class automod(commands.Cog):
     @chatfilter.command(name="add", description="add a word to the chatfilter", brief="manage guild", usage="[word]")
     @Permissions.has_permission(manage_guild=True) 
     async def cf_add(self, ctx: commands.Context, *, word: str): 
+     
      check = await self.bot.db.fetchrow("SELECT * FROM chatfilter WHERE guild_id = $1 AND word = $2", ctx.guild.id, word.lower())
      if check: return await ctx.send_warning("This word is **already** added in the chatfilter list") 
+     
      await self.bot.db.execute("INSERT INTO chatfilter VALUES ($1,$2)", ctx.message.guild.id, word.lower())
      await ctx.send_success(f"Added **{word}** as a filtered word")
     
     @chatfilter.command(name="remove", description="remove a word from the chatfilter", brief="manage guild", usage="[word]")
     @Permissions.has_permission(manage_guild=True) 
     async def cf_remove(self, ctx: commands.Context, *, word: str): 
+     
      check = await self.bot.db.fetchrow("SELECT * FROM chatfilter WHERE guild_id = $1 AND word = $2", ctx.guild.id, word.lower())
      if not check: return await ctx.send_warning("This word is **not** added in the chatfilter list") 
+     
      await self.bot.db.execute("DELETE FROM chatfilter WHERE guild_id = $1 AND word = $2", ctx.message.guild.id, word.lower())
      await ctx.send_success(f"Removed **{word}** from the filtered word") 
     
     @chatfilter.command(name="list", description="returns a list of blacklisted words", brief="manage guild")
     async def cf_list(self, ctx: commands.Context):
+     
      results = await self.bot.db.fetch("SELECT * FROM chatfilter WHERE guild_id = $1", ctx.guild.id)
      if len(results) == 0: return await ctx.send_warning("No **blacklisted** words found")
+     
      i=0
      k=1
      l=0
+     
      mes = ""
      number = []
      messages = []
+     
      for result in results:
        mes = f"{mes}`{k}` {result['word']}\n"
+       
        k+=1
        l+=1
        if l == 10:
+         
          messages.append(mes)
          number.append(discord.Embed(color=self.bot.color, title=f"blacklisted words ({len(results)})", description=messages[i]))
+         
          i+=1
          mes = ""
          l=0
     
      messages.append(mes)
      number.append(discord.Embed(color=self.bot.color, title=f"blacklisted words ({len(results)})", description=messages[i]))     
+     
      await ctx.paginator(number) 
     
     @chatfilter.group(name="whitelist", description="manage whitelist for chatfilter", aliases=["wl"], brief="manage guild")
@@ -103,43 +115,56 @@ class automod(commands.Cog):
     @anti_spam.command(name="enable", description="enable anti spam", aliases=['e'], brief="manage guild")
     @Permissions.has_permission(manage_guild=True) 
     async def anti_spam_enable(self, ctx: commands.Context):       
+        
         check = await self.bot.db.fetchrow("SELECT * FROM antispam WHERE guild_id = {}".format(ctx.guild.id))        
         if check: return await ctx.send_error("Anti-spam is **already** enabled")
+        
         await self.bot.db.execute("INSERT INTO antispam VALUES ($1,$2,$3,$4)", ctx.guild.id, 5, 5, "mute")
         return await ctx.send_success("Anti-spam is now enabled")
     
     @anti_spam.command(name="disable", description="disable anti spam", brief="manage guild")
     @Permissions.has_permission(manage_guild=True) 
     async def anti_spam_disable(self, ctx: commands.Context):
+      
       check = await self.bot.db.fetchrow("SELECT * FROM antispam WHERE guild_id = {}".format(ctx.guild.id))        
       if not check: return await ctx.send_error("Anti-spam is **not** enabled")
+      
       await self.bot.db.execute("DELETE FROM antispam WHERE guild_id = $1", ctx.guild.id)
       return await ctx.send_success("Anti-spam is now disabled") 
     
     @anti_spam.command(name="punishment", description="set antispam punishment", brief="manage guild", usage="[punishment]")
     @Permissions.has_permission(manage_guild=True) 
     async def anti_spam_punishment(self, ctx: commands.Context, punishment: str): 
+     
      check = await self.bot.db.fetchrow("SELECT * FROM antispam WHERE guild_id = {}".format(ctx.guild.id))        
+     
      if not check: return await ctx.send_error("Anti-spam is **not** enabled") 
      if not punishment in ["delete", "mute"]: return await ctx.send_warning(f"Punishment can be only **ban** or **mute**, not **{punishment}**") 
+     
      await self.bot.db.execute("UPDATE antispam SET punishment = $1 WHERE guild_id = $2", punishment, ctx.guild.id)
      return await ctx.send_success(f"Anti-spam punishment set to **{punishment}**") 
     
     @anti_spam.command(name="seconds", description="set antispam's delay time", brief="manage guild", usage="[seconds]")
     @Permissions.has_permission(manage_guild=True) 
     async def anti_spam_seconds(self, ctx: commands.Context, second: int): 
+     
      check = await self.bot.db.fetchrow("SELECT * FROM antispam WHERE guild_id = {}".format(ctx.guild.id))        
      if not check: return await ctx.send_error("Anti-spam is **not** enabled") 
+     
      if second < 1: return await ctx.send_warning(f"Anti-spam delay can't be lower than 1 second") 
+     
      await self.bot.db.execute("UPDATE antispam SET seconds = $1 WHERE guild_id = $2", second, ctx.guild.id)
      return await ctx.send_success(f"Anti-spam delay set to **{second}**")  
     
     @anti_spam.command(name="limit", description="set antispam's limit", brief="manage guild", usage="[limit]")
     @Permissions.has_permission(manage_guild=True) 
     async def anti_spam_limit(self, ctx: commands.Context, second: int): 
+     
      check = await self.bot.db.fetchrow("SELECT * FROM antispam WHERE guild_id = {}".format(ctx.guild.id))        
      if not check: return await ctx.send_error("Anti-spam is **not** enabled") 
+     
      if second < 1: return await ctx.send_warning(f"Anti-spam limit can't be lower than 1 second") 
+     
      await self.bot.db.execute("UPDATE antispam SET count = $1 WHERE guild_id = $2", second, ctx.guild.id)
      return await ctx.send_success(f"Anti-spam limit set to **{second}**")  
     
@@ -190,16 +215,20 @@ class automod(commands.Cog):
     @anti_invite.command(name="enable", description="enable anti invite", aliases=["e"], brief="manage guild") 
     @Permissions.has_permission(manage_guild=True) 
     async def antiinvite_enable(self, ctx: commands.Context):      
+        
         check = await self.bot.db.fetchrow("SELECT * FROM antiinvite WHERE guild_id = {}".format(ctx.guild.id))        
         if check: return await ctx.send_error("Anti-invite is **already** enabled")
+        
         await self.bot.db.execute("INSERT INTO antiinvite VALUES ($1)", ctx.guild.id)
         return await ctx.send_success("Anti-invite is now enabled")
     
     @anti_invite.command(name="disable", description="disable anti invite", aliases=["d"]) 
     @Permissions.has_permission(manage_guild=True) 
     async def antiinvite_disable(self, ctx: commands.Context): 
+        
         check = await self.bot.db.fetchrow("SELECT * FROM antiinvite WHERE guild_id = {}".format(ctx.guild.id))        
         if not check: return await ctx.send_error("Anti-invite is **not** enabled")
+        
         await self.bot.db.execute("DELETE FROM antiinvite WHERE guild_id = $1", ctx.guild.id)
         return await ctx.send_success("Anti-invite is now disabled")
     

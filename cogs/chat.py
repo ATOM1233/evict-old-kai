@@ -95,13 +95,17 @@ class chat(commands.Cog):
       messages = []
       
       for result in check:
+              
               lol = json.loads(result['emojis'])
               mes = f"{mes}`{k}` {result['trigger']} - {''.join(l for l in lol)}\n"
+              
               k+=1
               l+=1
               if l == 10:
+               
                messages.append(mes)
                number.append(discord.Embed(color=self.bot.color, title=f"auto reactions ({len(check)})", description=messages[i]))
+               
                i+=1
                mes = ""
                l=0
@@ -123,7 +127,9 @@ class chat(commands.Cog):
         
         for autoresponse in autoresponses:
             if message.content.lower().startswith(autoresponse['key'].lower()) or message.content.lower() == autoresponse['key'].lower():
+                
                 embed = Embed.from_variable(autoresponse['response'], message.author)
+                
                 if embed.only_content: return await message.channel.send(embed.content)
                 else: return await message.channel.send(content=embed.content, embed=embed.to_embed(), view=embed.to_view())
                 
@@ -141,6 +147,7 @@ class chat(commands.Cog):
     
           if check: 
             for emoji in check1: 
+              
               try: await message.add_reaction(emoji)
               except: continue
 

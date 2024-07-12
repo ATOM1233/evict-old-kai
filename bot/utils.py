@@ -1,32 +1,12 @@
 import discord, os, sys
 from discord.ext import commands
 
-class GoToModal(discord.ui.Modal, title="change the page"):
-  page = discord.ui.TextInput(label="page", placeholder="change the page", max_length=3)
-
-  async def on_submit(self, interaction: discord.Interaction) -> None:
-   if int(self.page.value) > len(self.embeds): return await interaction.client.ext.warning(interaction, f"You can only select a page **between** 1 and {len(self.embeds)}", ephemeral=True) 
-   await interaction.response.edit_message(embed=self.embeds[int(self.page.value)-1]) 
-  
-  async def on_error(self, interaction: discord.Interaction, error: Exception) -> None: 
-    await interaction.client.ext.warning(interaction, "Unable to change the page", ephemeral=True)
-
 class PaginatorView(discord.ui.View): 
     def __init__(self, ctx: commands.Context, embeds: list): 
       super().__init__()  
       self.embeds = embeds
       self.ctx = ctx
       self.i = 0
- 
-    @discord.ui.button(emoji="<:filter:1259609300221821039>")
-    async def goto(self, interaction: discord.Interaction, button: discord.ui.Button): 
-     if interaction.user.id != self.ctx.author.id: return await interaction.client.ext.warning(interaction, "You are not the author of this embed")     
-     modal = GoToModal()
-     await interaction.response.send_modal(modal)
-     await modal.wait()
-     try:
-      self.i = int(modal.page.value)-1
-     except: pass 
      
     @discord.ui.button(emoji="<:left:1259608758800220251>", style=discord.ButtonStyle.secondary)
     async def left(self, interaction: discord.Interaction, button: discord.ui.Button): 

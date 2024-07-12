@@ -66,6 +66,7 @@ class antiraid(commands.Cog):
     
     @antiraid.command(description="check whitelisted users of antiraid commands", help="antiraid")
     async def whitelisted(self, ctx: commands.Context): 
+          
           i=0
           k=1
           l=0
@@ -78,11 +79,14 @@ class antiraid(commands.Cog):
           if len(results) == 0: return await ctx.warning("No **whitelisted** members found")
           for result in results:
               mes = f"{mes}`{k}` {await self.bot.fetch_user(result['object_id'])}\n"
+              
               k+=1
               l+=1
               if l == 10:
+               
                messages.append(mes)
                number.append(discord.Embed(color=self.bot.color, title=f"antiraid whitelisted ({len(results)})", description=messages[i]))
+               
                i+=1
                mes = ""
                l=0
