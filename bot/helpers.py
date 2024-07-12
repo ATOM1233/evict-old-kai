@@ -61,7 +61,7 @@ class EvictContext(Context):
     .add_field(name="usage", value=f"```{commandname} {command.usage if command.usage else ''}```", inline=False)
     .set_footer(text=f"module: {command.cog_name} ・ page {i}/{len(self.command.commands)}", icon_url=self.author.display_avatar.url if not None else ''))
      
-   return await self.pagess(embeds)  
+   return await self.pages(embeds)  
     
   async def pages(self, embeds: List[Union[discord.Embed, str]]) -> discord.Message:
 
