@@ -81,7 +81,7 @@ class EvictContext(Context):
             NextButton=NextButton,
             DeleteButton=DeleteButton,
             InitialPage=0,
-            timeout=60
+            timeout=30
         ).start(self, pages=embeds)
         
   async def paginator(self, contents: List[str], title: str = None, author: dict = {'name': '', 'icon_url': None}):
