@@ -134,7 +134,7 @@ class antiraid(commands.Cog):
     @check_whitelist("antiraid")
     async def newaccounts_on(self, ctx: commands.Context, time: str, punishment: str):   
         try:
-         if not punishment in ["kick", "ban"]: return await ctx.send_error("Punishment is not either **kick** or **ban**")
+         if not punishment in ["kick", "ban"]: return await ctx.error("Punishment is not either **kick** or **ban**")
          time = humanfriendly.parse_timespan(time)
          
          check = await self.bot.db.fetchrow("SELECT * FROM antiraid WHERE guild_id = $1 AND command = $2", ctx.guild.id, "newaccounts")          

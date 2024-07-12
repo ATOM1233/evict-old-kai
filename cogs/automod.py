@@ -97,7 +97,7 @@ class automod(commands.Cog):
     async def anti_spam_enable(self, ctx: commands.Context):       
         
         check = await self.bot.db.fetchrow("SELECT * FROM antispam WHERE guild_id = {}".format(ctx.guild.id))        
-        if check: return await ctx.send_error("Anti-spam is **already** enabled")
+        if check: return await ctx.error("Anti-spam is **already** enabled")
         
         await self.bot.db.execute("INSERT INTO antispam VALUES ($1,$2,$3,$4)", ctx.guild.id, 5, 5, "mute")
         return await ctx.success("Anti-spam is now enabled")
@@ -107,7 +107,7 @@ class automod(commands.Cog):
     async def anti_spam_disable(self, ctx: commands.Context):
       
       check = await self.bot.db.fetchrow("SELECT * FROM antispam WHERE guild_id = {}".format(ctx.guild.id))        
-      if not check: return await ctx.send_error("Anti-spam is **not** enabled")
+      if not check: return await ctx.error("Anti-spam is **not** enabled")
       
       await self.bot.db.execute("DELETE FROM antispam WHERE guild_id = $1", ctx.guild.id)
       return await ctx.success("Anti-spam is now disabled") 
@@ -118,7 +118,7 @@ class automod(commands.Cog):
      
      check = await self.bot.db.fetchrow("SELECT * FROM antispam WHERE guild_id = {}".format(ctx.guild.id))        
      
-     if not check: return await ctx.send_error("Anti-spam is **not** enabled") 
+     if not check: return await ctx.error("Anti-spam is **not** enabled") 
      if not punishment in ["delete", "mute"]: return await ctx.warning(f"Punishment can be only **ban** or **mute**, not **{punishment}**") 
      
      await self.bot.db.execute("UPDATE antispam SET punishment = $1 WHERE guild_id = $2", punishment, ctx.guild.id)
@@ -129,7 +129,7 @@ class automod(commands.Cog):
     async def anti_spam_seconds(self, ctx: commands.Context, second: int): 
      
      check = await self.bot.db.fetchrow("SELECT * FROM antispam WHERE guild_id = {}".format(ctx.guild.id))        
-     if not check: return await ctx.send_error("Anti-spam is **not** enabled") 
+     if not check: return await ctx.error("Anti-spam is **not** enabled") 
      
      if second < 1: return await ctx.warning(f"Anti-spam delay can't be lower than 1 second") 
      
@@ -141,7 +141,7 @@ class automod(commands.Cog):
     async def anti_spam_limit(self, ctx: commands.Context, second: int): 
      
      check = await self.bot.db.fetchrow("SELECT * FROM antispam WHERE guild_id = {}".format(ctx.guild.id))        
-     if not check: return await ctx.send_error("Anti-spam is **not** enabled") 
+     if not check: return await ctx.error("Anti-spam is **not** enabled") 
      
      if second < 1: return await ctx.warning(f"Anti-spam limit can't be lower than 1 second") 
      
@@ -197,7 +197,7 @@ class automod(commands.Cog):
     async def antiinvite_enable(self, ctx: commands.Context):      
         
         check = await self.bot.db.fetchrow("SELECT * FROM antiinvite WHERE guild_id = {}".format(ctx.guild.id))        
-        if check: return await ctx.send_error("Anti-invite is **already** enabled")
+        if check: return await ctx.error("Anti-invite is **already** enabled")
         
         await self.bot.db.execute("INSERT INTO antiinvite VALUES ($1)", ctx.guild.id)
         return await ctx.success("Anti-invite is now enabled")
@@ -207,7 +207,7 @@ class automod(commands.Cog):
     async def antiinvite_disable(self, ctx: commands.Context): 
         
         check = await self.bot.db.fetchrow("SELECT * FROM antiinvite WHERE guild_id = {}".format(ctx.guild.id))        
-        if not check: return await ctx.send_error("Anti-invite is **not** enabled")
+        if not check: return await ctx.error("Anti-invite is **not** enabled")
         
         await self.bot.db.execute("DELETE FROM antiinvite WHERE guild_id = $1", ctx.guild.id)
         return await ctx.success("Anti-invite is now disabled")
