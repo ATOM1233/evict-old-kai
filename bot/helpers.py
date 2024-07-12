@@ -1,8 +1,7 @@
-import discord, Paginator
+import discord, Paginator, os
 from discord.ext.commands import Context 
 from discord import Embed, utils
 from typing import Any, Union, Dict, Optional, List, Sequence
-from bot.utils import PaginatorView
 from discord.ui import View
 from discord.ext import commands
 
@@ -178,3 +177,25 @@ class HelpCommand(commands.HelpCommand):
     embeds.append(discord.Embed(color=self.ec_color, title=f"{commandname}", description=command.description).set_author(name=ctx.author.name, icon_url=ctx.author.display_avatar.url if not None else '').add_field(name="usage", value=f"```{commandname} {command.usage if command.usage else ''}```", inline=False).set_footer(text=f"module: {command.cog_name} • aliases: {', '.join(a for a in command.aliases) if len(command.aliases) > 0 else 'none'} ・ {i}/{len(group.commands)}"))
      
    return await ctx.pages(embeds) 
+ 
+ 
+class StartUp:
+
+ async def startup(bot):
+    await bot.wait_until_ready()
+
+ async def loadcogs(self): 
+  
+  for file in os.listdir("./events"): 
+   if file.endswith(".py"):
+    try:
+     await self.load_extension(f"events.{file[:-3]}")
+     print(f"Loaded plugin {file[:-3]}".lower())
+    except Exception as e: print("failed to load %s %s".lower(), file[:-3], e)
+  
+  for fil in os.listdir("./cogs"):
+   if fil.endswith(".py"):
+    try:
+     await self.load_extension(f"cogs.{fil[:-3]}")
+     print(f"Loaded plugin {fil[:-3]}".lower())
+    except Exception as e: print("failed to load %s %s".lower(), fil[:-3], e)

@@ -1,12 +1,11 @@
-import discord, asyncpg, typing, time, os
+import discord, asyncpg, typing, time, os, discord_ios
 
 from typing import List
 from humanfriendly import format_timespan
 
 from discord.ext import commands
-from discord.gateway import DiscordWebSocket
 
-from bot.utils import StartUp
+from bot.helpers import StartUp
 from bot.helpers import EvictContext, HelpCommand
 from bot.ext import Client
 from bot.database import create_db
@@ -18,8 +17,6 @@ from cogs.ticket import CreateTicket, DeleteTicket
 from cogs.giveaway import GiveawayView
 
 from rivalapi.rivalapi import RivalAPI
-
-DiscordWebSocket.identify = StartUp.identify
 
 class Evict(commands.Bot):
   def __init__(self, db: asyncpg.Pool=None):
