@@ -1,4 +1,4 @@
-import discord, asyncpg, typing, time, os, discord_ios
+import discord, asyncpg, typing, time, os, discord_ios, pomice
 
 from typing import List
 from humanfriendly import format_timespan
@@ -34,6 +34,7 @@ class Evict(commands.Bot):
         self.left = "<:left:1259608758800220251>"
         self.right = "<:right:1259608897308721152>"
         self.goto = "<:filter:1259609300221821039>"
+        self.pomice = pomice.NodePool()
         
         self.ext = Client(self)
         
@@ -55,7 +56,11 @@ class Evict(commands.Bot):
         
   async def create_db_pool(self):
         self.db = await asyncpg.create_pool(port="5432", database="evict", user="postgres", host="localhost", password="admin")
-      
+        
+  async def on_ready(self) -> None:
+        print("I'm online!")
+        await self.cogs["music"].start_nodes()
+        
   async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
       if isinstance(error, commands.CommandNotFound): return 
       if isinstance(error, commands.NotOwner): pass
@@ -124,8 +129,10 @@ class Evict(commands.Bot):
         self.add_view(GiveawayView())
         
         await self.load_extension('jishaku')
-        await StartUp.loadcogs(self)
         await self.create_db_pool()
+        
+        await StartUp.loadcogs(self)
+       
         await create_db(self)
 
   async def get_context(self, message: discord.Message, cls=EvictContext) -> EvictContext:

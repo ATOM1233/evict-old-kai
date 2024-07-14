@@ -10,7 +10,6 @@ from typing import Union
 from io import BytesIO
 from patches.classes import Timezone, TimeConverter
 from events.tasks import is_there_a_reminder, bday_task, reminder_task
-import button_paginator as pg
 
 DISCORD_API_LINK = "https://discord.com/api/invite/"
 
@@ -66,20 +65,28 @@ class utility(commands.Cog):
      if member is None: member = ctx.author           
      user = await self.bot.fetch_user(member.id)
      badges = []
+     
      if user.id in self.bot.owner_ids: 
        badges.append("<:developer:1259612701030748303>")
+     
      if user.public_flags.active_developer: 
       badges.append("<:activedev:1259615920297349180>")
+     
      if user.public_flags.early_supporter:
       badges.append("<:early:1208465674318647306>")
+     
      if user.public_flags.verified_bot_developer:
        badges.append("<:developer:1259621097146548256>")
+     
      if user.public_flags.staff: 
       badges.append("<:staff:1259616506107400394>")
+     
      if user.public_flags.bug_hunter:
       badges.append("<:bughunter:1259619531517726901>") 
+     
      if user.public_flags.bug_hunter_level_2:
       badges.append("<:bughunterlvl2:1259619689991110744>")   
+     
      if user.public_flags.partner:
       badges.append("<:partner:1259620028576432221>")
 
@@ -89,9 +96,12 @@ class utility(commands.Cog):
 
      for guild in self.bot.guilds: 
       mem = guild.get_member(user.id)
+      
       if mem is not None:
+       
        if mem.premium_since is not None:
          badges.append("<:boosts:1259616471810838588>")
+         
          break
      
      async def tz_find(mem: discord.Member): 
@@ -138,31 +148,39 @@ class utility(commands.Cog):
 
     @commands.command(description="clear your usernames", aliases=["clearusernames", "clearusers"])
     async def clearnames(self, ctx):
-        embed = discord.Embed(color=self.bot.color, description=f"{ctx.author.mention} are you sure you want to clear your usernames. This decision is **irreversible**")
+        embed = discord.Embed(color=self.bot.color, description=f"{ctx.author.mention} are you sure you want to clear your usernames. this decision is **irreversible**.")
+        
         button1 = discord.ui.Button(emoji=self.bot.yes)
         button2 = discord.ui.Button(emoji=self.bot.no)
         
         async def button1_callback(interaction: discord.Interaction): 
-          if interaction.user.id != ctx.author.id: return await self.bot.ext.warning(interaction, "You are not the author of this embed", ephemeral=True) 
+          if interaction.user.id != ctx.author.id: return await self.bot.ext.warning(interaction, "you are not the author of this embed", ephemeral=True) 
+          
           await self.bot.db.execute("DELETE FROM oldusernames WHERE user_id = $1", ctx.author.id) 
-          return await interaction.response.edit_message(view=None, embed=discord.Embed(color=self.bot.color, description=f"> {self.bot.yes} {interaction.user.mention}: Name history cleared"))
+          return await interaction.response.edit_message(view=None, embed=discord.Embed(color=self.bot.color, description=f"> {self.bot.yes} {interaction.user.mention}: name history cleared"))
         
         async def button2_callback(interaction: discord.Interaction): 
          if interaction.user.id != ctx.author.id: return await self.bot.ext.warning(interaction, "You are not the author of this embed", ephemeral=True) 
-         return await interaction.response.edit_message(view=None, embed=discord.Embed(color=self.bot.color, description=f"Aborting action..."))  
+         
+         return await interaction.response.edit_message(view=None, embed=discord.Embed(color=self.bot.color, description=f"aborting action"))  
         
         button1.callback = button1_callback
         button2.callback = button2_callback
+        
         view = discord.ui.View()
+        
         view.add_item(button1)
         view.add_item(button2)
+        
         return await ctx.reply(embed=embed, view=view)
        
     @commands.command(description="clear all snipe data", brief="manage messages", aliases=['cs'])
     @Permissions.has_permission(manage_messages=True)
     async def clearsnipes(self, ctx: Context): 
+      
       lis = ["snipe", "reactionsnipe", "editsnipe"]
       for l in lis: await self.bot.db.execute(f"DELETE FROM {l} WHERE guild_id = $1", ctx.guild.id)
+      
       return await ctx.success("Cleared all snipes from this server") 
 
     @commands.command(aliases = ['names', 'usernames'], usage="<user>", description="check an user's past usernames")
@@ -193,13 +211,7 @@ class utility(commands.Cog):
          embed = Embed(description = auto, color = self.bot.color)
          embed.set_author(name = f"{member}'s past usernames", icon_url = member.display_avatar)
          number.append(embed)
-         if len(number) > 1:
-          paginator = pg.Paginator(self.bot, number, ctx, invoker=ctx.author.id)
-          paginator.add_button('prev', emoji= "<:left:1018156480991612999>")
-          paginator.add_button('goto', emoji = "<:filter:1073308758945562705>")
-          paginator.add_button('next', emoji="<:right:1018156484170883154>")
-          await paginator.start()     
-       else: return await ctx.warning( f"no logged usernames for **{member}**".capitalize())
+         if len(number) > 1: return await ctx.warning( f"no logged usernames for **{member}**".capitalize())
 
     @commands.command(usage="[message]", description="uwify a message", aliases=["uwu"])
     async def uwuify(self, ctx: Context, *, text: str): 
@@ -210,84 +222,120 @@ class utility(commands.Cog):
     @commands.command(description="give someone permission to post pictures in a channel", usage="[member] <channel>", brief="manage roles")
     @Permissions.has_permission(manage_roles=True)
     async def picperms(self, ctx: Context, member: Member, *, channel: TextChannel=None):
-      if channel is None: channel = ctx.channel
+      
+      if channel is None: 
+        channel = ctx.channel
+      
       if channel.permissions_for(member).attach_files and channel.permissions_for(member).embed_links:
+       
        await channel.set_permissions(member, attach_files=False, embed_links=False)
        return await ctx.success(f"Removed pic perms from {member.mention} in {channel.mention}")       
-      await channel.set_permissions(member, attach_files=True,embed_links=True)
+      
+      await channel.set_permissions(member, attach_files=True, embed_links=True)
       return await ctx.success(f"Added pic perms to {member.mention} in {channel.mention}")     
     
     @commands.command(description="see when a user was last seen", usage="[member]")
     async def seen(self, ctx, *, member: Member):
+        
         check = await self.bot.db.fetchrow("SELECT * FROM seen WHERE guild_id = {} AND user_id = {}".format(ctx.guild.id, member.id))
         if check is None: return await ctx.warning( f"I didn't see **{member}**")
+        
         ts = check['time']
+        
         await ctx.reply(embed=Embed(color=self.bot.color, description="{}: **{}** was last seen <t:{}:R>".format(ctx.author.mention, member, ts)))   
 
     @commands.command(description="let everyone know you are away", usage="<reason>")
     async def afk(self, ctx: Context, *, reason="AFK"):      
+       
        ts = int(datetime.datetime.now().timestamp())   
        result = await self.bot.db.fetchrow("SELECT * FROM afk WHERE guild_id = {} AND user_id = {}".format(ctx.guild.id, ctx.author.id)) 
+       
        if result is None:
+        
         await self.bot.db.execute("INSERT INTO afk VALUES ($1,$2,$3,$4)", ctx.guild.id, ctx.author.id, reason, ts)
         await ctx.success(f"You're now AFK with the status: **{reason}**")
 
     @commands.command(aliases=["es"], description="get the most recent edited messages from the channel", usage="<number>")
     async def editsnipe(self, ctx: Context, number: int=1): 
+     
      results = await self.bot.db.fetch("SELECT * FROM editsnipe WHERE guild_id = $1 AND channel_id = $2", ctx.guild.id, ctx.channel.id)
+     
      if len(results) == 0: return await ctx.warning( "There are no edited messages in this channel")
      if number > len(results): return await ctx.warning( f"The maximum amount of snipes is **{len(results)}**")
+     
      sniped = results[::-1][number-1]
+     
      embed = Embed(color=self.bot.color)
      embed.set_author(name=sniped['author_name'], icon_url=sniped["author_avatar"])
      embed.add_field(name="before", value=sniped['before_content'])
      embed.add_field(name="after", value=sniped['after_content'])
      embed.set_footer(text=f"{number}/{len(results)}")
+     
      await ctx.reply(embed=embed)
 
     @commands.command(aliases=["rs"], description="get the most recent messages that got one of their reactions removed", usage="number")
     async def reactionsnipe(self, ctx: Context, number: int=1):
+     
      results = await self.bot.db.fetch("SELECT * FROM reactionsnipe WHERE guild_id = $1 AND channel_id = $2", ctx.guild.id, ctx.channel.id)
+     
      if len(results) == 0: return await ctx.warning( "There are no reaction removed in this channel")
      if number > len(results): return await ctx.warning( f"The maximum amount of snipes is **{len(results)}**") 
+     
      sniped = results[::-1][number-1]
      message = await ctx.channel.fetch_message(sniped['message_id'])
+     
      embed = Embed(color=self.bot.color, description=f"[{sniped['emoji_name']}]({sniped['emoji_url']})\n[message link]({message.jump_url if message else 'https://none.none'})")
      embed.set_author(name=sniped['author_name'], icon_url=sniped['author_avatar'])
      embed.set_image(url=sniped['emoji_url'])
      embed.set_footer(text=f"{number}/{len(results)}")
+     
      await ctx.reply(embed=embed)
 
     @commands.command(aliases=["s"], description="check the latest deleted message from a channel", usage="<number>")
     async def snipe(self, ctx: Context, *, number: int=1):
+        
         check = await self.bot.db.fetch("SELECT * FROM snipe WHERE guild_id = {} AND channel_id = {}".format(ctx.guild.id, ctx.channel.id))
+        
         if len(check) == 0: return await ctx.warning( "There are no deleted messages in this channel") 
         if number > len(check): return await ctx.warning( f"current snipe limit is **{len(check)}**".capitalize()) 
+        
         sniped = check[::-1][number-1]
+        
         em = Embed(color=self.bot.color, description=sniped['content'], timestamp=sniped['time'])
         em.set_author(name=sniped['author'], icon_url=sniped['avatar']) 
         em.set_footer(text="{}/{}".format(number, len(check)))
+        
         if sniped['attachment'] != "none":
+         
          if ".mp4" in sniped['attachment'] or ".mov" in sniped['attachment']:
+          
           url = sniped['attachment']
           r = await self.bot.session.read(url)
           bytes_io = BytesIO(r)
           file = File(fp=bytes_io, filename="video.mp4")
+          
           return await ctx.reply(embed=em, file=file)
+         
          else:
+           
            try: em.set_image(url=sniped['attachment'])
            except: pass 
+        
         return await ctx.reply(embed=em)
     
     @commands.command(aliases=["mc"], description="check member count")
     async def membercount(self, ctx: Context):
+      
       b=len(set(b for b in ctx.guild.members if b.bot))
       h=len(set(b for b in ctx.guild.members if not b.bot))
+      
       embed = Embed(color=self.bot.color)
+      
       embed.set_author(name=f"{ctx.guild.name}'s member count", icon_url=ctx.guild.icon)
       embed.add_field(name=f"members (+{len([m for m in ctx.guild.members if (datetime.datetime.now() - m.joined_at.replace(tzinfo=None)).total_seconds() < 3600*24 and not m.bot])})", value=h)
       embed.add_field(name="total", value=ctx.guild.member_count) 
       embed.add_field(name="bots", value=b)
+      
       await ctx.reply(embed=embed)
     
     @commands.command(description="get role information", usage="[role]", aliases=["ri"])
@@ -297,69 +345,45 @@ class utility(commands.Cog):
         if role is None: return await ctx.warning( "This is not a valid role")
 
       perms = ", ".join([str(p[0]) for p in role.permissions if bool(p[1]) is True]) if role.permissions else "none"
+      
       embed = Embed(color=role.color, title=f"@{role.name}", description="`{}`".format(role.id), timestamp=role.created_at)
       embed.set_thumbnail(url=role.display_icon if not isinstance(role.display_icon, str) else None)
       embed.add_field(name="members", value=str(len(role.members)))
       embed.add_field(name="mentionable", value=str(role.mentionable).lower())
       embed.add_field(name="hoist", value=str(role.hoist).lower())
       embed.add_field(name="permissions", value=f"```{perms}```", inline=False)
+      
       await ctx.reply(embed=embed)
-       
+            
     @commands.command(description="see all members in a role", usage="[role]")
     async def inrole(self, ctx: Context, *, role: Union[Role, str]):
-            if isinstance(role, str): 
+      
+      if isinstance(role, str): 
+              
               role = ctx.find_role(role)
+              
               if role is None: return await ctx.warning("this **isn't** a valid role")
 
-            if len(role.members) == 0: return await ctx.error("no one has this role") 
-            i=0
-            k=1
-            l=0
-            mes = ""
-            number = []
-            messages = []
-            for member in role.members:
-              mes = f"{mes}`{k}` {member} - ({member.id})\n"
-              k+=1
-              l+=1
-              if l == 10:
-               messages.append(mes)
-               number.append(Embed(color=self.bot.color, title=f"members in {role.name} [{len(role.members)}]", description=messages[i]))
-               i+=1
-               mes = ""
-               l=0
-    
-            messages.append(mes)
-            embed = Embed(color=self.bot.color, title=f"members in {role.name} [{len(role.members)}]", description=messages[i])
-            number.append(embed)
-            await ctx.paginator( number)
+      if len(role.members) == 0: return await ctx.error("no one has this role")
+      b = len(role.members)
+          
+      inrole_list = [f"**{member}** - (``{member.id}``)"
+                           for member in role.members] 
+          
+      await ctx.paginator(inrole_list, f"members in {role.name} [{len({b})}]") 
     
     @commands.command(description="see all members joined within 24 hours")
     async def joins(self, ctx: Context): 
+      
       members = [m for m in ctx.guild.members if (datetime.datetime.now() - m.joined_at.replace(tzinfo=None)).total_seconds() < 3600*24]      
-      if len(members) == 0: return await ctx.error("No members joined in the last **24** hours")
+      if len(members) == 0: return await ctx.error("no members joined in the last **24** hours")
+      
       members = sorted(members, key=lambda m: m.joined_at)
-      i=0
-      k=1
-      l=0
-      mes = ""
-      number = []
-      messages = []
-      for member in members[::-1]: 
-        mes = f"{mes}`{k}` {member} - {discord.utils.format_dt(member.joined_at, style='R')}\n"
-        k+=1
-        l+=1
-        if l == 10:
-         messages.append(mes)
-         number.append(Embed(color=self.bot.color, title=f"joined today [{len(members)}]", description=messages[i]))
-         i+=1
-         mes = ""
-         l=0
+      
+      for member in members: 
+        join_list = [f"{member} - {discord.utils.format_dt(member.joined_at, style='R')}"]
     
-      messages.append(mes)
-      embed = Embed(color=self.bot.color, title=f"joined today [{len(members)}]", description=messages[i])
-      number.append(embed)
-      await ctx.paginator(number) 
+      await ctx.paginator(join_list, f"new members") 
             
     @commands.command(description="see all the muted members in the server")
     async def muted(self, ctx: Context):
@@ -379,66 +403,41 @@ class utility(commands.Cog):
     async def bans(self, ctx: Context):
           
           banned = [ban async for ban in ctx.guild.bans(limit=1000)]
+          
           if not banned:
             return await ctx.warning("no one is banned.")
 
           ban_list = [f"**{m.user}** - {m.reason or 'No reason provided'}" for m in banned]
+          
           await ctx.paginator(ban_list, f"bans [{len(banned)}]")
 
     @commands.group(invoke_without_command=True)
     async def boosters(self, ctx: commands.Context):
       await ctx.create_pages()
-
+            
     @boosters.command(invoke_without_command=True, description="see all server boosters")
     async def list(self, ctx: Context):
-            if not ctx.guild.premium_subscriber_role or len(ctx.guild.premium_subscriber_role.members) == 0: return await ctx.warning("this server doesn't have any boosters")
-            i=0
-            k=1
-            l=0
-            mes = ""
-            number = []
-            messages = []
-            for member in ctx.guild.premium_subscriber_role.members: 
-              mes = f"{mes}`{k}` {member} ``({member.id})`` - <t:{int(member.premium_since.timestamp())}:R> \n"
-              k+=1
-              l+=1
-              if l == 10:
-               messages.append(mes)
-               number.append(Embed(color=self.bot.color, title=f"boosters [{len(ctx.guild.premium_subscriber_role.members)}]", description=messages[i]))
-               i+=1
-               mes = ""
-               l=0
-    
-            messages.append(mes)
-            embed = Embed(color=self.bot.color, title=f"boosters [{len(ctx.guild.premium_subscriber_role.members)}]", description=messages[i])
-            number.append(embed)
-            await ctx.paginator(number) 
+            
+            if not ctx.guild.premium_subscriber_role or len(ctx.guild.premium_subscriber_role.members) == 0: 
+              return await ctx.warning("this server doesn't have any boosters")
+            
+            booster_list = [f"**{member}** ({member.id}) - <t:{int(member.premium_since.timestamp())}:R>"
+                           for member in ctx.guild.premium_subscriber_role.members] 
+            
+            await ctx.paginator(booster_list, f"server boosters [{len(ctx.guild.premium_subscriber_role.members)}]") 
     
     @boosters.command(name="lost", description="display lost boosters")
     async def lost(self, ctx: Context): 
+      
       results = await self.bot.db.fetch("SELECT * FROM boosterslost WHERE guild_id = $1", ctx.guild.id)
-      if len(results) == 0: return await ctx.warning( "There are no lost boosters")
-      i=0
-      k=1
-      l=0
-      mes = ""
-      number = []
-      messages = []
-      for result in results[::-1]: 
-          mes = f"{mes}`{k}` <@!{int(result['user_id'])}> - <t:{result['time']}:R> \n"
-          k+=1
-          l+=1
-          if l == 10:
-           messages.append(mes)
-           number.append(Embed(color=self.bot.color, title=f"lost boosters [{len(results)}]", description=messages[i]))
-           i+=1
-           mes = ""
-           l=0
-    
-      messages.append(mes)
-      embed = Embed(color=self.bot.color, title=f"lost boosters [{len(results)}]", description=messages[i])
-      number.append(embed)
-      await ctx.paginator(number) 
+      
+      if len(results) == 0: 
+        return await ctx.warning("there are **no** lost boosters")
+
+      for result in results: 
+          boosters_lost = [f"<@!{int(result['user_id'])}> - <t:{result['time']}:R>"]
+          
+      await ctx.paginator(boosters_lost) 
 
     @Permissions.has_permission(manage_roles=True)
     @commands.command(description="see all server roles")
@@ -458,6 +457,7 @@ class utility(commands.Cog):
       for member in ctx.guild.members:
              
         if member.bot:
+          
           bot_list = [f"{member.mention} (``{member.id}``)"
                            for member in ctx.guild.members if member.bot] 
             
@@ -465,12 +465,16 @@ class utility(commands.Cog):
     
     @commands.command(description="check the weather from a location", usage="[country]")
     async def weather(self, ctx: Context, *, location: str): 
+     
      url = "http://api.weatherapi.com/v1/current.json"
+     
      params = {
        "key": self.weather_key,
        "q": location 
      }  
+     
      data = await self.bot.session.get_json(url, params=params)
+     
      place = data["location"]["name"]
      country = data["location"]["country"]
      temp_c = data["current"]["temp_c"]
@@ -480,13 +484,16 @@ class utility(commands.Cog):
      humidity = data["current"]["humidity"]
      condition_text = data["current"]["condition"]["text"]
      condition_image = "http:" + data["current"]["condition"]["icon"]
+     
      time = datetime.datetime.fromtimestamp(int(data["current"]["last_updated_epoch"]))
+     
      embed = discord.Embed(color=self.bot.color, title=f"{condition_text} in {place}, {country}", timestamp=time)
      embed.set_author(name=ctx.author.name, icon_url=ctx.author.display_avatar.url)
      embed.set_thumbnail(url=condition_image)
      embed.add_field(name="Temperature", value=f"{temp_c} °C / {temp_f} °F")
      embed.add_field(name="Humidity", value=f"{humidity}%")
      embed.add_field(name="Wind", value=f"{wind_mph} mph / {wind_kph} kph")
+     
      return await ctx.reply(embed=embed)
  
     @commands.command(description="shows the number of invites an user has", usage="<user>")

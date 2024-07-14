@@ -145,6 +145,7 @@ class donor(commands.Cog):
   async def shutup(self, ctx: commands.Context, *, member: discord.Member):
     
     if isinstance(member, discord.Member) and not Permissions.check_hierarchy(self.bot, ctx.author, member): return await ctx.warning(f"You cannot shutup*{member.mention}")
+    if member.id == ctx.bot.user.id: return await ctx.warning("do not stfu me.")
     
     check = await self.bot.db.fetchrow("SELECT user_id FROM shutup WHERE user_id = {} AND guild_id = {}".format(member.id, ctx.guild.id))    
     if check is None: await self.bot.db.execute("INSERT INTO shutup VALUES ($1,$2)", ctx.guild.id, member.id)

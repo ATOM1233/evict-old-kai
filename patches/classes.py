@@ -1,5 +1,7 @@
-import datetime, discord, emoji, re, arrow
-from discord import Embed
+import datetime, discord, emoji, re, arrow, pomice, random
+from typing import Any, Coroutine
+from discord import Embed, Message, HTTPException
+from contextlib import suppress
 from timezonefinder import TimezoneFinder
 from geopy.geocoders import Nominatim
 from discord.ext import commands
@@ -235,4 +237,49 @@ class Timezone(object):
     else: return await ctx.warning( f"**{member.name}** doesn't have their **timezone** set")
    if member.id == ctx.author.id: return await self.timezone_send(ctx, f"Your current time: **{await self.timezone_request(member)}**")
    else: return await self.timezone_send(ctx, f"**{member.name}'s** current time: **{await self.timezone_request(member)}**") 
+   
+class Player(pomice.Player):
+  def __init__(self, *args, **kwargs):
+   super().__init__(*args, **kwargs)
+   self.ctx: EvictContext = None
+   self.queue = pomice.Queue()
+   self.loop: bool = False
+   self.current_track: pomice.Track = None
+   self.awaiting = False
+
+  def set_context(self, ctx: EvictContext):
+    self.context = ctx
+
+  def shuffle(self) -> None: 
+    return random.shuffle(self.queue) 
+
+  async def set_pause(self, pause: bool) -> Coroutine[Any, Any, bool]:
+    if pause is True:
+       self.awaiting = True 
+    else: 
+      if self.awaiting: 
+        self.awaiting = False 
+    
+    return await super().set_pause(pause)  
+
+  async def do_next(self, track: pomice.Track=None) -> None:
+    if not self.loop: 
+      if not track:
+        try:
+          track: pomice.Track = self.queue.get()
+        except pomice.QueueEmpty:
+          return await self.kill()
+      
+      self.current_track = track 
+    
+    await self.play(self.current_track)   
+    await self.context.send(embed=Embed(color=self.context.bot.color, description=f"🎵 {self.context.author.mention}: Now playing [**{track.title}**]({track.uri})"))
+    
+    if self.awaiting: 
+      self.awaiting = False 
+  
+  async def kill(self) -> Message:
+    with suppress((HTTPException), (KeyError)):
+      await self.destroy()
+      return await self.context.send_success("Left the voice channel")
   

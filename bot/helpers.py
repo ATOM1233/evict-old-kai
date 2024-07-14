@@ -97,7 +97,7 @@ class EvictContext(Context):
         ]
         return await self.pages(embeds)
 
-  async def reply(self, content: Optional[str] = None, *, embed: Optional[discord.Embed] = None, view: Optional[View] = None, mention_author: Optional[bool] = False, file: Optional[discord.File] = discord.utils.MISSING,
+  """async def reply(self, content: Optional[str] = None, *, embed: Optional[discord.Embed] = None, view: Optional[View] = None, mention_author: Optional[bool] = False, file: Optional[discord.File] = discord.utils.MISSING,
         files: Optional[Sequence[discord.File]] = discord.utils.MISSING) -> discord.Message:
    
    reskin = await self.bot.db.fetchrow("SELECT * FROM reskin WHERE user_id = $1 AND toggled = $2", self.author.id, True)
@@ -128,7 +128,7 @@ class EvictContext(Context):
      if webhook.user == self.me:
        return webhook
    
-   return await channel.create_webhook(name='evict')
+   return await channel.create_webhook(name='evict')"""
 
   async def cmdhelp(self): 
     

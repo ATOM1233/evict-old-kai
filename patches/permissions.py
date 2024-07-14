@@ -27,11 +27,12 @@ class Permissions:
         
     def check_hierarchy(bot: commands.Bot, author: discord.Member, target: discord.Member):
         if target.id in OWNERS: raise commands.CommandInvokeError("You cannot perform this action on a bot owner.")
-        if author.id in bot.owner_ids: return True
         if target.id == author.id: raise commands.CommandInvokeError("You cannot perform this action on yourself.")
+        if target.id in bot.owner_ids: raise commands.CommandInvokeError("You cannot perform this action on a bot owner.")
+        if author.id == author.guild.owner.id: return True
+        if author.id in bot.owner_ids: return True
         if target.id == author.guild.owner.id: raise commands.CommandInvokeError("You cannot perform this action on the server owner.")
         if target.top_role >= author.top_role: raise commands.CommandInvokeError("You cannot perform this action on a higher role than you.")
-        if target.id in bot.owner_ids: raise commands.CommandInvokeError("You cannot perform this action on a bot owner.")
         return True
     
     def server_owner():

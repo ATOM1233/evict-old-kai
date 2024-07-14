@@ -25,7 +25,7 @@ class automod(commands.Cog):
      await self.bot.db.execute("INSERT INTO chatfilter VALUES ($1,$2)", ctx.message.guild.id, word.lower())
      await ctx.success(f"Added **{word}** as a filtered word")
     
-    @chatfilter.command(name="remove", description="remove a word from the chatfilter", brief="manage guild", usage="[word]")
+    @chatfilter.command(name="remove", aliases=["delete"], description="remove a word from the chatfilter", brief="manage guild", usage="[word]")
     @Permissions.has_permission(manage_guild=True) 
     async def cf_remove(self, ctx: commands.Context, *, word: str): 
      
@@ -33,18 +33,19 @@ class automod(commands.Cog):
      if not check: return await ctx.warning("This word is **not** added in the chatfilter list") 
      
      await self.bot.db.execute("DELETE FROM chatfilter WHERE guild_id = $1 AND word = $2", ctx.message.guild.id, word.lower())
-     await ctx.success(f"Removed **{word}** from the filtered word") 
+     await ctx.success(f"removed **{word}** from the filtered word") 
      
     @chatfilter.command(name="list", description="returns a list of blacklisted words", brief="manage guild")
     async def cf_list(self, ctx: commands.Context):
       
       results = await self.bot.db.fetch("SELECT * FROM chatfilter WHERE guild_id = $1", ctx.guild.id)
       
-      if len(results) == 0: return await ctx.warning("No **blacklisted** words found")
-      
-      for result in results:
+      if len(results) == 0: return await ctx.warning("no **blacklisted** words found")
         
-        cf_list = [f"{result['word']}"]
+      cf_list = [
+        f"{result['word']}" 
+        for result in results
+      ]
             
       await ctx.paginator(cf_list, f"blacklisted words [{len(results)}]")  
     
@@ -143,7 +144,7 @@ class automod(commands.Cog):
      check = await self.bot.db.fetchrow("SELECT * FROM antispam WHERE guild_id = {}".format(ctx.guild.id))        
      if not check: return await ctx.error("Anti-spam is **not** enabled") 
      
-     if second < 1: return await ctx.warning(f"Anti-spam limit can't be lower than 1 second") 
+     if second < 1: return await ctx.warning(f"anti-spam limit can't be lower than 1 second") 
      
      await self.bot.db.execute("UPDATE antispam SET count = $1 WHERE guild_id = $2", second, ctx.guild.id)
      return await ctx.success(f"Anti-spam limit set to **{second}**")  
