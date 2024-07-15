@@ -37,14 +37,6 @@ class fun(commands.Cog):
       await message.add_reaction("👍")
       await message.add_reaction("👎")
 
-    @commands.command(name="no", description="just says yes", help="fun")
-    async def no_cmd(self, ctx: commands.Context): 
-     await ctx.reply("yes") 
-    
-    @commands.command(name="yes", description="just says no", help="fun")
-    async def yes_cmd(self, ctx: commands.Context): 
-     await ctx.reply("no") 
-
     @commands.command(description="flip a coin", help="fun")
     async def coinflip(self, ctx: commands.Context): 
      await ctx.reply(random.choice(["heads", "tails"]))  

@@ -203,17 +203,13 @@ class Music(commands.Cog):
         if not channel:
             channel = getattr(ctx.author.voice, "channel", None)
             if not channel:
-                return await ctx.send(
-                    "You must be in a voice channel in order to use this command!",
+                return await ctx.warning(
+                    "You must be in a voice channel in order to use this command.",
                 )
-
-        # With the release of discord.py 1.7, you can now add a compatible
-        # VoiceProtocol class as an argument in VoiceChannel.connect().
-        # This library takes advantage of that and is how you initialize a player.
+                
         await ctx.author.voice.channel.connect(cls=Player)
         player: Player = ctx.voice_client
 
-        # Set the player context so we can use it so send messages
         await player.set_context(ctx=ctx)
         await ctx.success(f"I have **joined** `{channel.mention}`")
 
@@ -229,17 +225,12 @@ class Music(commands.Cog):
     @commands.command()
     async def play(self, ctx: commands.Context, *, search: str) -> None:
         # Checks if the player is in the channel before we play anything
-        if not (player := ctx.voice_client):
+        if not (player := ctx.voice_client): 
             await ctx.author.voice.channel.connect(cls=Player)
-            player: Player = ctx.voice_client
-            await player.set_context(ctx=ctx)
+       
+        player: Player = ctx.voice_client
+        await player.set_context(ctx=ctx)
 
-        # If you search a keyword, Pomice will automagically search the result using YouTube
-        # You can pass in "search_type=" as an argument to change the search type
-        # i.e: player.get_tracks("query", search_type=SearchType.ytmsearch)
-        # will search up any keyword results on YouTube Music
-
-        # We will also set the context here to get special features, like a track.requester object
         results = await player.get_tracks(search, ctx=ctx)
 
         if not results:
@@ -360,9 +351,7 @@ class Music(commands.Cog):
         
         if not (player := ctx.voice_client):
             return await ctx.warning(
-                "You **must** have the bot in a channel in order to use this command",
-                
-            )
+                "You **must** have the bot in a channel in order to use this command")
             
         if not player.is_connected:
             return
@@ -387,18 +376,20 @@ class Music(commands.Cog):
         
         await player.set_context(ctx=ctx)
         
-        playing = f"{'Playing'} [***{player.current.title}***]({player.current.uri}) by **{player.current.author}**"
+        playing = f"{'Playing'} {player.current.title} by {player.current.author}"
     
         if player.queue.get_queue():
             tracks = [f"[**{track.title}**]({track.uri})" for track in player.queue.get_queue()]
-            queue_length = len(player.queue.get_queue())
 
         for m in utils.as_chunks(tracks, 10):
-            embed = Embed(
-            color=self.bot.color,
-            description=playing
-            ).add_field(name=f"Tracks ({queue_length})", value='\n'.join([l for l in m]))
-        
+            embed = Embed(color=self.bot.color, title=f"queued in {ctx.guild.name}")
+            embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar.url)
+            embed.add_field(name=f"Tracks:", value='\n'.join([l for l in m]))
+            embed.set_footer(text=f"{playing}")
+            
+            if player.current.thumbnail:
+                embed.set_thumbnail(url=player.current.thumbnail)
+            
             await ctx.reply(embed=embed)  
             
     @commands.command(name="current", brief="show current playing song")
@@ -408,7 +399,7 @@ class Music(commands.Cog):
         player: Player = ctx.voice_client
         
         if player == None:
-            return await ctx.invoke(self.bot.get_command("lastfm nowplaying"))
+            return await ctx.invoke(self.bot.get_command("nowplaying"))
         
         elif player.current:
             embed = discord.Embed(title=f"**Currently Playing:**", color=self.bot.color)

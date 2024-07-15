@@ -4,6 +4,19 @@ from patches.permissions import Permissions
 from typing import Union
 from patches.classes import Modals
 
+def has_booster_role(): 
+ async def predicate(ctx: commands.Context): 
+  che = await ctx.bot.db.fetchrow("SELECT * FROM booster_module WHERE guild_id = {}".format(ctx.guild.id))
+  if che is None:
+    await ctx.warning("Booster role module is not configured")
+    return False
+  check = await ctx.bot.db.fetchrow("SELECT * FROM booster_roles WHERE guild_id = {} AND user_id = {}".format(ctx.guild.id, ctx.author.id))
+  if check is None:  
+   await ctx.warning("You do not have a booster role")
+   return False 
+  return True 
+ return commands.check(predicate)
+
 class boosters(commands.Cog): 
     def __init__(self, bot: commands.Bot): 
       self.bot = bot    
@@ -117,8 +130,8 @@ class boosters(commands.Cog):
       await self.bot.db.execute("INSERT INTO booster_roles VALUES ($1,$2,$3)", ctx.guild.id, ctx.author.id, role.id)
       await ctx.invoke(self.bot.get_command('boosterrole edit'))
     
+    @has_booster_role()
     @boosterrole.command(description="edit the booster role name", usage="[name]")
-    @Permissions.booster()
     async def name(self, ctx: commands.Context, *, name: str): 
       
       check = await self.bot.db.fetchrow("SELECT * FROM booster_roles WHERE guild_id = {} AND user_id = {}".format(ctx.guild.id, ctx.author.id))
@@ -127,8 +140,8 @@ class boosters(commands.Cog):
       await role.edit(name=name)
       await ctx.success(f"Booster role name changed to: {name}")
     
+    @has_booster_role()
     @boosterrole.command(description="edit the role icon", usage="[emoji]")
-    @Permissions.booster()
     async def icon(self, ctx: commands.Context, *, emoji: Union[discord.PartialEmoji, str]):      
       
       check = await self.bot.db.fetchrow("SELECT * FROM booster_roles WHERE guild_id = {} AND user_id = {}".format(ctx.guild.id, ctx.author.id))
@@ -143,8 +156,8 @@ class boosters(commands.Cog):
       
       except discord.Forbidden as e: return await ctx.error(str(e))
         
+    @has_booster_role()
     @boosterrole.command(description="change the booster role color", usage="[color]")
-    @Permissions.booster()
     async def color(self, ctx: commands.Context, color: str): 
      
      check = await self.bot.db.fetchrow("SELECT * FROM booster_roles WHERE guild_id = {} AND user_id = {}".format(ctx.guild.id, ctx.author.id))
@@ -156,8 +169,8 @@ class boosters(commands.Cog):
      await role.edit(color=color)
      return await ctx.success("Changed the **booster role** color") 
 
+    @has_booster_role()
     @boosterrole.command(description="delete the booster role")
-    @Permissions.booster()
     async def delete(self, ctx: commands.Context): 
       
       check = await self.bot.db.fetchrow("SELECT * FROM booster_roles WHERE guild_id = {} AND user_id = {}".format(ctx.guild.id, ctx.author.id))
@@ -166,7 +179,7 @@ class boosters(commands.Cog):
       await role.delete()
       await ctx.success("Deleted the booster role")
     
-    @Permissions.booster()
+    @has_booster_role()
     @boosterrole.command(description="edit a booster role")
     async def edit(self, ctx: commands.Context): 
         

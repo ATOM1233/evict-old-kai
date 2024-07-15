@@ -47,8 +47,10 @@ class Permissions:
     def booster():
      
      async def booster(ctx: commands.Context):
+            
             che = await ctx.bot.db.fetchrow("SELECT * FROM booster_module WHERE guild_id = {}".format(ctx.guild.id))
             if che is None: raise commands.CommandInvokeError("the booster role module is **not** configured.")
+            
             check = await ctx.bot.db.fetchrow("SELECT * FROM booster_roles WHERE guild_id = {} AND user_id = {}".format(ctx.guild.id, ctx.author.id))
             if check is None: raise commands.CommandInvokeError("You don't have a booster role.")
      
@@ -64,6 +66,18 @@ class Permissions:
             if check is None: raise commands.CommandInvokeError("You need to be a donor to run this command.")
      
      return commands.check(donor)
+ 
+class Boosters:
+    
+    async def booster(ctx: commands.Context):
+            
+            che = await ctx.bot.db.fetchrow("SELECT * FROM booster_module WHERE guild_id = {}".format(ctx.guild.id))
+            if che is None: raise commands.CommandInvokeError("the booster role module is **not** configured.")
+            
+            check = await ctx.bot.db.fetchrow("SELECT * FROM booster_roles WHERE guild_id = {} AND user_id = {}".format(ctx.guild.id, ctx.author.id))
+            if check is None: raise commands.CommandInvokeError("You don't have a booster role.")
+     
+            return commands.check(Boosters)
  
 class GoodRole(commands.Converter):
   async def convert(self, ctx: commands.Context, argument):

@@ -218,9 +218,9 @@ class vmbuttons(discord.ui.View):
     async def trash(self, interaction: discord.Interaction, button: discord.ui.Button):
          check = await interaction.client.db.fetchrow("SELECT * FROM voicemaster WHERE guild_id = $1", interaction.guild.id) 
          if not interaction.user.voice: return await interaction.client.ext.warning(interaction, "you are not in a voice channel", ephemeral=True)
-         if check is not None:     
-             await interaction.user.voice.channel.delete()      
-
+         che = await interaction.client.db.fetchrow("SELECT * FROM vcs WHERE voice = $1 AND user_id = $2", interaction.user.voice.channel.id, interaction.user.id)
+         if che is None: return await interaction.client.ext.warning(interaction, "you don't own this voice channel", ephemeral=True)
+         if check is not None: await interaction.user.voice.channel.delete()
 
 class voicemaster(commands.Cog):
    def __init__(self, bot: commands.Bot):
