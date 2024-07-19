@@ -256,57 +256,92 @@ class voicemaster(commands.Cog):
 
    @commands.Cog.listener()
    async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
+     
      naughty = await self.bot.db.fetchrow("SELECT * FROM naughtycorner_members WHERE guild_id = $1 AND user_id = $2", member.guild.id, member.id)
      if naughty: return
      check = await self.bot.db.fetchrow("SELECT * FROM voicemaster WHERE guild_id = $1", member.guild.id)
+     
      if check:
       jtc = int(check["channel_id"])
+      
       if not before.channel and after.channel: 
+       
        if after.channel.id == jtc: 
         if await self.get_channel_categories(after.channel, member) is True: return
+        
         channel = await member.guild.create_voice_channel(name=f"{member.name}'s channel", category=after.channel.category, reason="creating temporary voice channel")
-        await channel.set_permissions(member.guild.default_role, connect=True)
-        await member.move_to(channel=channel)
+        
+        try:
+       
+             await channel.set_permissions(member.guild.default_role, connect=True)
+             await member.move_to(channel=channel)
+        
+        except: await channel.delete() 
+        
         return await self.bot.db.execute("INSERT INTO vcs VALUES ($1,$2)", member.id, channel.id)
+       
        else: return await self.get_channel_overwrites(after.channel, member)          
+      
       elif before.channel and after.channel: 
+       
        if before.channel.id == jtc: return 
        if before.channel.category == after.channel.category: 
         if after.channel.id == jtc: 
+         
          che = await self.bot.db.fetchrow("SELECT * FROM vcs WHERE voice = $1", before.channel.id)
+         
          if che: 
            if len(before.channel.members) == 0: return await member.move_to(channel=before.channel) 
          if await self.get_channel_categories(after.channel, member) is True: return
+         
          cha = await member.guild.create_voice_channel(name=f"{member.name}'s channel", category=after.channel.category, reason="creating temporary voice channel")
-         await cha.set_permissions(member.guild.default_role, connect=True)
-         await member.move_to(channel=cha)
-         return await self.bot.db.execute("INSERT INTO vcs VALUES ($1,$2)", member.id, cha.id)  
+         await self.bot.db.execute("INSERT INTO vcs VALUES ($1,$2)", member.id, channel.id)
+         
+         try:
+             await cha.set_permissions(member.guild.default_role, connect=True)
+             await member.move_to(channel=cha)
+         except: await cha.delete() 
+        
         elif before.channel.id != after.channel.id: 
          await self.get_channel_overwrites(after.channel, member)
+         
          che = await self.bot.db.fetchrow("SELECT * FROM vcs WHERE voice = $1", before.channel.id)
          if che: 
+           
            if len(before.channel.members) == 0:
             await self.bot.db.execute("DELETE FROM vcs WHERE voice = $1", before.channel.id)
             await before.channel.delete(reason="no one in the temporary voice channel")                
        else: 
+        
         if after.channel.id == jtc: 
          if await self.get_channel_categories(after.channel, member) is True: return
          cha = await member.guild.create_voice_channel(name=f"{member.name}'s Channel", category=after.channel.category, reason="creating temporary voice channel")
-         await cha.set_permissions(member.guild.default_role, connect=True)
-         await member.move_to(channel=cha)
-         return await self.bot.db.execute("INSERT INTO vcs VALUES ($1,$2)", member.id, cha.id)
+         
+         try:
+             await self.bot.db.execute("INSERT INTO vcs VALUES ($1,$2)", member.id, channel.id)
+             await cha.set_permissions(member.guild.default_role, connect=True)
+             await member.move_to(channel=cha)
+         except: await cha.delete()
+        
         else:
+          
           await self.get_channel_overwrites(after.channel, member)
           result = await self.bot.db.fetchrow("SELECT * FROM vcs WHERE voice = $1", before.channel.id)
           if result: 
+            
             if len(before.channel.members) == 0:
+             
              await self.bot.db.execute("DELETE FROM vcs WHERE voice = $1", before.channel.id)
              return await before.channel.delete(reason="no one in the temporary voice channel")        
+      
       elif before.channel and not after.channel: 
        if before.channel.id == jtc: return
+       
        che = await self.bot.db.fetchrow("SELECT * FROM vcs WHERE voice = $1", before.channel.id)
        if che: 
+           
            if len(before.channel.members) == 0:
+            
             await self.bot.db.execute("DELETE FROM vcs WHERE voice = $1", before.channel.id)
             await before.channel.delete(reason="no one in the temporary voice channel")    
 
