@@ -20,15 +20,15 @@ async def make_transcript(c):
 class TicketTopic(discord.ui.Modal, title="Add a ticket topic"): 
 
   name = discord.ui.TextInput(
-    label="topic name",
-    placeholder="the ticket topic's name..",
+    label="Topic Name",
+    placeholder="The ticket topics name.",
     required=True, 
     style=discord.TextStyle.short 
   )
 
   description = discord.ui.TextInput(
-    label="topic description",
-    placeholder="the description of the ticket topic...", 
+    label="Topic Description",
+    placeholder="The description of the ticket topic.", 
     required=False, 
     max_length=100,
     style=discord.TextStyle.long 
@@ -105,7 +105,7 @@ class DeleteTicket(discord.ui.View):
   def __init__(self): 
       super().__init__(timeout=None)   
 
-  @discord.ui.button(label='', emoji="<:trash:1209432918523645983>:ren", style=discord.ButtonStyle.gray, custom_id='persistent_view:delete')
+  @discord.ui.button(label='', emoji="<:trash:1263727144832602164>", style=discord.ButtonStyle.gray, custom_id='persistent_view:delete')
   async def delete(self, interaction: discord.Interaction, button: discord.ui.Button): 
     close = discord.ui.Button(label="Close", style=discord.ButtonStyle.red)
     cancel = discord.ui.Button(label="Cancel", style=discord.ButtonStyle.gray)
@@ -126,7 +126,7 @@ class DeleteTicket(discord.ui.View):
     close.callback = close_callback 
 
     async def cancel_callback(inte: discord.Interaction): 
-       await inte.response.edit_message(content="aborting closure...", view=None)
+       await inte.response.edit_message(content="Aborting closure...", view=None)
 
     cancel.callback = cancel_callback
 
@@ -159,7 +159,7 @@ class tickets(commands.Cog):
      overwrites.attach_files = True 
      overwrites.embed_links = True
      await ctx.channel.set_permissions(member, overwrite=overwrites) 
-     return await ctx.success( "Added **{}** to the ticket".format(member))
+     return await ctx.success( "I have added **{}** to the ticket.".format(member))
     
     @ticket.command(description="remove a member from the ticket", usage="[member]", brief="manage channels")
     @Permissions.has_permission(manage_channels=True)
@@ -171,7 +171,7 @@ class tickets(commands.Cog):
      overwrites.attach_files = False 
      overwrites.embed_links = False
      await ctx.channel.set_permissions(member, overwrite=overwrites) 
-     return await ctx.success( "Removed **{}** from the ticket".format(member))
+     return await ctx.success( "I have removed **{}** from the ticket.".format(member))
 
     @ticket.command(description="manage the ticket topics", brief="administrator")
     @Permissions.has_permission(administrator=True)
@@ -184,20 +184,20 @@ class tickets(commands.Cog):
         button2 = discord.ui.Button(label="remove topic", style=discord.ButtonStyle.red, disabled=len(results) == 0)
 
         async def button1_callback(interaction: discord.Interaction): 
-          if interaction.user != ctx.author: return await interaction.client.ext.warning(interaction, "You are not the author of this message", ephemeral=True)
+          if interaction.user != ctx.author: return await interaction.client.ext.warning(interaction, "You are **not** the author of this message.", ephemeral=True)
           add = TicketTopic()
           return await interaction.response.send_modal(add)
 
         async def button2_callback(interaction: discord.Interaction): 
-          if interaction.user != ctx.author: return await interaction.client.ext.warning(interaction, "You are not the author of this message", ephemeral=True)
-          e = discord.Embed(color=self.bot.color, description=f"🔍 Select a topic to delete")
+          if interaction.user != ctx.author: return await interaction.client.ext.warning(interaction, "You are **not** the author of this message.", ephemeral=True)
+          e = discord.Embed(color=self.bot.color, description=f"🔍 Select a topic to delete.")
           options = []
           for result in results: options.append(discord.SelectOption(label=result[1], description=result[2]))
-          select = discord.ui.Select(options=options, placeholder="select a topic...")
+          select = discord.ui.Select(options=options, placeholder="Select a topic.")
           async def select_callback(inter: discord.Interaction):
-            if inter.user != ctx.author: return await interaction.client.ext.warning(interaction, "You are not the author of this message", ephemeral=True)
+            if inter.user != ctx.author: return await interaction.client.ext.warning(interaction, "You are **not** the author of this message.", ephemeral=True)
             await self.bot.db.execute("DELETE FROM ticket_topics WHERE guild_id = $1 AND name = $2", inter.guild.id, select.values[0])
-            await self.bot.ext.success(inter, f"Removed **{select.values[0]}** topic", ephemeral=True)
+            await self.bot.ext.success(inter, f"I have removed **{select.values[0]}** topic.", ephemeral=True)
 
           select.callback = select_callback 
           v = discord.ui.View()
@@ -218,21 +218,21 @@ class tickets(commands.Cog):
         if message is not None:
          if check is None: await self.bot.db.execute("INSERT INTO tickets (guild_id, message) VALUES ($1,$2)", ctx.guild.id, message)  
          else: await self.bot.db.execute("UPDATE tickets SET message = $1 WHERE guild_id = $2", message, ctx.guild.id) 
-         return await ctx.success( f"Ticket message set as\n```{message}```")
+         return await ctx.success( f"I have set the **ticket message** as\n```{message}```")
         else: 
-          if check is None: return await ctx.warning("There is no custom ticket message")
+          if check is None: return await ctx.warning("There is **no** custom ticket message.")
           await self.bot.db.execute("UPDATE tickets SET message = $1 WHERE guild_id = $2", None, ctx.guild.id)
-          return await ctx.success( "Custom ticket message set to default")
+          return await ctx.success( "I have set the message as **default**.")
     
     @ticket.command(description="configure the ticket support role (will be pinged)", usage="[role]", brief="administrator")
     @Permissions.has_permission(administrator=True)
     async def support(self, ctx: commands.Context, role: discord.Role=None):
       if role == None:
         await self.bot.db.execute("DELETE FROM ticket_support WHERE guild_id = $1", ctx.guild.id)
-        return await ctx.success('Removed **support roles**.')
+        return await ctx.success('I have removed **support roles**.')
      
       await self.bot.db.execute("INSERT INTO ticket_support (guild_id, role_id) VALUES ($1, $2)", ctx.guild.id, role.id)
-      return await ctx.success(f'Added **{role.name}** as a **support role**.')
+      return await ctx.success(f'I have added **{role.name}** as a **support role**.')
       
       
     @ticket.command(description="configure the ticket category", usage="[category]", brief="administrator")
@@ -244,9 +244,9 @@ class tickets(commands.Cog):
          else: await self.bot.db.execute("UPDATE tickets SET category = $1 WHERE guild_id = $2", channel.id, ctx.guild.id)
          await ctx.success( "tickets category set to {}".format(channel.mention))
         else: 
-            if check is None: return await ctx.warning("tickets channel is not set")
+            if check is None: return await ctx.warning("Tickets channel is **not** set.")
             await self.bot.db.execute("UPDATE tickets SET category = $1 WHERE guild_id = $2", None, ctx.guild.id)
-            await ctx.success( "removed tickets category")
+            await ctx.success( "I have **removed** tickets category.")
 
     @ticket.command(description="configure the ticket channel", usage="[channel]", brief="administrator")
     @Permissions.has_permission(administrator=True)
@@ -257,9 +257,9 @@ class tickets(commands.Cog):
          else: await self.bot.db.execute("UPDATE tickets SET channel_id = $1 WHERE guild_id = $2", channel.id, ctx.guild.id)
          await ctx.success( "tickets channel set to {}".format(channel.mention))
         else: 
-            if check is None: return await ctx.warning("tickets channel is not set")
+            if check is None: return await ctx.warning("Tickets channel is **not** set.")
             await self.bot.db.execute("UPDATE tickets SET channel_id = $1 WHERE guild_id = $2", None, ctx.guild.id)
-            await ctx.success( "removed tickets channel") 
+            await ctx.success( "I have **removed** the tickets channel.") 
 
     @ticket.command(description="configure the ticket logging channel", usage="[channel]", brief="administrator")
     @Permissions.has_permission(administrator=True)
@@ -270,16 +270,16 @@ class tickets(commands.Cog):
          else: await self.bot.db.execute("UPDATE tickets SET logs = $1 WHERE guild_id = $2", channel.id, ctx.guild.id)
          await ctx.success( "tickets logs set to {}".format(channel.mention))
         else: 
-            if check is None: return await ctx.warning("tickets logs are not set")
+            if check is None: return await ctx.warning("Ticket logs are **not** set.")
             await self.bot.db.execute("UPDATE tickets SET logs = $1 WHERE guild_id = $2", None, ctx.guild.id)
-            await ctx.success("removed tickets logs") 
+            await ctx.success("I have **removed** the tickets logs.") 
 
     @ticket.command(description="sends the ticket panel", brief="administrator")
     @Permissions.has_permission(administrator=True)
     async def send(self, ctx: commands.Context): 
         check = await self.bot.db.fetchrow("SELECT * FROM tickets WHERE guild_id = $1", ctx.guild.id)
-        if check is None: return await ctx.warning("No ticket panel created")
-        if ctx.guild.get_channel(check['channel_id']) is None: return await ctx.warning("Channel not found")
+        if check is None: return await ctx.warning("You have **not** sent a ticket panel.")
+        if ctx.guild.get_channel(check['channel_id']) is None: return await ctx.warning("I could **not** find that channel.")
         channel = ctx.guild.get_channel(check['channel_id'])
         message = None
         if check['message']:
@@ -299,11 +299,11 @@ class tickets(commands.Cog):
     @ticket.command(description="check the ticket panel's settings")
     async def settings(self, ctx: commands.Context):
         check = await self.bot.db.fetchrow("SELECT * FROM tickets WHERE guild_id = $1", ctx.guild.id)
-        if check is None: return await ctx.reply("no ticket panel created")
-        embed1 = discord.Embed(color=self.bot.color, title="ticket settings", description="settings for **{}**".format(ctx.guild.name))
-        embed1.add_field(name="ticket channel", value=ctx.guild.get_channel(check['channel_id']).mention if ctx.guild.get_channel(check['channel_id']) is not None else "none")
-        embed1.add_field(name="logs channel", value=ctx.guild.get_channel(check['logs']).mention if ctx.guild.get_channel(check['logs']) is not None else "none")
-        embed1.add_field(name="category", value=ctx.guild.get_channel(check['category']).mention if ctx.guild.get_channel(check['category']) is not None else "none")
+        if check is None: return await ctx.reply("You have **not** created a ticket panel.")
+        embed1 = discord.Embed(color=self.bot.color, title="Ticket Settings", description="Settings for **{}**".format(ctx.guild.name))
+        embed1.add_field(name="Ticket Channel", value=ctx.guild.get_channel(check['channel_id']).mention if ctx.guild.get_channel(check['channel_id']) is not None else "N/A")
+        embed1.add_field(name="Logs Channel", value=ctx.guild.get_channel(check['logs']).mention if ctx.guild.get_channel(check['logs']) is not None else "N/A")
+        embed1.add_field(name="Category", value=ctx.guild.get_channel(check['category']).mention if ctx.guild.get_channel(check['category']) is not None else "N/A")
         embed2 = discord.Embed(color=self.bot.color, title="ticket message", description="```{}```".format(check['message']) if check['message'] is not None else "default")
         await ctx.send(embed=embed1)
         await ctx.send(embed=embed2)

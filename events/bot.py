@@ -16,7 +16,7 @@ class Bot(commands.Cog):
         
     @commands.Cog.listener('on_guild_join')
     async def join_log(self, guild: discord.Guild):
-            channel_id = 1258940630114238555
+            channel_id = 1262304011562782804
             channel = self.bot.get_channel(channel_id)
      
             icon= f"[icon]({guild.icon.url})" if guild.icon is not None else "N/A"
@@ -39,7 +39,7 @@ class Bot(commands.Cog):
 
     @commands.Cog.listener('on_guild_remove')
     async def leave_log(self, guild: discord.Guild):
-            channel_id = 1258940630114238555
+            channel_id = 1262304011562782804
             channel = self.bot.get_channel(channel_id)
      
             icon= f"[icon]({guild.icon.url})" if guild.icon is not None else "N/A"
@@ -142,7 +142,7 @@ class Bot(commands.Cog):
             
     @commands.Cog.listener()
     async def on_command_completion(self, ctx):
-        channel_id = 1259228979639091352
+        channel_id = 1262304000041025609
         channel = self.bot.get_channel(channel_id)
         embed = discord.Embed(description=f"Text command ``{ctx.command.qualified_name}`` has been ran in ``{ctx.guild} ({ctx.guild.id})`` by ``{ctx.author} ({ctx.author.id})`` with message id: ``{ctx.message.id}``.", color=self.bot.color)
         try: await channel.send(embed=embed)
@@ -150,7 +150,7 @@ class Bot(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error: commands.CommandError):
-        channel_id = 1259229845561278566
+        channel_id = 1262303993439326208
         channel = self.bot.get_channel(channel_id)
         embed = discord.Embed(description=f"Text command ``{ctx.command.qualified_name}`` has ran into an error in ``{ctx.guild} ({ctx.guild.id})`` by ``{ctx.author} ({ctx.author.id})`` with message id: ``{ctx.message.id}``. \n\n **Error: {error}**", color=self.bot.color)
         try: await channel.send(embed=embed)

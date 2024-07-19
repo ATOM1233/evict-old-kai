@@ -28,12 +28,12 @@ class Evict(commands.Bot):
         
         self.color = 0xCCCCFF
         self.error_color= 0xFFFFED
-        self.yes = "<:approved:1259606226535317615>"
-        self.no = "<:false:1259606495234887740>"
-        self.warning = "<:warning:1259608056832987248>"
-        self.left = "<:left:1259608758800220251>"
-        self.right = "<:right:1259608897308721152>"
-        self.goto = "<:filter:1259609300221821039>"
+        self.yes = "<:approve:1263726951613464627>"
+        self.no = "<:deny:1263727013433184347>"
+        self.warning = "<:warn:1263727178802004021>"
+        self.left = "<:left:1263727060078035066>"
+        self.right = "<:right:1263727130370637995>"
+        self.goto = "<:filter:1263727034798968893>"
         self.pomice = pomice.NodePool()
         
         self.ext = Client(self)
@@ -59,7 +59,7 @@ class Evict(commands.Bot):
         
   async def on_ready(self) -> None:
         print("I'm online!")
-        await self.cogs["music"].start_nodes()
+        await self.cogs["Music"].start_nodes()
         
   async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
       if isinstance(error, commands.CommandNotFound): return 

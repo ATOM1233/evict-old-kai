@@ -57,31 +57,20 @@ class owner(commands.Cog):
 
    @commands.is_owner()
    @commands.command(aliases=["guilds"], name='servers', description="list all the servers evict is in", brief="bot owner")
-   async def servers(self, ctx: commands.Context): 
+   async def servers(self, ctx: commands.Context):
+       
             def key(s): 
-              return s.member_count 
-            i=0
-            k=1
-            l=0
-            mes = ""
-            number = []
-            messages = []
+              return s.member_count
+                   
             lis = [g for g in self.bot.guilds]
+            
             lis.sort(reverse=True, key=key)
-            for guild in lis:
-              mes = f"{mes}`{k}` {guild.name} ({guild.id}) - ({guild.member_count})\n"
-              k+=1
-              l+=1
-              if l == 10:
-               messages.append(mes)
-               number.append(discord.Embed(color=self.bot.color, title=f"guilds ({len(self.bot.guilds)})", description=messages[i]))
-               i+=1
-               mes = ""
-               l=0
-    
-            messages.append(mes)
-            number.append(discord.Embed(color=self.bot.color, title=f"guilds ({len(self.bot.guilds)})", description=messages[i]))
-            await ctx.paginator(number)  
+
+            guild_list = [f"{g.name} ``({g.id})`` - ({g.member_count})"
+            
+            for g in lis]
+            
+            await ctx.paginator(guild_list, f"all guilds [{len(self.bot.guilds)}]")  
 
    @commands.is_owner()
    @commands.command(name='portal', description="get an invite to a guild", usage="[guild id]", brief="bot owner")
@@ -243,35 +232,21 @@ class owner(commands.Cog):
    @commands.is_owner()
    @commands.command(name='mutuals', description="show servers a user shares with the bot", usage="[user]", brief="bot owner")
    async def mutuals(self, ctx, user: discord.User = None): 
+            
+            if not user: user = ctx.author
+            
             def key(s): 
               return s.member_count
-            if user is None: 
-                user = ctx.author   
-            i=0
-            k=1
-            l=0
-            mes = ""
-            number = []
-            messages = []
+            
             lis = [g for g in user.mutual_guilds]
+            
             if len(lis) == 0: return await ctx.warning(f"I don't share a server with {user.mention}.") 
             lis.sort(reverse=True, key=key)
-            for guild in lis:
-              mes = f"{mes}`{k}` {guild.name} ({guild.id}) - ({guild.member_count})\n"
-              k+=1
-              l+=1
-              if l == 10:
-               mutual_guilds = user.mutual_guilds
-               messages.append(mes)
-               number.append(discord.Embed(color=self.bot.color, title=f"shared servers with {user} - {len(mutual_guilds)} shared", description=messages[i]))
-               i+=1
-               mes = ""
-               l=0
             
-            mutual_guilds = user.mutual_guilds
-            messages.append(mes)
-            number.append(discord.Embed(color=self.bot.color, title=f"shared servers with {user} - {len(mutual_guilds)} shared", description=messages[i]))
-            await ctx.paginator(number)  
+            mutuals_list = [f"{g.name} ``({g.id})`` - ({g.member_count})"
+                     for g in lis]
+
+            await ctx.paginator(mutuals_list, f"shared servers with {user} - {len(user.mutual_guilds)} shared")  
 
    @commands.is_owner()
    @commands.command(name='dm', aliases=['dmu'], description="dm a user", usage="[user]", brief="bot owner")
@@ -329,12 +304,20 @@ class owner(commands.Cog):
         check = await self.bot.db.fetchrow("SELECT * FROM gblacklist WHERE guild_id = $1", guild) 
         if check is not None: return await ctx.warning(f"this guild is **already** blacklisted.")
         await self.bot.db.execute("INSERT INTO gblacklist VALUES ($1)", guild)
-        await ctx.warning("the guild has been **blacklisted**.")
+        await ctx.success("the guild has been **blacklisted**.")
         try:
             guild = self.bot.get_guild(int(guild))
             if guild: return await guild.leave()
         except: return
-
+        
+   @commands.is_owner()
+   @commands.command(aliases=["gunblacklist"], name='unblacklistg', description="unblacklist a guild", usage="[guild id]", brief="bot owner")
+   async def unblacklistg(self, ctx, guild: int):
+        check = await self.bot.db.fetchrow("SELECT * FROM gblacklist WHERE guild_id = $1", guild) 
+        if check is None: return await ctx.warning(f"this guild isn't **blacklisted**.")
+        await self.bot.db.execute("DELETE FROM gblacklist WHERE guild_id = $1", guild)
+        await ctx.success("the guild has been **unblacklisted**.")
+        
    @commands.is_owner()
    @commands.command(aliases=["gg"], description="show information about a server", brief="bot owner")
    async def getguild(self, ctx: Context, guild:int):

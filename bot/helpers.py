@@ -43,6 +43,9 @@ class EvictContext(Context):
   async def warning(self, message: str) -> discord.Message: 
     return await self.reply(embed=discord.Embed(color=self.bot.color, description=f"{self.bot.warning} {self.author.mention}: {message}") )
   
+  async def lastfm_message(self, message: str) -> discord.Message: 
+    return await self.reply(embed=discord.Embed(color=0xff0000, description=f"> <:lastfm:1263727050309632031> {self.author.mention}: {message}"))  
+  
   async def create_pages(self): 
    embeds = []
    
@@ -72,9 +75,9 @@ class EvictContext(Context):
             elif isinstance(embeds[0], str):
                 return await self.reply(embeds[0])
 
-        PreviousButton = discord.ui.Button(style=discord.ButtonStyle.grey, emoji="<:left:1259608758800220251>")
-        NextButton = discord.ui.Button(style=discord.ButtonStyle.grey, emoji="<:right:1259608897308721152>")
-        DeleteButton = discord.ui.Button(style=discord.ButtonStyle.grey, emoji="<:false:1259606495234887740>")
+        PreviousButton = discord.ui.Button(style=discord.ButtonStyle.grey, emoji="<:left:1263727060078035066>")
+        NextButton = discord.ui.Button(style=discord.ButtonStyle.grey, emoji="<:right:1263727130370637995>")
+        DeleteButton = discord.ui.Button(style=discord.ButtonStyle.grey, emoji="<:deny:1263727013433184347>")
 
         await Paginator.Simple(
             PreviousButton=PreviousButton,

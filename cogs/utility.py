@@ -67,28 +67,28 @@ class utility(commands.Cog):
      badges = []
      
      if user.id in self.bot.owner_ids: 
-       badges.append("<:developer:1259612701030748303>")
+       badges.append("<:developer:1263728141558353963>")
      
      if user.public_flags.active_developer: 
-      badges.append("<:activedev:1259615920297349180>")
+      badges.append("<:activedev:1263726943048695828>")
      
      if user.public_flags.early_supporter:
-      badges.append("<:early:1208465674318647306>")
+      badges.append("<:early:1263727021318602783>")
      
      if user.public_flags.verified_bot_developer:
-       badges.append("<:developer:1259621097146548256>")
+       badges.append("<:earlydev:1263727027022860330>")
      
      if user.public_flags.staff: 
-      badges.append("<:staff:1259616506107400394>")
+      badges.append("<:staff:1263729127199084645>")
      
      if user.public_flags.bug_hunter:
-      badges.append("<:bughunter:1259619531517726901>") 
+      badges.append("<:bugreg:1263726968377966642>") 
      
      if user.public_flags.bug_hunter_level_2:
-      badges.append("<:bughunterlvl2:1259619689991110744>")   
+      badges.append("<:buggold:1263726960882876456>")   
      
      if user.public_flags.partner:
-      badges.append("<:partner:1259620028576432221>")
+      badges.append("<:partner:1263727124066340978>")
 
 # CUSTOM BADGES 
      if user.id == 987183275560820806:
@@ -100,7 +100,7 @@ class utility(commands.Cog):
       if mem is not None:
        
        if mem.premium_since is not None:
-         badges.append("<:boosts:1259616471810838588>")
+         badges.append("<:booster:1263727083310415885>")
          
          break
      
@@ -114,17 +114,17 @@ class utility(commands.Cog):
           u = str(check['username']) 
           if u != "error": 
             a = await self.lastfmhandler.get_tracks_recent(u, 1)
-            return f"<:lastfm:1208398661961130064> Listening to [{a['recenttracks']['track'][0]['name']}]({a['recenttracks']['track'][0]['url']}) by **{a['recenttracks']['track'][0]['artist']['#text']}** on LastFM."
+            return f"<:lastfm:1263727050309632031> Listening to [{a['recenttracks']['track'][0]['name']}]({a['recenttracks']['track'][0]['url']}) by **{a['recenttracks']['track'][0]['artist']['#text']}** on LastFM."
       
         return ""
 
      def vc(mem: Member):
         if mem.voice: 
           channelname = mem.voice.channel.name 
-          deaf = "<:deafen:1259614676417908817>" if mem.voice.self_deaf or mem.voice.deaf else "<:undeafen:1259613737241804821>"
-          mute = "<:mute:1259617185530384560>" if mem.voice.self_mute or mem.voice.mute else "<:unmute:1259614028070780969>"
-          stream = "<:streaming:1259617539634364428>" if mem.voice.self_stream else ""
-          video = "<:video:1259617723843874856>" if mem.voice.self_video else ""
+          deaf = "<:deafen:1263727000087166996>" if mem.voice.self_deaf or mem.voice.deaf else "<:undeafen:1263729513842606110>"
+          mute = "<:mute:1263727110741164092>" if mem.voice.self_mute or mem.voice.mute else "<:unmute:1263727157696401431>"
+          stream = "<:stream:1263727136821346448>" if mem.voice.self_stream else ""
+          video = "<:video:1263727171738931292>" if mem.voice.self_video else ""
           channelmembers = f"with {len(mem.voice.channel.members)-1} other member{'s' if len(mem.voice.channel.members) > 2 else ''}" if len(mem.voice.channel.members) > 1 else ""
           return f"{deaf} {mute} {stream} {video} **in Voice** {channelname} {channelmembers}"
         return ""  
