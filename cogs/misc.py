@@ -103,7 +103,7 @@ class misc(commands.Cog):
       if len(results) == 0: return await ctx.warning("no **whitelisted** members found")
       
       nc_list = [f"<@!{r['user_id']}>" for r in results]
-      await ctx.paginator(nc_list, f"members in naughty corner [{len(results)}]")  
+      await ctx.paginate(nc_list, f"members in naughty corner [{len(results)}]")  
 
   @commands.group(name="webhook", invoke_without_command=True)
   async def webhook(self, ctx):
@@ -208,7 +208,7 @@ class misc(commands.Cog):
         
       webhook_list = [f"<#{results['channel_id']}> - `{results['code']}`"]
             
-      await ctx.paginator(webhook_list, f"webhooks in server [{len(results)}]")  
+      await ctx.paginate(webhook_list, f"webhooks in server [{len(results)}]")  
 
   @commands.command(description='make a channel nsfw for 30 seconds', brief='manage channels', usage='[chan]')
   @commands.has_permissions(manage_channels=True)

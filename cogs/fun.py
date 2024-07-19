@@ -14,14 +14,6 @@ class fun(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.session = Session()
-    
-    @commands.command(aliases=["goodmorning"], help="fun", description="says good morning")
-    async def gm(self, ctx: commands.Context): 
-      await ctx.send(f"Good Morning {ctx.author.mention}!")
-
-    @commands.command(help="fun", description="says good night")
-    async def gn(self, ctx: commands.Context): 
-      await ctx.send(f"💤 Good Night {ctx.author.mention}!")  
 
     @commands.command(name="choose", description="choose between options", usage="[choices separated by a command]")
     async def choose_cmd(self, ctx: commands.Context, *, choice: str): 
@@ -140,10 +132,10 @@ class fun(commands.Cog):
     @commands.command(description='grab info on a snapchat profile', usage='[username]', help='fun')
     async def snapchat(self, ctx: commands.Context, *, username: str):
       try:
-        results = await self.bot.session.json("https://api.resent.dev/snapstory", headers=self.bot.resent_api, params={"username": username})
+        results = await self.bot.session.json("https://kure.pl/snapstory", headers=self.bot.resent_api, params={"username": username})
         if results.get('detail'):
           return await ctx.error(results['detail'])
-        await ctx.paginator(list(map(lambda s: s['url'], results['stories'])))
+        await ctx.paginate(list(map(lambda s: s['url'], results['stories'])))
       except Exception: return await ctx.warning(f"{username} **does not** appear to be valid.")
       
     @commands.command(description='make an image transparent', usage='[image url]', help='fun')
@@ -241,7 +233,7 @@ class fun(commands.Cog):
       try:  
         data = await api.ask_chatgpt(f"{text}")
         await ctx.reply(data)
-      except Exception: return await ctx.warning(f"API is either down or I have no ChatGPT credits. Please join https://discord.gg/resent and report this.")  
+      except Exception: return await ctx.warning(f"API is either down or I have no ChatGPT credits. Please join https://discord.gg/evict and report this.")  
 
     @commands.command(description="ship rate an user", help="fun", usage="[member]")
     async def ship(self, ctx, member: discord.Member):
@@ -362,7 +354,7 @@ class fun(commands.Cog):
             response = await response.json()
             embeds = [discord.Embed(title=res.get('title', 'Untitled'), url="https://" + res.get('domain', ''), color=res.get('color', discord.Color.default())).set_image(url=res.get('url', '')) for res in response]
           # if len(embeds) == 0: return await ctx.warning("Nothing found.")
-          return await ctx.paginator(embeds=embeds)
+          return await ctx.paginate(embeds=embeds)
       except Exception:
         return await ctx.warning(f"Could not find anything with this query")
 
@@ -381,7 +373,7 @@ class fun(commands.Cog):
                 embed.add_field(name=f"Google", value=f"[**{res.get('title')}**](https://{res.get('domain')})\n{(res.get('description'))}", inline=False)
             embeds.append(embed)
 
-        return await ctx.paginator(embeds=embeds)
+        return await ctx.paginate(embeds=embeds)
 
 async def setup(bot) -> None:
     await bot.add_cog(fun(bot))     

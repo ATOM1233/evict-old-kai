@@ -40,33 +40,10 @@ class auth(commands.Cog):
      
      results = await self.bot.db.fetch("SELECT * FROM authorize WHERE buyer = $1", member.id)
      if len(results) == 0: return await ctx.warning("no server authorized for **{}**".format(member))
-     
-     i=0
-     k=1
-     l=0
-     
-     mes = ""
-     number = []
-     messages = []          
-     
-     for result in results:
-       
-      mes = f"{mes} ``{k}`` ``{result['guild_id']}``\n"
-      k+=1
-      l+=1
-      if l == 10:
-       
-       messages.append(mes)
-       number.append(discord.Embed(color=self.bot.color, title=f"owned servers ({len(results)})", description=messages[i]))
-       
-       i+=1
-       mes = ""
-       l=0
-    
-     messages.append(mes)
-     number.append(discord.Embed(color=self.bot.color, title=f"owned servers ({len(results)})", description=messages[i]))
-     
-     await ctx.paginator(number) 
+
+     await ctx.paginate([f"{f'**{str(self.bot.get_guild(m[0]))}** `{m[0]}`' if self.bot.get_guild(m[0]) else f'`{m[0]}`'}" for m in results],
+            f"Authorized guilds ({len(results)})",
+            {"name": member.name, "icon_url": member.display_avatar.url})
 
     @commands.command()
     @commands.is_owner()

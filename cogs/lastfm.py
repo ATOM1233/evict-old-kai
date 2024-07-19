@@ -341,7 +341,7 @@ class lastfm(commands.Cog):
         mes = ""
         l = 1 
       embeds.append(discord.Embed(color=self.bot.color, title=f"{member.name}'s cronws ({len(check)})", description=mes))    
-      return await ctx.paginator(embeds) 
+      return await ctx.paginate(embeds) 
     
     @lastfm.command(name="chart", aliases=["c"], description="Generates an album image chart.", usage="[size] [period]\nsizes available: 3x3 (default), 2x2, 4x5, 20x4\nperiods available: alltime (default), yearly, monthly")
     async def lf_chart(self, ctx: commands.Context, user: discord.User=None, size: str = "3x3", period: Literal['overall', '7day', '1month', '3month', '6month', '12month'] = 'overall'):

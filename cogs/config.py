@@ -94,7 +94,7 @@ class config(Cog):
           messages.append(mes)
           number.append(Embed(color=self.bot.color, title=f"mediaonly channels ({len(results)})", description=messages[i])) 
           
-          if len(number) > 1: return await ctx.paginator(number) 
+          if len(number) > 1: return await ctx.paginate(number) 
           
           return await ctx.send(embed=number[0])
     
@@ -162,7 +162,7 @@ class config(Cog):
           messages.append(mes)
           number.append(Embed(color=self.bot.color, title=f"pingonjoin channels ({len(results)})", description=messages[i]))
           
-          await ctx.paginator(number)
+          await ctx.paginate(number)
     
     @commands.group(invoke_without_command=True)
     async def starboard(self, ctx): 
@@ -303,7 +303,7 @@ class config(Cog):
           messages.append(mes)
           number.append(Embed(color=self.bot.color, title=f"autoroles ({len(results)})", description=messages[i]))
           
-          return await ctx.paginator(number)
+          return await ctx.paginate(number)
 
     @commands.group(invoke_without_command=True, description="manage custom punishment responses", help="config")
     async def invoke(self, ctx): 
@@ -666,7 +666,7 @@ class config(Cog):
           messages.append(mes)
           number.append(Embed(color=self.bot.color, title=f"server counters ({len(results)})", description=messages[i]))
           
-          return await ctx.paginator(number) 
+          return await ctx.paginate(number) 
 
     @counter.command(name="remove", description="remove a counter from the server", brief="manage guild", usage="[counter type]")
     @commands.has_permissions(manage_guild=True)
@@ -844,7 +844,7 @@ class config(Cog):
             Embed(color=self.bot.color, title=f"sticky messages", description=f"{ctx.guild.get_channel(result['channel_id'])} ```{result['key']}```",).set_footer(text=f"{results.index(result)+1}/{len(results)}")
             for result in results]
         
-        await ctx.paginator(embeds)
+        await ctx.paginate(embeds)
         
     @commands.group(name="restrictcommand", aliases=["rc"], invoke_without_command=True)
     async def restrictcommand(self, ctx: commands.Context):

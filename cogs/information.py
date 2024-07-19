@@ -135,7 +135,7 @@ class information(commands.Cog):
         e.add_field(name="example", value=defi["example"], inline=False) 
         e.set_footer(text=f"{defs.index(defi)+1}/{len(defs)}")
         embeds.append(e)
-       return await ctx.paginator(embeds)
+       return await ctx.paginate(embeds)
       except Exception as e: await ctx.reply("no definition found for **{}**".format(word))
 
     @commands.command(description="gets information about a github user", aliases=["gh"], usage="[user]")

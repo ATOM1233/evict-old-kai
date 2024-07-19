@@ -47,7 +47,7 @@ class automod(commands.Cog):
         for result in results
       ]
             
-      await ctx.paginator(cf_list, f"blacklisted words [{len(results)}]")  
+      await ctx.paginate(cf_list, f"blacklisted words [{len(results)}]")  
     
     @chatfilter.group(name="whitelist", description="manage whitelist for chatfilter", aliases=["wl"], brief="manage guild")
     async def cf_whitelist(self, ctx: commands.Context): 

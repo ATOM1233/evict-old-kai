@@ -104,7 +104,7 @@ class giveaway(commands.Cog):
     
     messages.append(mes)
     number.append(discord.Embed(color=self.bot.color, title=f"giveaways ({len(results)})", description=messages[i]))
-    await ctx.paginator(number)  
+    await ctx.paginate(number)  
 
   @giveaway.command(name="create", brief="manage server", description="create a giveaway in this server", usage="<channel>")
   @Permissions.has_permission(manage_guild=True) 

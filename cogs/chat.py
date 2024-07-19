@@ -1,12 +1,31 @@
-import discord, json
+import discord, json, orjson
+from typing import Optional
 from utils.embed import Embed
-from discord.ext import commands 
+from discord.ext import commands
+from discord import Message, Embed 
 from patches.permissions import Permissions
+from patches.classes import ValidAutoreact
 
 class chat(commands.Cog): 
   def __init__(self, bot: commands.Bot): 
     self.bot = bot 
     self._cd = commands.CooldownMapping.from_cooldown(3, 6, commands.BucketType.guild) 
+    
+  async def get_autoreact_cd(self, message: Message) -> Optional[int]:
+        """
+        custom rate limit for autoreact
+        """
+
+        bucket = self.autoreact_cd.get_bucket(message)
+        return bucket.update_rate_limit()
+
+  async def get_ratelimit(self, message: Message) -> Optional[int]:
+        """
+        custom rate limit for reposters
+        """
+
+        bucket = self._ccd.get_bucket(message)
+        return bucket.update_rate_limit()
 
   def get_ratelimit(self, message):
         bucket = self._cd.get_bucket(message)
@@ -115,7 +134,7 @@ class chat(commands.Cog):
       embed = discord.Embed(color=self.bot.color, title=f"auto reactions ({len(check)})", description=messages[i])
       
       number.append(embed)
-      await ctx.paginator(number) 
+      await ctx.paginate(number) 
       
   @commands.Cog.listener('on_message')
   async def auto(self, message: discord.Message):
@@ -133,23 +152,29 @@ class chat(commands.Cog):
                 if embed.only_content: return await message.channel.send(embed.content)
                 else: return await message.channel.send(content=embed.content, embed=embed.to_embed(), view=embed.to_view())
                 
-  @commands.Cog.listener('on_message')
-  async def on_autoreact(self, message: discord.Message): 
-    
-          if message.author.bot: return
-          if message.guild is None: return
-    
-          retry_after = self.get_ratelimit(message)
-          if retry_after: return
-    
-          check = await self.bot.db.fetchrow("SELECT emojis FROM autoreact WHERE guild_id = $1 AND trigger = $2", message.guild.id, message.content)
-          check1 = json.loads(check["emojis"])
-    
-          if check: 
-            for emoji in check1: 
-              
-              try: await message.add_reaction(emoji)
-              except: continue
+  @commands.Cog.listener("on_message")
+  async def on_autoreact(self, message: Message):
+        
+        if message.author.bot:
+            return
+
+        if not message.guild:
+            return
+
+        if not message.guild.me.guild_permissions.add_reactions:
+            return
+
+        words = message.content.lower().split()
+        results = await self.bot.db.fetch("SELECT * FROM autoreact WHERE guild_id = $1", message.guild.id)
+        for result in results:
+            if result["trigger"].lower() in words:
+
+                reactions = orjson.loads(result["reactions"])
+                ctx = await self.bot.get_context(message)
+                for reaction in reactions:
+                    x = await ValidAutoreact().convert(ctx, reaction)
+                    if x:
+                        await message.add_reaction(x)
 
 async def setup(bot: commands.Bot) -> None: 
     await bot.add_cog(chat(bot))

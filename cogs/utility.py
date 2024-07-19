@@ -370,7 +370,7 @@ class utility(commands.Cog):
       inrole_list = [f"**{member}** - (``{member.id}``)"
                            for member in role.members] 
           
-      await ctx.paginator(inrole_list, f"members in {role.name} [{len({b})}]") 
+      await ctx.paginate(inrole_list, f"members in {role.name} [{len({b})}]") 
     
     @commands.command(description="see all members joined within 24 hours")
     async def joins(self, ctx: Context): 
@@ -383,7 +383,7 @@ class utility(commands.Cog):
       for member in members: 
         join_list = [f"{member} - {discord.utils.format_dt(member.joined_at, style='R')}"]
     
-      await ctx.paginator(join_list, f"new members") 
+      await ctx.paginate(join_list, f"new members") 
             
     @commands.command(description="see all the muted members in the server")
     async def muted(self, ctx: Context):
@@ -396,7 +396,7 @@ class utility(commands.Cog):
       for member in members:
           muted_list = [f"{member} - <t:{int(member.timed_out_until.timestamp())}:R>"]
             
-      await ctx.paginator(muted_list, f"muted members [{m}]")     
+      await ctx.paginate(muted_list, f"muted members [{m}]")     
     
     @Permissions.has_permission(ban_members=True)
     @commands.command(description="see all server bans")
@@ -409,35 +409,17 @@ class utility(commands.Cog):
 
           ban_list = [f"**{m.user}** - {m.reason or 'No reason provided'}" for m in banned]
           
-          await ctx.paginator(ban_list, f"bans [{len(banned)}]")
+          await ctx.paginate(ban_list, f"bans [{len(banned)}]")
 
-    @commands.group(invoke_without_command=True)
+    @commands.command(description="see all server boosters")
     async def boosters(self, ctx: commands.Context):
-      await ctx.create_pages()
-            
-    @boosters.command(invoke_without_command=True, description="see all server boosters")
-    async def list(self, ctx: Context):
-            
-            if not ctx.guild.premium_subscriber_role or len(ctx.guild.premium_subscriber_role.members) == 0: 
+      if not ctx.guild.premium_subscriber_role or len(ctx.guild.premium_subscriber_role.members) == 0: 
               return await ctx.warning("this server doesn't have any boosters")
             
-            booster_list = [f"**{member}** ({member.id}) - <t:{int(member.premium_since.timestamp())}:R>"
+      booster_list = [f"**{member}** ({member.id}) - <t:{int(member.premium_since.timestamp())}:R>"
                            for member in ctx.guild.premium_subscriber_role.members] 
             
-            await ctx.paginator(booster_list, f"server boosters [{len(ctx.guild.premium_subscriber_role.members)}]") 
-    
-    @boosters.command(name="lost", description="display lost boosters")
-    async def lost(self, ctx: Context): 
-      
-      results = await self.bot.db.fetch("SELECT * FROM boosterslost WHERE guild_id = $1", ctx.guild.id)
-      
-      if len(results) == 0: 
-        return await ctx.warning("there are **no** lost boosters")
-
-      for result in results: 
-          boosters_lost = [f"<@!{int(result['user_id'])}> - <t:{result['time']}:R>"]
-          
-      await ctx.paginator(boosters_lost) 
+      await ctx.paginate(booster_list, f"server boosters [{len(ctx.guild.premium_subscriber_role.members)}]") 
 
     @Permissions.has_permission(manage_roles=True)
     @commands.command(description="see all server roles")
@@ -447,7 +429,7 @@ class utility(commands.Cog):
       
       for role in ctx.guild.roles[1:][::-1]] 
       
-      await ctx.paginator(role_list, f"roles [{len(ctx.guild.roles[1:])}]")   
+      await ctx.paginate(role_list, f"roles [{len(ctx.guild.roles[1:])}]")   
   
     @commands.command(description="see all the bots in the server")
     async def bots(self, ctx: Context):
@@ -461,7 +443,7 @@ class utility(commands.Cog):
           bot_list = [f"{member.mention} (``{member.id}``)"
                            for member in ctx.guild.members if member.bot] 
             
-      await ctx.paginator(bot_list, f"bots [{b}]")  
+      await ctx.paginate(bot_list, f"bots [{b}]")  
     
     @commands.command(description="check the weather from a location", usage="[country]")
     async def weather(self, ctx: Context, *, location: str): 
@@ -526,7 +508,7 @@ class utility(commands.Cog):
     
           messages.append(mes)
           number.append(Embed(color=self.bot.color, title=f"donators ({len(results)})", description=messages[i]))
-          await ctx.paginator( number)
+          await ctx.paginate( number)
     
     @commands.command(aliases=["tts", "speech"], description="convert your message to mp3", usage="[message]")     
     async def texttospeech(self, ctx: Context, *, txt: str): 
@@ -627,7 +609,7 @@ class utility(commands.Cog):
      messages.append(mes)
      embed = Embed(color=self.bot.color, title=f"timezone list", description=messages[i])
      number.append(embed)
-     await ctx.paginator(number) 
+     await ctx.paginate(number) 
 
     @timezone.command(name="unset", description="unset the timezone")
     async def tz_unset(self, ctx: Context):
@@ -668,7 +650,7 @@ class utility(commands.Cog):
       member_list = [f"**{member}** joined <t:{int(member.joined_at.timestamp())}:f> (<t:{int(member.joined_at.timestamp())}:R>)"
                            for member in ctx.guild.members if not member.bot] 
           
-      await ctx.paginator(member_list, f"members [{len(ctx.guild.members[1:])}]") 
+      await ctx.paginate(member_list, f"members [{len(ctx.guild.members[1:])}]") 
 
 async def setup(bot):
     await bot.add_cog(utility(bot))

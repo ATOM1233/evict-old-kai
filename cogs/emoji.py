@@ -237,7 +237,7 @@ class emoji(commands.Cog):
     
             messages.append(mes)
             number.append(discord.Embed(color=self.bot.color, title=f"emojis in {ctx.guild.name} [{len(ctx.guild.emojis)}]", description=messages[i]))
-            await ctx.paginator(number)
+            await ctx.paginate(number)
 
    @commands.command(description="returns a list of server's stickers", aliases=["stickers"])
    async def stickerlist(self, ctx: commands.Context):
@@ -260,7 +260,7 @@ class emoji(commands.Cog):
     
             messages.append(mes)
             number.append(discord.Embed(color=self.bot.color, title=f"stickers in {ctx.guild.name} [{len(ctx.guild.stickers)}]", description=messages[i]))
-            await ctx.paginator(number)    
+            await ctx.paginate(number)    
 
    @commands.command(aliases=["downloademoji", "e", 'jumbo'], description="gets an image version of your emoji", usage="[emoji]")
    async def enlarge(self, ctx: commands.Context, emoj: Union[discord.PartialEmoji, str]): 

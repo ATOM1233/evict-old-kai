@@ -76,7 +76,7 @@ class antiraid(commands.Cog):
         
         whitelisted = [f"{await self.bot.fetch_user(result['object_id'])}"]
             
-      await ctx.paginator(whitelisted)  
+      await ctx.paginate(whitelisted)  
     
     @antiraid.group(invoke_without_command=True, description="prevend join raids", help="antiraid", usage="[status (enable/disable)] [punishment] [joins per 10 seconds]\nexample: antiraid massjoin enable 10")
     async def massjoin(self, ctx: commands.Context): 

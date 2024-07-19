@@ -377,7 +377,7 @@ class moderation(commands.Cog):
       messages.append(mes)
       embed = discord.Embed(color=self.bot.color, title=f"warns ({len(check)})", description=messages[i]).set_footer(text="All times are GMT")
       number.append(embed)
-      await ctx.paginator(number)
+      await ctx.paginate(number)
 
   @Mod.is_mod_configured()
   @commands.command(description="jail a member", usage="[member]", brief="manage channels")
@@ -738,7 +738,7 @@ class moderation(commands.Cog):
     
           messages.append(mes)          
           number.append(discord.Embed(color=self.bot.color, title=f"autokick list [{len(results)}]", description=messages[i]))
-          await ctx.paginator(number)
+          await ctx.paginate(number)
 
   @commands.group(name="private", invoke_without_command=True)
   async def private(self, ctx): 
@@ -807,7 +807,7 @@ class moderation(commands.Cog):
     
           messages.append(mes)          
           number.append(discord.Embed(color=self.bot.color, title=f"private whitelist [{len(results)}]", description=messages[i]))
-          await ctx.paginator(number)
+          await ctx.paginate(number)
         
 async def setup(bot: commands.Bot): 
   await bot.add_cog(moderation(bot))      

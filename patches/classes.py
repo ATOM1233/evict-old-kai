@@ -8,6 +8,17 @@ from discord.ext import commands
 from discord.ext.commands import Context
 from bot.helpers import EvictContext
 
+class ValidAutoreact(commands.EmojiConverter):
+    async def convert(self, ctx: commands.Context, argument: str):
+        try:
+            emoj = await super().convert(ctx, argument)
+        except commands.BadArgument:
+            if not emoji.is_emoji(argument):
+                return None
+
+            emoj = argument
+        return emoj
+
 class TimeConverter(object): 
     def convert_datetime(self, date: datetime.datetime=None):
      if date is None: return None  

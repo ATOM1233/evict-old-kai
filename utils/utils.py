@@ -41,7 +41,7 @@ class Whitelist:
     
    messages.append(mes)  
    number.append(discord.Embed(color=ctx.bot.color, title=f"whitelisted {target}s ({len(results)})", description=messages[i]))
-   await ctx.paginator(number)
+   await ctx.paginate(number)
 
 class InvokeClass:
  

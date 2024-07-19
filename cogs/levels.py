@@ -163,7 +163,7 @@ class leveling(commands.Cog):
       embed = discord.Embed(description = auto, color = self.bot.color)
       embed.set_author(name = f"Level Rewards", icon_url = ctx.guild.icon.url or None)
       number.append(embed)
-      await ctx.paginator(number)
+      await ctx.paginate(number)
 
   @level.command(name="reset", description="reset levels for a member, leave blank for everyone", brief="administrator", usage="<member>")
   @Permissions.has_permission(administrator=True) 

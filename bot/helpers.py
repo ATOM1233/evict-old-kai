@@ -1,9 +1,10 @@
 import discord, Paginator, os
 from discord.ext.commands import Context 
-from discord import Embed, utils
+from discord import Embed, utils, ButtonStyle, Message
 from typing import Any, Union, Dict, Optional, List, Sequence
 from discord.ui import View
 from discord.ext import commands
+from discord_paginator import Paginator
 
 class EvictContext(Context): 
   flags: Dict[str, Any] = {}
@@ -63,44 +64,49 @@ class EvictContext(Context):
     .add_field(name="usage", value=f"```{commandname} {command.usage if command.usage else ''}```", inline=False)
     .set_footer(text=f"module: {command.cog_name} ・ page {i}/{len(self.command.commands)}", icon_url=self.author.display_avatar.url if not None else ''))
      
-   return await self.pages(embeds)  
+   return await self.paginator(embeds)
     
-  async def pages(self, embeds: List[Union[discord.Embed, str]]) -> discord.Message:
-
+  async def paginator(self, embeds: List[Union[Embed, str]]) -> Message:
+        """Sends some paginated embeds to the channel"""
         if len(embeds) == 1:
-            
-            if isinstance(embeds[0], discord.Embed):
+            if isinstance(embeds[0], Embed):
                 return await self.reply(embed=embeds[0])
-            
             elif isinstance(embeds[0], str):
                 return await self.reply(embeds[0])
 
-        PreviousButton = discord.ui.Button(style=discord.ButtonStyle.grey, emoji="<:left:1263727060078035066>")
-        NextButton = discord.ui.Button(style=discord.ButtonStyle.grey, emoji="<:right:1263727130370637995>")
-        DeleteButton = discord.ui.Button(style=discord.ButtonStyle.grey, emoji="<:deny:1263727013433184347>")
-
-        await Paginator.Simple(
-            PreviousButton=PreviousButton,
-            NextButton=NextButton,
-            DeleteButton=DeleteButton,
-            InitialPage=0,
-            timeout=30
-        ).start(self, pages=embeds)
+        paginator = Paginator(self, embeds)
+        style = ButtonStyle.gray
+        paginator.add_button("prev", emoji="<:left:1263727060078035066>", style=style)
+        paginator.add_button("next", emoji="<:right:1263727130370637995>", style=style)
+        paginator.add_button("delete", emoji="<:deny:1263727013433184347>", style=style)
         
-  async def paginator(self, contents: List[str], title: str = None, author: dict = {'name': '', 'icon_url': None}):
+        return await paginator.start()
 
+  async def create_pages(self):
+        """Create pages for group commands"""
+        return await self.send_help(self.command)
+
+  async def paginate(
+        self,
+        contents: List[str],
+        title: str = None,
+        author: dict = {"name": "", "icon_url": None},
+    ):
+        """Paginate a list of contents in multiple embeds"""
         iterator = [m for m in utils.as_chunks(contents, 10)]
         embeds = [
             Embed(
                 color=self.bot.color,
                 title=title,
-                description='\n'.join([f"`{(m.index(f)+1)+(iterator.index(m)*10)}.` {f}" for f in m])
+                description="\n".join(
+                    [f"`{(m.index(f)+1)+(iterator.index(m)*10)}.` {f}" for f in m]
+                ),
             ).set_author(**author)
             for m in iterator
         ]
-        return await self.pages(embeds)
+        return await self.paginator(embeds)
 
-  """async def reply(self, content: Optional[str] = None, *, embed: Optional[discord.Embed] = None, view: Optional[View] = None, mention_author: Optional[bool] = False, file: Optional[discord.File] = discord.utils.MISSING,
+  async def reply(self, content: Optional[str] = None, *, embed: Optional[discord.Embed] = None, view: Optional[View] = None, mention_author: Optional[bool] = False, file: Optional[discord.File] = discord.utils.MISSING,
         files: Optional[Sequence[discord.File]] = discord.utils.MISSING) -> discord.Message:
    
    reskin = await self.bot.db.fetchrow("SELECT * FROM reskin WHERE user_id = $1 AND toggled = $2", self.author.id, True)
@@ -131,7 +137,7 @@ class EvictContext(Context):
      if webhook.user == self.me:
        return webhook
    
-   return await channel.create_webhook(name='evict')"""
+   return await channel.create_webhook(name='evict')
 
   async def cmdhelp(self): 
     
@@ -179,7 +185,7 @@ class HelpCommand(commands.HelpCommand):
     i+=1 
     embeds.append(discord.Embed(color=self.ec_color, title=f"{commandname}", description=command.description).set_author(name=ctx.author.name, icon_url=ctx.author.display_avatar.url if not None else '').add_field(name="usage", value=f"```{commandname} {command.usage if command.usage else ''}```", inline=False).set_footer(text=f"module: {command.cog_name} • aliases: {', '.join(a for a in command.aliases) if len(command.aliases) > 0 else 'none'} ・ {i}/{len(group.commands)}"))
      
-   return await ctx.pages(embeds) 
+   return await self.context.paginator(embeds)
  
  
 class StartUp:

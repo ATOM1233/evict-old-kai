@@ -343,7 +343,7 @@ class roleplay(commands.Cog):
       if len(results) == 0: return await ctx.warning("You don't have any diary page created")
       embeds = []
       for result in results: embeds.append(discord.Embed(color=self.bot.color, title=result['title'], description=result['text']).set_author(name=f"diary for {result['date']}").set_footer(text=f"{results.index(result)+1}/{len(results)}"))
-      return await ctx.paginator(embeds)
+      return await ctx.paginate(embeds)
     
     @diary.command(name="delete", description="delete a diary page")
     async def diary_delete(self, ctx: commands.Context): 

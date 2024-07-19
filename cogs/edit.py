@@ -31,12 +31,12 @@ class edit(commands.Cog):
                     async with session.get(url) as r:
                         data = await r.read()
                 except aiohttp.InvalidURL:
-                    return await ctx.warning('that url is invalid.')
+                    return await ctx.warning('That url is **invalid**.')
                 except aiohttp.ClientError:
-                    return await ctx.warning('something went wrong when trying to get the image.')
+                    return await ctx.warning('Something went wrong when trying to get the image.')
       else:
             await ctx.guild.edit(banner=None)
-            await ctx.success('server banner has been updated.')
+            await ctx.success('I have **cleared** the server banner.')
             return
       try:
             async with ctx.typing():
@@ -44,7 +44,7 @@ class edit(commands.Cog):
       except ValueError:
             await ctx.warning('JPG/PNG format only.')
       else:
-            await ctx.success('server banner has been updated.')
+            await ctx.success(f'I have **updated** the server banner to [**image**]({url}).')
     
     @Mod.is_mod_configured()
     @Permissions.has_permission(manage_guild=True)
@@ -62,12 +62,12 @@ class edit(commands.Cog):
                     async with session.get(url) as r:
                         data = await r.read()
                 except aiohttp.InvalidURL:
-                    return await ctx.warning('that link is invalid.')
+                    return await ctx.warning('That link is invalid.')
                 except aiohttp.ClientError:
-                    return await ctx.warning('something went wrong when trying to get the image.')
+                    return await ctx.warning('Something went wrong when trying to get the image.')
         else:
             await ctx.guild.edit(icon=None, reason=f'server icon updated by {ctx.author}')
-            await ctx.success('server icon has been cleared.')
+            await ctx.success('I have **cleared** the server icon.')
             return
 
         try:
@@ -76,7 +76,7 @@ class edit(commands.Cog):
         except ValueError:
             await ctx.warning('JPG/PNG format only.')
         else:
-            await ctx.success('server icon has been updated.')
+            await ctx.success(f'I have **updated** the server icon to [**image**]({url}).')
 
     @Mod.is_mod_configured()
     @Permissions.has_permission(manage_guild=True)
@@ -94,12 +94,12 @@ class edit(commands.Cog):
                     async with session.get(url) as r:
                         data = await r.read()
                 except aiohttp.InvalidURL:
-                    return await ctx.warning('that link is invalid.')
+                    return await ctx.warning('That link is invalid.')
                 except aiohttp.ClientError:
-                    return await ctx.warning('something went wrong when trying to get the image.')
+                    return await ctx.warning('Something went wrong when trying to get the image.')
         else:
             await ctx.guild.edit(splash=None, reason=f'server splash updated by {ctx.author}')
-            await ctx.success('server splash has been removed.')
+            await ctx.success('I have **removed** the server invite splash.')
             return
 
         try:
@@ -108,7 +108,7 @@ class edit(commands.Cog):
         except ValueError:
             await ctx.warning('JPG/PNG format only.')
         else:
-            await ctx.success('server splash has been updated.')
+            await ctx.success(f'I have **updated** the server invite splash to [**image**]({url}).')
 
     @Mod.is_mod_configured()
     @Permissions.has_permission(manage_guild=True)
@@ -148,7 +148,7 @@ class edit(commands.Cog):
     async def ge_name(self, ctx, *, name: str) -> None:
        async with ctx.typing():
           await ctx.guild.edit(name=name, reason=f'server name updated by {ctx.author}')
-          await ctx.success('server name has been changed.')
+          await ctx.success('I have **updated** the server name.')
 
     @Mod.is_mod_configured()
     @Permissions.has_permission(manage_guild=True)
@@ -156,15 +156,7 @@ class edit(commands.Cog):
     async def ge_description(self, ctx, *, description: typing.Optional[str] = None) -> None:
        async with ctx.typing():
           await ctx.guild.edit(description=description, reason=f'server description updated by {ctx.author}')
-          await ctx.success('server description has been changed.')
-    
-    @Mod.is_mod_configured()
-    @Permissions.has_permission(manage_guild=True)
-    @gedit.command(name="community", description="toggle community", usage="[true / false]")
-    async def ge_community(self, ctx, *, community: bool) -> None:
-       async with ctx.typing():
-          await ctx.guild.edit(community=community, reason=f'server community updated by {ctx.author}')
-          await ctx.success('server community settings has been changed.')
+          await ctx.success('I have **updated** the server description.')
 
     @Mod.is_mod_configured()
     @Permissions.has_permission(manage_guild=True)
@@ -172,7 +164,7 @@ class edit(commands.Cog):
     async def invites(self, ctx, *, invites_disabled: bool) -> None:
        async with ctx.typing():
           await ctx.guild.edit(invites_disabled=invites_disabled, reason=f'server invite settings updated by {ctx.author}')
-          await ctx.success('server invites have been changed.')
+          await ctx.success(f'I have **updated** the server invites setting to {invites_disabled}.')
 
     @Mod.is_mod_configured()
     @Permissions.has_permission(manage_guild=True)
@@ -180,7 +172,7 @@ class edit(commands.Cog):
     async def ge_discovery(self, ctx, *, discoverable: bool) -> None:
        async with ctx.typing():
           await ctx.guild.edit(discoverable=discoverable, reason=f'server discovery settings updated by {ctx.author}')
-          await ctx.success('server discovery have been changed.')
+          await ctx.success(f'I have **updated** the server discovery settings to {discoverable}.')
 
     @commands.group(name="channeledit", aliases=["cedit"], invoke_without_command=True)
     async def cedit(self, ctx): 
@@ -191,7 +183,7 @@ class edit(commands.Cog):
     @Permissions.has_permission(manage_roles=True) 
     async def ce_create(self, ctx: commands.Context, *, name: str): 
         channel = await ctx.guild.create_text_channel(name=name, reason=f"created by {ctx.author}")
-        return await ctx.success(f"created channel {channel.mention}")
+        return await ctx.success(f"I have **created** the channel {channel.mention}.")
 
     @Mod.is_mod_configured()
     @cedit.command(name='name', description='rename a text channel', brief="manage channels", usage="[channel] [name]")
@@ -200,7 +192,7 @@ class edit(commands.Cog):
         if channel is None:
             channel = ctx.channel
         await channel.edit(name=name, reason=f"renamed by {ctx.author}")
-        await ctx.success(f'{name} channel has been renamed.')
+        await ctx.success(f'I have **renamed** {channel.mention} to **{name}**.')
 
     @Mod.is_mod_configured()
     @cedit.command(name='nsfw', description='toggle whether or not a channel is nsfw', brief="manage channels", usage="[channel] [true / false]")
@@ -209,14 +201,14 @@ class edit(commands.Cog):
         if channel is None:
           channel = ctx.channel
         await channel.edit(nsfw=nsfw, reason=f"nsfw status changed by {ctx.author}")
-        await ctx.success(f'{channel.mention} nsfw status has been changed.')
+        await ctx.success(f"I have **updated** {channel.mention}'s nsfw settings to {nsfw}.")
 
     @Mod.is_mod_configured()
     @cedit.command(name='category', description='change a text channels category', brief="manage channels", usage="[channel] [category]")
     @Permissions.has_permission(manage_channels=True)
     async def ce_category(self, ctx: commands.Context, channel: typing.Optional[discord.TextChannel], category: discord.CategoryChannel):
         await channel.edit(category=category, reason=f"channel category changed by {ctx.author}")
-        await ctx.success(f'{channel.mention} category has been changed.')
+        await ctx.success(f'I have **updated** the category for {channel.mention} to {category.mention}.')
 
     @Mod.is_mod_configured()
     @cedit.command(name='delete', description='delete a channel', brief="manage channels", usage="[channel]")
@@ -225,7 +217,7 @@ class edit(commands.Cog):
         if channel is None:
          channel = ctx.channel
         await channel.delete(reason=f'channel deleted by {ctx.author}')
-        await ctx.success(f'{channel.mention} has been deleted.')
+        await ctx.success(f'I have **deleted** the channel {channel.name}.')
 
     @Mod.is_mod_configured()
     @cedit.command(name='sync', description='sync the permissions to the text channel from the category', brief="manage channels", usage="[channel] [true / false]")
@@ -234,7 +226,7 @@ class edit(commands.Cog):
         if channel is None:
          channel = ctx.channel
         await channel.edit(sync_permissions=sync_permissions, reason=f"{ctx.author} has modifed {channel}.")
-        await ctx.success(f'permissions for {channel.mention} have been synced.')
+        await ctx.success(f'I have **updated** the sync permissions for {channel.mention} to `{sync_permissions}`.')
 
     @Mod.is_mod_configured()
     @cedit.command(name='clone', description='clone a text channel', brief="manage channels", usage="[channel] [name]")
@@ -243,16 +235,22 @@ class edit(commands.Cog):
         if channel is None:
             channel = ctx.channel
         await channel.clone(name=name, reason=f"cloned by {ctx.author}")
-        await ctx.success(f'{name} channel has been cloned.')
+        await ctx.success(f'I have **cloned** {channel.mention}.')
 
     @Mod.is_mod_configured()
     @cedit.command(name="topic", description="change the channel topic", usage="[channel] [topic]")
     @Permissions.has_permission(manage_channels=True)
     async def ce_topic(self, ctx, channel: typing.Optional[discord.TextChannel] = None, *, topic: str) -> None:
+        
         if channel is None:
             channel = ctx.channel
+        
+        if topic == None: 
+            await channel.edit(topic=None)
+            return await ctx.success("I have **cleared** the channel topic.")
+        
         await channel.edit(topic=topic, reason=f'server description updated by {ctx.author}')
-        await ctx.success('server description has been changed.')
+        await ctx.success(f'I have **updated** {channel.mention} topic to {topic}.')
 
     @Mod.is_mod_configured()
     @cedit.command(name='lock', description="lock a channel", usage="<channel>", brief="manage channels")

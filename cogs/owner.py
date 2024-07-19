@@ -70,7 +70,7 @@ class owner(commands.Cog):
             
             for g in lis]
             
-            await ctx.paginator(guild_list, f"all guilds [{len(self.bot.guilds)}]")  
+            await ctx.paginate(guild_list, f"all guilds [{len(self.bot.guilds)}]")  
 
    @commands.is_owner()
    @commands.command(name='portal', description="get an invite to a guild", usage="[guild id]", brief="bot owner")
@@ -246,7 +246,7 @@ class owner(commands.Cog):
             mutuals_list = [f"{g.name} ``({g.id})`` - ({g.member_count})"
                      for g in lis]
 
-            await ctx.paginator(mutuals_list, f"shared servers with {user} - {len(user.mutual_guilds)} shared")  
+            await ctx.paginate(mutuals_list, f"shared servers with {user} - {len(user.mutual_guilds)} shared")  
 
    @commands.is_owner()
    @commands.command(name='dm', aliases=['dmu'], description="dm a user", usage="[user]", brief="bot owner")
@@ -383,7 +383,7 @@ class owner(commands.Cog):
     
           messages.append(mes)          
           number.append(discord.Embed(color=self.bot.color, title=f"globaluwulocked list [{len(results)}]", description=messages[i]))
-          await ctx.paginator(number)
+          await ctx.paginate(number)
             
    @commands.is_owner()
    @commands.command(aliases=["globalbanned"], description='globalbanned members', brief='bot owner')
@@ -409,7 +409,7 @@ class owner(commands.Cog):
     
           messages.append(mes)          
           number.append(discord.Embed(color=self.bot.color, title=f"globalban list [{len(results)}]", description=messages[i]))
-          await ctx.paginator(number)
+          await ctx.paginate(number)
    
 async def setup(bot) -> None:
     await bot.add_cog(owner(bot))

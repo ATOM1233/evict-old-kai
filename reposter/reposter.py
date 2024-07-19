@@ -1,8 +1,10 @@
 import io, aiohttp, yt_dlp, asyncio
+from bs4 import BeautifulSoup
 import discord, re
 from discord.ext import commands
+from discord.ui import View, Button
 from reposter.scraper.instagram import Instagram
-from discord import Embed, File
+from discord import Embed, File, Message
 from collections import defaultdict
 from bot.headers import Session
 
@@ -25,19 +27,54 @@ class Reposter:
             return await message.delete()
         
     async def repost_instagram(self, bot: commands.Bot, message: discord.Message, url: str):
-        await message.channel.typing()
-        post = await Instagram().post(url)
-        views = self.format_number(post.views)
-        likes = self.format_number(post.likes)
-        post.caption = post.caption.replace('\n', ' ')
-        embed = discord.Embed(color=bot.color, description=f"[**{post.caption[:100] + '...' if len(post.caption) > 150 else post.caption}**]({post.url})")
-        file = None
-        if post.video is not None: file = discord.File(fp=await self.read_file_from_url(post.video.url), filename='evict-instagram.mp4')
-        embed.set_author(name=f"{post.user.full_name} (@{post.user.username})", icon_url=post.user.profile_picture_url, url=f"https://instagram.com/{post.user.username}")
-        embed.set_footer(icon_url=message.author.display_avatar.url, text=f"Requested by {message.author}﹒Views: {views}")
-        view = discord.ui.View()
-        view.add_item(discord.ui.Button(style=discord.ButtonStyle.link, label="View On Instagram", url=post.video.url, emoji="<:instagram:1219530672041889892>"))
-        return await message.channel.send(embed=embed, file=file, view=view) if file is not None else await message.channel.send(embed=embed, view=view)
+        """
+        repost an instagram post
+        """
+
+        async with message.channel.typing():
+                    url = message.content[len("evict") + 1 :]
+                    try:
+                        await message.delete()
+                    except:
+                        pass
+
+                    
+                        headers = {
+                            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                            "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1",
+                            "Cookie": "_gid=GA1.2.1666878334.1698168914; _gat_UA-174582130-1=1; _ga=GA1.2.865855812.1698168914; _ga_MNQG2TK2HP=GS1.1.1698168913.1.1.1698168919.54.0.0",
+                            "X-Requested-With": "XMLHttpRequest",
+                        }
+
+                        body = {"url": url, "lang_code": "en"}
+
+                        async with aiohttp.ClientSession(headers=headers) as cs:
+                            async with cs.post("https://fastdl.app/c/", data=body) as r:
+                                if r.status == 200:
+                                    data = await r.read()
+                                    soup = BeautifulSoup(data, "html.parser")
+                                    post = soup.find("a")
+
+                                    post_data = {
+                                        "url": post["href"],
+                                        "extension": "png"
+                                        if post["data-mediatype"] == "Image"
+                                        else "mp4",
+                                    }
+
+                    view = View()
+                    view.add_item(
+                        Button(
+                            label="post url",
+                            url=url
+                        )
+                    )
+
+                    file = File(
+                        await self.bot.getbyte(post_data["url"]),
+                        filename=f"evict_instagram.{post_data['extension']}",
+                    )
+                    return await message.channel.send(file=file, view=view)
    
     def format_number(self, number: int) -> str:
         if number >= 1_000_000_000:
@@ -138,7 +175,7 @@ class Reposter:
             
             embeds.append(embed)
             ctx = await self.bot.get_context(message)
-            return await ctx.paginator(embeds)
+            return await ctx.paginate(embeds)
           else:
             video = x["data"]["play"]
             file = File(fp=await session.getbyte(video), filename="evicttiktok.mp4")

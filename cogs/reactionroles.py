@@ -74,7 +74,7 @@ class reactionroles(commands.Cog):
 
    messages.append(mes)          
    number.append(discord.Embed(color=self.bot.color, title=f"reaction roles ({len(results)})", description=messages[i]))
-   await ctx.paginator(number)   
+   await ctx.paginate(number)   
 
 async def setup(bot: commands.Bot) -> None: 
   await bot.add_cog(reactionroles(bot))      
