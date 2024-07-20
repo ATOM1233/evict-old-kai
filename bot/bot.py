@@ -16,8 +16,6 @@ from cogs.voicemaster import vmbuttons
 from cogs.ticket import CreateTicket, DeleteTicket
 from cogs.giveaway import GiveawayView
 
-from rivalapi.rivalapi import RivalAPI
-
 class Evict(commands.Bot):
   def __init__(self, db: asyncpg.Pool=None):
         super().__init__(command_prefix=EvictContext.getprefix, allowed_mentions=discord.AllowedMentions(roles=False, everyone=False, users=True, replied_user=False), intents=discord.Intents.all(), 
@@ -49,7 +47,6 @@ class Evict(commands.Bot):
         self.evict_api = os.environ.get("evict_api")
         self.rival_api = os.environ.get("rival_api")
         self.proxy_url = os.environ.get("proxy_url")
-        self.rival = RivalAPI(self.rival_api)
         
         self.commands_url = os.environ.get("commands_url")
         self.support_server = os.environ.get("support_server")
