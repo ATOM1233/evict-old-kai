@@ -14,6 +14,14 @@ class Bot(commands.Cog):
     async def on_ready(self): 
         servers_check.start(self.bot)
         
+    @commands.Cog.listener('on_ready')
+    async def stats(self): 
+            channel_id = 1264065200290529350
+            channel = self.bot.get_channel(channel_id)
+            embed = discord.Embed(color=self.bot.color, description=f"evict is now online with **{len(self.bot.guilds)}** guilds and **{len(self.bot.users)}** users.")
+            try: await channel.send(embed=embed)
+            except: return
+        
     @commands.Cog.listener('on_guild_join')
     async def join_log(self, guild: discord.Guild):
             channel_id = 1262304011562782804
