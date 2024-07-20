@@ -14,10 +14,6 @@ class Reposter:
             await self.repost_twitter(bot, message, url)
             return await message.delete()
         
-        elif 'instagram.com' in url:
-            await self.repost_instagram(bot, message, url)
-            return await message.delete()
-        
         elif 'youtube.com' in url or 'youtu.be' in url:
             await self.repost_youtube(bot, message, url)
             return await message.delete()
@@ -25,56 +21,6 @@ class Reposter:
         elif 'tiktok.com' in url:
             await self.repost_tiktok(bot, message, url)
             return await message.delete()
-        
-    async def repost_instagram(self, bot: commands.Bot, message: discord.Message, url: str):
-        """
-        repost an instagram post
-        """
-
-        async with message.channel.typing():
-                    url = message.content[len("evict") + 1 :]
-                    try:
-                        await message.delete()
-                    except:
-                        pass
-
-                    
-                        headers = {
-                            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-                            "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1",
-                            "Cookie": "_gid=GA1.2.1666878334.1698168914; _gat_UA-174582130-1=1; _ga=GA1.2.865855812.1698168914; _ga_MNQG2TK2HP=GS1.1.1698168913.1.1.1698168919.54.0.0",
-                            "X-Requested-With": "XMLHttpRequest",
-                        }
-
-                        body = {"url": url, "lang_code": "en"}
-
-                        async with aiohttp.ClientSession(headers=headers) as cs:
-                            async with cs.post("https://fastdl.app/c/", data=body) as r:
-                                if r.status == 200:
-                                    data = await r.read()
-                                    soup = BeautifulSoup(data, "html.parser")
-                                    post = soup.find("a")
-
-                                    post_data = {
-                                        "url": post["href"],
-                                        "extension": "png"
-                                        if post["data-mediatype"] == "Image"
-                                        else "mp4",
-                                    }
-
-                    view = View()
-                    view.add_item(
-                        Button(
-                            label="post url",
-                            url=url
-                        )
-                    )
-
-                    file = File(
-                        await self.bot.getbyte(post_data["url"]),
-                        filename=f"evict_instagram.{post_data['extension']}",
-                    )
-                    return await message.channel.send(file=file, view=view)
    
     def format_number(self, number: int) -> str:
         if number >= 1_000_000_000:
