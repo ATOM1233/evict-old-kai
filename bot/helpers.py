@@ -4,6 +4,7 @@ from discord import Embed, utils, ButtonStyle, Message
 from typing import Any, Union, Dict, Optional, List, Sequence
 from discord.ui import View
 from discord.ext import commands
+from discord_paginator import Paginator
 
 class EvictContext(Context): 
   flags: Dict[str, Any] = {}
