@@ -526,6 +526,7 @@ class settings(commands.Cog):
 
     @commands.Cog.listener('on_audit_log_entry_create')
     async def webhook_update(self, entry: discord.AuditLogEntry):
+        
         if entry.action == discord.AuditLogAction.webhook_update:
             
             server_logs = await self.bot.db.fetchrow("SELECT * FROM server_logs WHERE guild_id = $1", entry.guild.id) 
@@ -544,12 +545,15 @@ class settings(commands.Cog):
             
     @commands.Cog.listener('on_audit_log_entry_create')
     async def emoji_create(self, entry: discord.AuditLogEntry):
+        
         if entry.action == discord.AuditLogAction.emoji_create:
             
             server_logs = await self.bot.db.fetchrow("SELECT * FROM server_logs WHERE guild_id = $1", entry.guild.id) 
             if not server_logs: return
         
             channel = entry.guild.get_channel(server_logs['channel_id'])
+            
+            await self.bot.fetch_user(entry.target)
             
             embed = discord.Embed(timestamp=datetime.datetime.now(), title='Emoji Created', color=self.bot.color)
             embed.set_author(name=f'{entry.user}', icon_url=entry.user.avatar.url if entry.user.avatar is not None else entry.user.default_avatar.url)

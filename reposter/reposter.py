@@ -3,7 +3,6 @@ from bs4 import BeautifulSoup
 import discord, re
 from discord.ext import commands
 from discord.ui import View, Button
-from reposter.scraper.instagram import Instagram
 from discord import Embed, File, Message
 from collections import defaultdict
 from bot.headers import Session

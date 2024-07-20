@@ -79,12 +79,12 @@ class boosters(commands.Cog):
           await self.bot.db.execute("DELETE FROM booster_module WHERE guild_id = $1", ctx.guild.id)
           await self.bot.db.execute("DELETE FROM booster_roles WHERE guild_id = $1", ctx.guild.id)        
           
-          return await interaction.response.edit_message(embed=discord.Embed(color=self.bot.color, description=f"{self.bot.yes} {ctx.author.mention}: Booster role module cleared"), view=None)
+          return await interaction.response.edit_message(embed=discord.Embed(color=self.bot.color, description=f"{self.bot.yes} {ctx.author.mention}: I have **cleared** the booster role module."), view=None)
 
         async def no_callback(interaction: discord.Interaction): 
-          if interaction.user != ctx.author: return await self.bot.ext.warning(interaction, "This is not your message", ephemeral=True)
+          if interaction.user != ctx.author: return await self.bot.ext.warning(interaction, "This is **not** your message.", ephemeral=True)
           
-          return await interaction.response.edit_message(embed=discord.Embed(color=self.bot.color, description="Alright you changed your mind"), view=None)
+          return await interaction.response.edit_message(embed=discord.Embed(color=self.bot.color, description="I did **not** clear the booster role module."), view=None)
 
         yes.callback = yes_callback
         no.callback = no_callback
@@ -101,26 +101,26 @@ class boosters(commands.Cog):
       check = await self.bot.db.fetchrow("SELECT base FROM booster_module WHERE guild_id = {}".format(ctx.guild.id))      
       
       if role is None:
-        if check is None: return await ctx.warning("Booster role module **base role** isn't set") 
+        if check is None: return await ctx.warning("The booster role base is **not** set.") 
         
         await self.bot.db.execute("UPDATE booster_module SET base = $1 WHERE guild_id = $2", None, ctx.guild.id) 
-        return await ctx.success("Removed base role")
+        return await ctx.success("I have **removed** the booster role base.")
       
-      if role.position >= ctx.guild.get_member(self.bot.user.id).top_role.position: return await ctx.warning("This role can't be configured as booster role base")
+      if role.position >= ctx.guild.get_member(self.bot.user.id).top_role.position: return await ctx.warning("You **need** to be above the role you want to use as a base.")
       
       await self.bot.db.execute("UPDATE booster_module SET base = $1 WHERE guild_id = $2", role.id, ctx.guild.id) 
-      return await ctx.success(f"set {role.mention} as base role".capitalize())
+      return await ctx.success(f"I have set {role.mention} as the base role.")
     
     @boosterrole.command(description="create a booster role", usage="<name>")
     async def create(self, ctx: commands.Context, name: str=None): 
       
-      if not ctx.author in ctx.guild.premium_subscribers: return await ctx.warning("You are not a booster")
+      if not ctx.author in ctx.guild.premium_subscribers: return await ctx.warning("You are **not** a booster.")
       che = await self.bot.db.fetchrow("SELECT * FROM booster_module WHERE guild_id = {}".format(ctx.guild.id))
       
-      if che is None: return await ctx.warning("Booster role module is not configured")
+      if che is None: return await ctx.warning("The booster role module is **not** configured.")
       
       check = await self.bot.db.fetchrow("SELECT * FROM booster_roles WHERE guild_id = {} AND user_id = {}".format(ctx.guild.id, ctx.author.id))
-      if check is not None: return await ctx.warning(f"You already have a booster role. Use `{ctx.clean_prefix}boosterrole edit` command for more")
+      if check is not None: return await ctx.warning(f"You **already** have a booster role. Use `{ctx.clean_prefix}boosterrole edit` command for more")
       
       ro = ctx.guild.get_role(che['base'])
       role = await ctx.guild.create_role(name=f"{ctx.author.name}'s role" if not name else name)  
@@ -138,7 +138,7 @@ class boosters(commands.Cog):
       role = ctx.guild.get_role(check['role_id'])
       
       await role.edit(name=name)
-      await ctx.success(f"Booster role name changed to: {name}")
+      await ctx.success(f"I have **changed** your booster role name to: {name}.")
     
     @has_booster_role()
     @boosterrole.command(description="edit the role icon", usage="[emoji]")
@@ -152,7 +152,7 @@ class boosters(commands.Cog):
       
       try:
        await role.edit(display_icon=icon)
-       await ctx.success(f"Booster role icon changed")
+       await ctx.success(f"I have **updated** your booster role icon.")
       
       except discord.Forbidden as e: return await ctx.error(str(e))
         
@@ -167,7 +167,7 @@ class boosters(commands.Cog):
      color = int(color, 16)
      
      await role.edit(color=color)
-     return await ctx.success("Changed the **booster role** color") 
+     return await ctx.success("I have **changed** your booster role color.") 
 
     @has_booster_role()
     @boosterrole.command(description="delete the booster role")
@@ -177,7 +177,7 @@ class boosters(commands.Cog):
       role = ctx.guild.get_role(check['role_id'])  
       
       await role.delete()
-      await ctx.success("Deleted the booster role")
+      await ctx.success("I have **deleted** your booster role.")
     
     @has_booster_role()
     @boosterrole.command(description="edit a booster role")
