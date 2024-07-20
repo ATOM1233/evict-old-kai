@@ -21,7 +21,7 @@ class chat(commands.Cog):
         
         results = await self.bot.db.fetch("SELECT * FROM autoresponses WHERE guild_id = $1", ctx.guild.id)
         
-        if not results: return await ctx.warning(f"No **autoresponders** are set.")
+        if not results: return await ctx.warning(f"There are no **autoresponders** set.")
         return await ctx.paginate([f"{result['key']} - {result['response']}" for result in results], f"autoresponders ({len(results)})", {"name": ctx.guild.name, "icon_url": ctx.guild.icon})  
 
   @autoresponder.command(name='delete', description='delete an autoresponder', brief="manage guild", aliases=['del', 'remove', 'rm'], usage="trigger")
@@ -32,7 +32,7 @@ class chat(commands.Cog):
         if not key: return await ctx.warning(f"You don't have an autoresponse for `{toggle}`")
         
         await ctx.bot.db.execute("DELETE FROM autoresponses WHERE guild_id = $1 AND key = $2", ctx.guild.id, toggle)
-        return await ctx.warning(f'Successfully **deleted** the autoresponse for `{toggle}`')
+        return await ctx.success(f'I have successfully **deleted** the autoresponse for `{toggle}`')
     
   @autoresponder.command(name='add', description='create an autoresponder', brief="manage guild", aliases=['set'], usage="[trigger], [response]")
   @Permissions.has_permission(manage_guild=True) 
@@ -40,10 +40,10 @@ class chat(commands.Cog):
         
         autoresponse = message.split(',', 1)
         key = await ctx.bot.db.fetch("SELECT * FROM autoresponses WHERE guild_id = $1 AND key = $2", ctx.guild.id, autoresponse[0])
-        if key: return await ctx.warning(f"You already have an autoresponse for `{autoresponse[0]}`")
+        if key: return await ctx.warning(f"You **already** have an autoresponse for `{autoresponse[0]}`")
         
         await ctx.bot.db.execute("INSERT INTO autoresponses VALUES ($1, $2, $3)", ctx.guild.id, autoresponse[0], autoresponse[1].lstrip())
-        return await ctx.warning(f'Successfully **added** the autoresponse for `{autoresponse[0].lstrip()}` with response `{autoresponse[1].lstrip()}`')
+        return await ctx.success(f'I have **added** the autoresponse for `{autoresponse[0].lstrip()}` with response `{autoresponse[1].lstrip()}`')
 
   @autoresponder.command(name="variables", help="config", description="returns variables for autoresponder")
   async def ar_variables(self, ctx: commands.Context): 
@@ -69,17 +69,17 @@ class chat(commands.Cog):
     if check: await self.bot.db.execute("UPDATE autoreact SET emojis = $1 WHERE guild_id = $2 AND trigger = $3", sql_as_text, ctx.guild.id, con[0])   
     else: await self.bot.db.execute("INSERT INTO autoreact VALUES ($1,$2,$3)", ctx.guild.id, con[0], sql_as_text)
     
-    await ctx.warning(f"Added autoreact for **{con[0]}** - {''.join([e for e in emojis])}")
+    await ctx.success(f"I have **added** the autoreact for **{con[0]}** - {''.join([e for e in emojis])}")
   
   @autoreact.command(name="remove", help="config", description="remove auto reactions from a content", brief="manage guild", usage='[content]')
   @Permissions.has_permission(manage_guild=True) 
   async def autoreact_remove(self, ctx: commands.Context, *, content: str): 
     
     check = await self.bot.db.fetchrow("SELECT * FROM autoreact WHERE guild_id = $1 AND trigger = $2", ctx.guild.id, content)
-    if not check: return await ctx.warning(f"No autoreaction found with the content **{content}**")
+    if not check: return await ctx.success(f"No autoreaction found with the content **{content}**")
     
     await self.bot.db.execute("DELETE FROM autoreact WHERE guild_id = $1 AND trigger = $2", ctx.guild.id, content)
-    return await ctx.warning(f"Deleted autoreaction with the content **{content}**")
+    return await ctx.success(f"Deleted autoreaction with the content **{content}**")
 
   @autoreact.command(name="list", description="return a list of autoreactions in this server")
   async def autoreact_list(self, ctx: commands.Context): 
