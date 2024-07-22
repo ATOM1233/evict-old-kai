@@ -1,6 +1,6 @@
 import discord, random, json, asyncio, aiohttp
 from discord.ext import commands
-from utils.utils import Pack
+from patches.fun import Pack
 from random import randrange
 from io import BytesIO
 from patches.permissions import Permissions
