@@ -54,22 +54,22 @@ class fun(commands.Cog):
     @commands.command(description="retard rate an user", help="fun", usage="<member>")
     async def howretarded(self, ctx, member: discord.Member=commands.Author):
      if member.id in self.bot.owner_ids: await ctx.reply(embed=discord.Embed(color=self.bot.color, title="how retarded", description=f"{member.mention} is `0%` retarded <a:retard:1216970788259893381>"))
-     else: await ctx.reply(embed=discord.Embed(color=self.bot.color, title="how retarded", description=f"{member.mention} is `{randrange(101)}%` retarded <a:retard:1216970788259893381>"))
+     else: await ctx.reply(embed=discord.Embed(color=self.bot.color, title="how retarded", description=f"{member.mention} is `{randrange(100)}%` retarded <a:retard:1216970788259893381>"))
 
     @commands.command(description="gay rate an user", help="fun", usage="<member>")
     async def howgay(self, ctx, member: discord.Member=commands.Author):
      if member.id in self.bot.owner_ids: return await ctx.reply(embed=discord.Embed(color=self.bot.color, title="gay r8", description=f"{member.mention} is `0%` gay 🏳️‍🌈"))
-     else:await ctx.reply(embed=discord.Embed(color=self.bot.color, title="gay r8", description=f"{member.mention} is `{randrange(1000)}%` gay 🏳️‍🌈"))
+     else:await ctx.reply(embed=discord.Embed(color=self.bot.color, title="gay r8", description=f"{member.mention} is `{randrange(100)}%` gay 🏳️‍🌈"))
     
     @commands.command(description="cool rate an user", help="fun", usage="<member>")
     async def howcool(self, ctx, member: discord.Member=commands.Author):
      if member.id in self.bot.owner_ids: return
-     else: await ctx.reply(embed=discord.Embed(color=self.bot.color, title="cool r8", description=f"{member.mention} is `{randrange(1000)}%` cool 😎"))
+     else: await ctx.reply(embed=discord.Embed(color=self.bot.color, title="cool r8", description=f"{member.mention} is `{randrange(100)}%` cool 😎"))
 
     @commands.command(description="check an user's iq", help="fun", usage="<member>")
     async def iq(self, ctx, member: discord.Member=commands.Author):
      if member.id in self.bot.owner_ids: return await ctx.reply(embed=discord.Embed(color=self.bot.color, title="iq test", description=f"{member.mention} has `3000` iq 🧠"))
-     else: await ctx.reply(embed=discord.Embed(color=self.bot.color, title="iq test", description=f"{member.mention} has `{randrange(3000)}` iq 🧠"))
+     else: await ctx.reply(embed=discord.Embed(color=self.bot.color, title="iq test", description=f"{member.mention} has `{randrange(100)}` iq 🧠"))
 
     @commands.command(description="hot rate an user", help="fun", usage="<member>")
     async def hot(self, ctx, member: discord.Member=commands.Author):

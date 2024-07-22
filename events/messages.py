@@ -198,7 +198,16 @@ class Messages(commands.Cog):
       async for message in message.channel.history(limit=3):
         if message.author.id == self.bot.user.id: await message.delete()
 
-      return await message.channel.send(stickym)   
+      return await message.channel.send(stickym)  
+    
+  @commands.Cog.listener('on_message')
+  async def lastfm_custom(self, message: discord.Message): 
+       if not message.guild: return 
+       if message.author.bot: return 
+       check = await self.bot.db.fetchrow("SELECT * FROM lastfmcc WHERE command = $1 AND user_id = $2", message.clean_content, message.author.id)
+       if check:
+          context = await self.bot.get_context(message)
+          await context.invoke(self.bot.get_command("nowplaying"))   
         
 async def setup(bot: commands.Bot):
   await bot.add_cog(Messages(bot))

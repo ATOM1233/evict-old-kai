@@ -20,7 +20,7 @@ async def lf_add_reactions(ctx: commands.Context, message: typing.Union[discord.
  reactions = json.loads(check["reactions"])
  if reactions[0] == "none": return
  for r in reactions: await message.add_reaction(r)
- return  
+ return   
 
 @tasks.loop(hours=1)
 async def clear_caches(bot: commands.Bot):
@@ -52,31 +52,27 @@ class lastfm(commands.Cog):
     async def on_ready(self): 
      clear_caches.start(self.bot)  
 
-    @commands.Cog.listener()
-    async def on_message(self, message: discord.Message): 
-       if not message.guild: return 
-       if message.author.bot: return 
-       check = await self.bot.db.fetchrow("SELECT * FROM lastfmcc WHERE command = $1 AND user_id = $2", message.clean_content, message.author.id)
-       if check:
-          context = await self.bot.get_context(message)
-          await context.invoke(self.bot.get_command("nowplaying"))  
-
     @commands.group(invoke_without_command=True, aliases = ['lf'])
     async def lastfm(self, ctx: commands.Context):
         await ctx.create_pages()
 
     @lastfm.command(name="set", description="register your lastfm account", usage="[name]")
     async def lf_set(self, ctx: commands.Context, *, ref: str):
+      
       if not await lastfm_user_exists(ref): return await ctx.lastfm_message("That is **not** a valid **last.fm** username.")                        
+      
       check = await self.bot.db.fetchrow("SELECT * FROM lastfm WHERE user_id = {}".format(ctx.author.id))
       if not check: await self.bot.db.execute("INSERT INTO lastfm VALUES ($1,$2)", ctx.author.id, ref)
+      
       else: await self.bot.db.execute("UPDATE lastfm SET username = $1 WHERE user_id = $2", ref, ctx.author.id)
       return await ctx.lastfm_message(f"I have set your **Last.fm** username as **{ref}**.")
 
     @lastfm.command(name="remove", description="unset your lastfm account")
     async def lf_remove(self, ctx: commands.Context):      
+        
         check = await self.bot.db.fetchrow("SELECT * FROM lastfm WHERE user_id = {}".format(ctx.author.id))        
         if not check: return await ctx.lastfm_message("You don't have a **last.fm** account connected.")
+        
         await self.bot.db.execute("DELETE FROM lastfm WHERE user_id = {}".format(ctx.author.id))
         await ctx.lastfm_message("I have removed your **last.fm** account from the bot.")
          
@@ -90,87 +86,118 @@ class lastfm(commands.Cog):
     
     @lf_embed.command(name="steal", description="steal someone's custom lastfm embed", usage="[member]")
     async def lf_embed_steal(self, ctx: commands.Context, *, member: discord.Member): 
+     
      check = await self.bot.db.fetchrow("SELECT * FROM lfmode WHERE user_id = $1", member.id)
      if not check: return await ctx.warning(f"**{member}** doesn't have a custom lastfm embed.")
+     
      re = await self.bot.db.fetchrow("SELECT * FROM lfmode WHERE user_id = $1", ctx.author.id)
      if not re: await self.bot.db.execute("INSERT INTO lfmode VALUES ($1,$2)", ctx.author.id, check['mode'])
+     
      else: await self.bot.db.execute("UPDATE lfmode SET mode = $1 WHERE user_id = $2", check['mode'], ctx.author.id)
      return await ctx.lastfm_message(f"I have successfully copied **{member.name}'s** custom lastfm embed.")  
 
     @lf_embed.command(name="set", description="set a personal embed as the lastfm embed", usage="[message | embed code]")                 
     async def lf_embed_set(self, ctx: commands.Context, *, embed: str):      
+     
      check = await self.bot.db.fetchrow("SELECT * FROM lfmode WHERE user_id = $1", ctx.author.id)
      if not check: await self.bot.db.execute("INSERT INTO lfmode VALUES ($1,$2)", ctx.author.id, embed)
+     
      else: await self.bot.db.execute("UPDATE lfmode SET mode = $1 WHERE user_id = $2", embed, ctx.author.id) 
      await ctx.lastfm_message(f"I have set your **last.fm** mode to\n```{embed}```")              
     
     @lf_embed.command(name="view", description="check your lastfm custom embed")
     async def lf_embed_view(self, ctx: commands.Context): 
+     
      check = await self.bot.db.fetchrow("SELECT * FROM lfmode WHERE user_id = $1", ctx.author.id)
      if not check: return await ctx.lastfm_message("You do not have a **last.fm** embed.") 
+     
      embed = discord.Embed(color=self.bot.color, description=f"```{check['mode']}```")
      return await ctx.reply(embed=embed)    
 
     @lf_embed.command(name="none", description="clear your last.fm custom embed", aliases=["delete"])
     async def lf_embed_none(self, ctx: commands.Context): 
+     
      check = await self.bot.db.fetchrow("SELECT * FROM lfmode WHERE user_id = $1", ctx.author.id)
      if not check: return await ctx.lastfm_message("You do not have any **last.fm** embed.") 
+     
      await self.bot.db.execute("DELETE FROM lfmode WHERE user_id = $1", ctx.author.id)
      await ctx.lastfm_message("I have deleted your **last.fm** embed.")  
 
     @lastfm.command(name="customcommand", description="set a custom command for nowplaying", usage="[command]", aliases=["cc"])
     async def lf_customcommand(self, ctx: commands.Context, *, cmd: str):
+        
         check = await self.bot.db.fetchrow("SELECT * FROM lastfmcc WHERE user_id = {}".format(ctx.author.id))
         if cmd == "none":   
+            
             if check is None: return await ctx.lastfm_message(f"You don't have a **last.fm** custom command")
+            
             await self.bot.db.execute(f"DELETE FROM lastfmcc WHERE user_id = {ctx.author.id}")
             return await ctx.lastfm_message("Your **Last.fm** custom command got succesfully deleted.")              
+        
         if check is None: await self.bot.db.execute("INSERT INTO lastfmcc VALUES ($1,$2)", ctx.author.id, cmd)       
+        
         else: await self.bot.db.execute("UPDATE lastfmcc SET command = $1 WHERE user_id = $2", cmd, ctx.author.id)
         return await ctx.lastfm_message(f"Your **Last.fm** custom command is {cmd}")         
 
     @lastfm.command(name="topartists", aliases = ['ta', "tar"], description="check a member's top 10 artists", usage="<member>")
     async def lf_topartists(self, ctx: commands.Context, member: discord.Member=None):
+        
+        if member is None: member = ctx.author
         try:
-           if member is None: member = ctx.author
+           
            check = await self.bot.db.fetchrow("SELECT * FROM lastfm WHERE user_id = {}".format(member.id))           
            if check:   
+                
                 user = check["username"]
                 if user != "error": 
+                 
                  jsonData = await self.lastfmhandler.get_top_artists(user, 10)
                  mes = '\n'.join(f"`{i+1}` **[{jsonData['topartists']['artist'][i]['name']}]({jsonData['topartists']['artist'][i]['url']})** {jsonData['topartists']['artist'][i]['playcount']} plays" for i in range(10))
+                 
                  embed = discord.Embed(description = mes,color=self.bot.color)
                  embed.set_thumbnail(url = member.display_avatar)
                  embed.set_author(name = f"{user}'s overall top artists", icon_url = member.display_avatar)
                  return await ctx.reply(embed=embed)  
            else: return await ctx.lastfm_message("There is no **last.fm** account linked for this member.")
+        
         except Exception as e:
             print(e)
 
     @lastfm.command(name="toptracks", aliases = ['tt'], description="check a member's top 10 tracks", usage="<member>")
     async def lf_toptracks(self, ctx: commands.Context, *, member: discord.Member=None):
+        
         if member == None: member = ctx.author
         try:
+            
             check = await self.bot.db.fetchrow("SELECT * FROM lastfm WHERE user_id = {}".format(member.id))
+            
             if check:  
+                
                 user = check["username"]
                 if user != "error":    
+                  
                   jsonData = await self.lastfmhandler.get_top_tracks(user, 10)                               
+                  
                   embed = discord.Embed(description = '\n'.join(f"`{i+1}` **[{jsonData['toptracks']['track'][i]['name']}]({jsonData['toptracks']['track'][i]['url']})** {jsonData['toptracks']['track'][i]['playcount']} plays" for i in range(10)),color = self.bot.color)
                   embed.set_thumbnail(url = ctx.message.author.avatar)
                   embed.set_author(name = f"{user}'s overall top tracks", icon_url = ctx.message.author.avatar)
                   return await ctx.reply(embed=embed)   
             else: return await ctx.lastfm_message("There is no **last.fm** account linked for this member.")
+        
         except Exception as e:
             print(e)
 
     @lastfm.command(name="topalbums", aliases = ['tal'], description="check a member's top 10 albums", usage="<member>")
     async def lf_topalbums(self,ctx: commands.Context, *, member: discord.Member=None):
+        
         if member == None: member=ctx.author
+        
         try:
            check = await self.bot.db.fetchrow("SELECT * FROM lastfm WHERE user_id = {}".format(member.id))
+           
            if check:  
              user = check["username"]
+             
              if user != "error":                     
                   jsonData = await self.lastfmhandler.get_top_albums(user, 10)
                   embed = discord.Embed(description = '\n'.join(f"`{i+1}` **[{jsonData['topalbums']['album'][i]['name']}]({jsonData['topalbums']['album'][i]['url']})** {jsonData['topalbums']['album'][i]['playcount']} plays" for i in range(10)),color = self.bot.color)
@@ -178,16 +205,22 @@ class lastfm(commands.Cog):
                   embed.set_author(name = f"{user}'s overall top albums", icon_url = ctx.message.author.avatar)
                   return await ctx.reply(embed=embed)   
            else: return await ctx.lastfm_message("There is no **last.fm** account linked for this member.")
+        
         except Exception as e:
             print(e)
 
     @lastfm.command(name="user", aliases=["ui"], description="lastfm", help="check info about a lastfm user", usage="<username>")
     async def lf_user(self, ctx: commands.Context, user: typing.Union[discord.User, discord.Member] = commands.Author):
+            
             await ctx.channel.typing()                    
+            
             check = await self.bot.db.fetchrow('SELECT username FROM lastfm WHERE user_id = $1', user.id)
             username = check["username"]
+            
             if not check: return await ctx.warning(f"{'You don' if user == ctx.author else f'**{user}** doesn'}'t have a **last.fm** account linked.")
+            
             info = await self.lastfmhandler.get_user_info(username)
+            
             try:
              i = info["user"]
              name = i["name"]
@@ -206,14 +239,18 @@ class lastfm(commands.Cog):
              embed.set_author(name=f"{name}", icon_url=image)
              embed.add_field(name=f"Plays", value=f"**artists:** {artistcount:,}\n**plays:** {playcount:,}\n**tracks:** {trackcount:,}\n**albums:** {albumcount:,}", inline=False)
              embed.add_field(name=f"Info", value=f"**name:** {realname}\n**registered:** <t:{int(i['registered']['#text'])}:R>\n**subscriber:** {subscriber}\n**age:** {age:,}", inline=False)
+             
              await ctx.reply(embed=embed)
-            except TypeError: return await ctx.lastfm_message("This user doesn't have a **last.fm** account connected")
+            except TypeError: return await ctx.lastfm_message("This user doesn't have a **Last.fm** account connected.")
 
     @lastfm.command(name="whoknows", aliases = ['wk'], description="see who knows a certain artist in the server", usage="[artist]")
     async def lf_whoknows(self, ctx: commands.Context, * , artist: str=None):
+     
      await ctx.typing()
+     
      check = await self.bot.db.fetchrow("SELECT username FROM lastfm WHERE user_id = {}".format(ctx.author.id))
-     if check is None: return await ctx.lastfm_message("You don't have a **last.fm** account connected.")
+     if check is None: return await ctx.lastfm_message("You don't have a **Last.fm** account connected.")
+     
      fmuser = check['username']
      if not artist:    
        resp = await self.lastfmhandler.get_tracks_recent(fmuser, 1)
@@ -223,8 +260,10 @@ class lastfm(commands.Cog):
      rows = []      
      ids = [str(m.id) for m in ctx.guild.members]
      results =  await self.bot.db.fetch(f"SELECT * FROM lastfm WHERE user_id IN ({','.join(ids)})")     
-     if len(results) == 0: return await ctx.lastfm_message("No one has a **last.fm** account linked.")
+     
+     if len(results) == 0: return await ctx.lastfm_message("No one has a **Last.fm** account linked.")
      for result in results: 
+          
           user_id = int(result[0])
           fmuser2 = result[1] 
           us = ctx.guild.get_member(user_id)
@@ -238,122 +277,167 @@ class lastfm(commands.Cog):
           rows.append(f"{'<a:developer:1208257462549880913>' if num == 1 else f'`{num}`'} [**{x[0]}**]({x[2]}) has **{x[1]}** plays")
 
      if len(rows) == 0: return await ctx.warning(f"No one has listened to {artist}.")              
+     
      embeds = []
      embed = discord.Embed(color=self.bot.color, description="\n".join(rows), title=f"Top Listeners for {artist} in {ctx.guild.name}")
      embed.set_author(name=f"{ctx.author.display_name}", icon_url=ctx.author.display_avatar.url)
      embeds.append(embed)     
+     
      return await ctx.reply(embed=embed) 
 
     @lastfm.command(name="globalwhoknows", aliases=["gwk"], description="see who knows a certain artist across all servers the bot is in", usage="[artist]")
     async def lf_globalwhoknows(self, ctx: commands.Context, * ,artist: str=None):
+      
       await ctx.typing()
+      
       check = await self.bot.db.fetchrow("SELECT username FROM lastfm WHERE user_id = {}".format(ctx.author.id))
-      if check is None: return await ctx.lastfm_message("You don't have a **last.fm** account connected.")
+      if check is None: return await ctx.lastfm_message("You don't have a **Last.fm** account connected.")
+      
       fmuser = check['username']
       if not artist:    
        resp = await self.lastfmhandler.get_tracks_recent(fmuser, 1)
        artist = resp["recenttracks"]["track"][0]["artist"]["#text"]
+      
       tuples = []  
       o = 0 
+      
       if not self.globalwhoknows_cache.get(artist):
        o = 1
        ids = [str(m.id) for m in self.bot.users]     
+       
        results = await self.bot.db.fetch(f"SELECT * FROM lastfm WHERE user_id IN ({','.join(ids)})")     
-       if len(results) == 0: return await ctx.lastfm_message("No one has a **last.fm** account linked.")
+       
+       if len(results) == 0: return await ctx.lastfm_message("No one has a **Last.fm** account linked.")
        for result in results: 
+          
           user_id = int(result[0])
           fmuser2 = result[1] 
           us = self.bot.get_user(user_id)
           if not us: continue
           z = await self.lastfmhandler.get_artist_playcount(fmuser2, artist)
           tuples.append(tuple([str(us), int(z), f"https://last.fm/user/{fmuser2}", us.id]))
+       
        self.globalwhoknows_cache[artist] = sorted(tuples, key=lambda n: n[1])[::-1][:10]   
        gwk_list = sorted(tuples, key=lambda n: n[1])[::-1][:10]
+      
       else: gwk_list = self.globalwhoknows_cache[artist]    
       num = 0
       rows = []
+      
       for x in gwk_list:
         if x[1] != 0:
           num += 1
           rows.append(f"{'<:crown:1263741407969939467>' if num == 1 else f'`{num}`'} [**{x[0]}**]({x[2]}) has **{x[1]}** plays")
 
       if len(rows) == 0: return await ctx.warning(f"No one has listened to {artist}")               
+      
       embeds = []
       embed = discord.Embed(color=self.bot.color, description="\n".join(rows), title=f"Top Listeners for {artist}")
       embed.set_author(name=f"{ctx.author.display_name}", icon_url=ctx.author.display_avatar.url)
       embeds.append(embed)
+      
       if o == 0: return await ctx.reply(embed=embeds[0])
       re = await self.bot.db.fetchrow("SELECT * FROM lfcrowns WHERE user_id = $1 AND artist = $2", sorted(tuples, key=lambda n: n[1])[::-1][0][3], artist)
       if not re: 
+        
         embeds.append(discord.Embed(color=self.bot.color, description=f"> `{(await self.bot.fetch_user(sorted(tuples, key=lambda n: n[1])[::-1][0][3]))}` claimed the crown for **{artist}**"))
         ar = await self.bot.db.fetchrow("SELECT * FROM lfcrowns WHERE artist = $1", artist)
         if ar: await self.bot.db.execute("UPDATE lfcrowns SET user_id = $1 WHERE artist = $2", sorted(tuples, key=lambda n: n[1])[::-1][0][3], artist) 
         else: await self.bot.db.execute("INSERT INTO lfcrowns VALUES ($1,$2)", sorted(tuples, key=lambda n: n[1])[::-1][0][3], artist)
+      
       return await ctx.reply(embed=embed)  
     
     @lastfm.command(name="cover", description="get the cover image of your lastfm song", usage="<member>")
     async def lf_cover(self, ctx: commands.Context, *, member: discord.Member=commands.Author): 
+     
      check = await self.bot.db.fetchrow("SELECT username FROM lastfm WHERE user_id = $1", member.id)
      if check is None: return await ctx.lastfm_message("You don't have a **last.fm** account connected.")  
+     
      user = check[0]
+     
      a = await self.lastfmhandler.get_tracks_recent(user, 1)
      file = discord.File(await self.bot.getbyte((a['recenttracks']['track'][0])['image'][3]['#text']), filename="cover.png")
+     
      return await ctx.reply(f"**{a['recenttracks']['track'][0]['name']}**", file=file)
 
     @lastfm.command(name="reactions", description="add custom reactions to your lastfm embed", usage="[emojis | none]\nnone -> no reactions for np command\nno emoji -> default emojis will be used")
     async def lf_reactions(self, ctx: commands.Context, *emojis: str): 
+     
      check = await self.bot.db.fetchrow("SELECT * FROM lfreactions WHERE user_id = $1", ctx.author.id)
+     
      if len(emojis) == 0: 
       if not check: return await ctx.lastfm_message("You don't have any **last.fm** custom reaction to remove.")
+      
       await self.bot.db.execute("DELETE FROM lfreactions WHERE user_id = $1", ctx.author.id)
       return await ctx.lastfm_message("I have **deleted** your **last.fm** custom reactions.")
+     
      sql_as_text = json.dumps(emojis)    
      if check: await self.bot.db.execute("UPDATE lfreactions SET reactions = $1 WHERE user_id = $2", sql_as_text, ctx.author.id)
+     
      else: await self.bot.db.execute("INSERT INTO lfreactions VALUES ($1,$2)", ctx.author.id, sql_as_text)
      return await ctx.lastfm_message(f"Your **last.fm** reactions are {''.join([e for e in emojis])}")
     
     @lastfm.command(name="howto", description="tutorial for using lastfm", aliases=["tutorial"])
     async def lf_howto(self, ctx: commands.Context): 
-      await ctx.reply(f"1) Create an account at https://last.fm\n2) Link your **Spotify** account to your **Last.fm** account\n3) Use the command `{ctx.clean_prefix}lf set [your lastfm username]`\n4) While you listen to your songs, you can use the `{ctx.clean_prefix}nowplaying` command") 
+      await ctx.lastfm_message("instructions can be viewed at <https://new-docs.evict.cc/configuration/lastfm>")
 
     @lastfm.command(name="crowns", description="get the crowns of a member", usage="<user>") 
     async def lf_crowns(self, ctx: commands.Context, *, member: discord.User=None): 
+      
       if member is None: member = ctx.author 
       check = await self.bot.db.fetch("SELECT * FROM lfcrowns WHERE user_id = $1", member.id)
+      
       if len(check) == 0: return await ctx.lastfm_message("I **couldn't** find any crown for **{}**".format(member))
       await ctx.typing()
+      
       if not self.lastfm_crowns.get(str(member.id)): 
+        
         re = await self.bot.db.fetchrow('SELECT * FROM lastfm WHERE user_id = $1', member.id)
         idk = [(x['artist'], await self.lastfmhandler.get_artist_playcount(re['username'], x['artist'])) for x in check]
+        
         crowns = sorted(idk, key=lambda s: s[1])[::-1]
         self.lastfm_crowns[str(member.id)] = crowns
+      
       else: crowns = self.lastfm_crowns[str(member.id)]
+      
       i=1 
       l=1 
+      
       embeds = []
       mes = ""
+      
       for c in crowns: 
        mes += f"`{i}` **{c[0]}** - **{c[1]}** plays\n"
        i+=1
        l+=1
+      
        if l == 11: 
+      
         embeds.append(discord.Embed(color=self.bot.color, title=f"{member.name}'s cronws ({len(check)})", description=mes))  
+      
         mes = ""
         l = 1 
+      
       embeds.append(discord.Embed(color=self.bot.color, title=f"{member.name}'s cronws ({len(check)})", description=mes))    
       return await ctx.paginate(embeds) 
     
     @lastfm.command(name="chart", aliases=["c"], description="Generates an album image chart.", usage="[size] [period]\nsizes available: 3x3 (default), 2x2, 4x5, 20x4\nperiods available: alltime (default), yearly, monthly")
     async def lf_chart(self, ctx: commands.Context, user: discord.User=None, size: str = "3x3", period: Literal['overall', '7day', '1month', '3month', '6month', '12month'] = 'overall'):
+      
       if user is None: user = ctx.author   
       username = await self.bot.db.fetchval("SELECT username FROM lastfm WHERE user_id = $1", user.id)
+      
       if not username: 
         return await ctx.lastfm_send(f"{user.mention} does not have a lastfm account linked.")
+      
       params = {'username': username, 'size': size, 'period': period}
       headers = {"api-key": self.bot.evict_api}
+      
       x = await self.session.get_json("https://kure.pl/lastfm/chart", params=params, headers=headers)
+      
       if detail := x.get('detail'):
         return await ctx.error(detail)
+      
       image = await self.session.get_bytes(x['image_url'])
       return await ctx.reply(f"Last.FM chart for {user.mention} **{size}** album chart ({period})", file = File(BytesIO(image), filename="chart.png"))
     
@@ -377,20 +461,27 @@ class lastfm(commands.Cog):
     async def topartists(self, ctx: commands.Context, *, member: discord.Member=None): 
      await ctx.invoke(self.bot.get_command("lastfm topartists"), member=member)   
 
-    @commands.command(aliases=['np', 'fm'], description="check what song is playing right now", usage="<user>")
+    @commands.command(aliases=['np', 'fm'], help="lastfm", description="check what song is playing right now", usage="<user>")
     async def nowplaying(self, ctx: commands.Context, *, member: discord.User=None):
+        
         if member is None: member = ctx.author
+        
         try:
             await ctx.typing()             
             check = await self.bot.db.fetchrow("SELECT * FROM lastfm WHERE user_id = {}".format(member.id))            
+            
             if check:   
                starData = await self.bot.db.fetchrow("SELECT mode FROM lfmode WHERE user_id = $1", member.id)
+               
                if starData is None:  
                 user = check['username']
+                
                 if user != "error":      
+                    
                     a = await self.lastfmhandler.get_tracks_recent(user, 1)
                     artist = a['recenttracks']['track'][0]['artist']['#text'].replace(" ", "+")
                     album = a['recenttracks']['track'][0]['album']['#text'] or "N/A"
+                    
                     embed = discord.Embed(colour=self.bot.color)
                     embed.add_field(name="**Track:**", value = f"""[{"" + a['recenttracks']['track'][0]['name']}]({"" + a['recenttracks']['track'][0]['url']})""", inline = False)
                     embed.add_field(name="**Artist:**", value = f"""[{a['recenttracks']['track'][0]['artist']['#text']}](https://last.fm/music/{artist})""", inline = False)
@@ -398,18 +489,24 @@ class lastfm(commands.Cog):
                     embed.set_thumbnail(url=(a['recenttracks']['track'][0])['image'][3]['#text'])
                     embed.set_footer(text = f"Track Playcount: {await self.lastfmhandler.get_track_playcount(user, a['recenttracks']['track'][0])} ・Album: {album}", icon_url = (a['recenttracks']['track'][0])['image'][3]['#text'])
                     message = await ctx.reply(embed=embed)
-                    return await lf_add_reactions(message)
+                    return await lf_add_reactions(ctx, message)
+               
                else:
                 user = check['username']
+                
                 try: 
+                
                  x = await EmbedBuilder.to_object(EmbedBuilder.embed_replacement(member, await self.lastfm_replacement(user, starData[0])))
                  message = await ctx.send(content=x[0], embed=x[1], view=x[2])
+                
                 except: message = await ctx.send(await self.lastfm_replacement(user, starData[0]))
-                return await lf_add_reactions(message)
-            elif check is None: return await ctx.lastfm_message(f"**{member}** doesn't have a **Last.fm account** linked. Use `{ctx.clean_prefix}lf set <username>` to link your **account**.")                      
+                return await lf_add_reactions(ctx, message)
+            
+            elif check is None: return await ctx.lastfm_message(ctx, f"**{member}** doesn't have a **Last.fm account** linked. Use `{ctx.clean_prefix}lf set <username>` to link your **account**.")                      
+        
         except Exception: 
            print(traceback.format_exc())
-           return await ctx.lastfm_message(f"I am **unable** to get **{member.name}'s** recent track.")  
+           return await ctx.lastfm_message(ctx, f"I am **unable** to get **{member.name}'s** recent track.")                      
     
 async def setup(bot):
     await bot.add_cog(lastfm(bot))
