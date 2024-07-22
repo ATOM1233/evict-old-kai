@@ -2,7 +2,7 @@ import discord, random, string, asyncio, aiohttp
 from discord.ext import commands 
 from patches.permissions import Permissions
 from patches.classes import Mod
-from utils.utils import EmbedScript
+from utils.embed import EmbedConverter
 from bot.helpers import EvictContext
 from patches.classes import ValidWebhookCode
 
@@ -180,7 +180,7 @@ class misc(commands.Cog):
   
   @webhook.command(name="send", aliases=["post"], description="send a message via a webhook using a code", brief="manage server")
   @Permissions.has_permission(manage_guild=True)
-  async def webhook_send(self, ctx: EvictContext, code: ValidWebhookCode, *, script: EmbedScript=None):
+  async def webhook_send(self, ctx: EvictContext, code: ValidWebhookCode, *, script: EmbedConverter=None):
    check = await self.bot.db.fetchrow("SELECT * FROM webhook WHERE guild_id = $1 AND code = $2", ctx.guild.id, code)
    if script is None: 
       if ctx.message.attachments: 

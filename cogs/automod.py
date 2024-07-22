@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands 
-from patches.permissions import Permissions
-from utils.utils import Whitelist
+from patches.permissions import Permissions, Whitelist
 
 async def decrypt_message(content: str) -> str: 
   return content.lower().replace("1", "i").replace("4", "a").replace("3", "e").replace("0", "o").replace("@", "a") 

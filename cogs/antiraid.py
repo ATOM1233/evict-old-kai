@@ -1,7 +1,7 @@
 import humanfriendly, discord 
 from discord.ext import commands
 from patches.permissions import Permissions
-from utils.utils import Whitelist
+from patches.permissions import Whitelist
 
 def check_whitelist(module: str):
         async def predicate(ctx: commands.Context):

@@ -4,6 +4,7 @@ from discord.ext.commands import Cog, Context, group, command, Bot as AB
 from discord.ui import Select, View, Button 
 from typing import Union
 from utils.utils import InvokeClass, EmbedScript
+from utils.embed import Embed, EmbedConverter
 from discord.ext import commands
 from patches.permissions import Permissions
 
@@ -30,7 +31,7 @@ class config(Cog):
      await ctx.reply(embed=embed)
 
     @embed.command(description="create an embed", usage="[code]")
-    async def create(self, ctx: Context, *, name: EmbedScript): 
+    async def create(self, ctx: Context, *, name: EmbedConverter): 
      return await ctx.send(**name)
 
     @group(invoke_without_command=True)
