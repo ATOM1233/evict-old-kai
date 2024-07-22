@@ -1,6 +1,56 @@
-import discord, datetime, logging
+import discord, datetime, aiohttp, logging
 from discord.ext import commands, tasks
 from discord import Embed
+from asyncio import log
+
+log = logging.getLogger(__name__)
+
+@tasks.loop(seconds=60)
+async def shard_stats(self):
+    log.info("Collecting shard stats")
+    shards = []
+    for shard_id, shard in self.bot.shards.items():
+      guilds = [g for g in self.bot.guilds if g.shard_id == shard_id]
+      users = len(self.bot.users)
+      shard_info = {
+                "shard_id": shard_id,
+                "shard_name": f"Shard {shard_id}",
+                "shard_ping": round(shard.latency * 1000),  # Kept in milliseconds for internal use
+                "shard_guild_count": f"{len(guilds):,}",
+                "shard_user_count": f"{users:,}",
+                "shard_guilds": [str(g.id) for g in guilds],
+                "server_count": len(guilds),  # Added field
+                "member_count": users,  # Added field
+                "uptime": str(self.bot.ext.uptime),  # Replace with actual uptime if available
+                "latency": round(shard.latency * 1000) / 1000,  # Converted to seconds
+                "last_updated": datetime.datetime.utcnow().isoformat()  # Current timestamp in ISO format
+            }
+      shards.append(shard_info)
+
+      shard_data = {
+            "bot": "Evict",  # Replace with your bot's name or identifier
+            "shards": shards
+        }
+
+      try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    "https://kure.pl/shards/post",  # Updated FastAPI server URL
+                    json=shard_data,
+                    headers={"api-key": "58ZCTj0fTkai"}  # Replace with your actual API key
+                ) as response:
+                    if response.status == 200:
+                        log.info("Shard data successfully sent to the API")
+                    else:
+                        log.error(f"Failed to send shard data: {response.status} - {await response.text()}")
+                        log.debug(f"Response headers: {response.headers}")
+                        log.debug(f"Request payload: {shard_data}")
+      except aiohttp.ClientConnectorError as e:
+            log.error(f"Connection error occurred while sending shard data: {e}")
+      except aiohttp.ClientResponseError as e:
+            log.error(f"Response error occurred while sending shard data: {e}")
+      except Exception as e:
+            log.error(f"Exception occurred while sending shard data: {e}")
 
 @tasks.loop(seconds=5)
 async def servers_check(bot: commands.Bot):
@@ -13,6 +63,7 @@ class Bot(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self): 
         servers_check.start(self.bot)
+        shard_stats.start(self)
         
     @commands.Cog.listener('on_ready')
     async def stats(self): 

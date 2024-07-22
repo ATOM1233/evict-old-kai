@@ -17,7 +17,7 @@ class config(Cog):
     
     @Permissions.has_permission(manage_messages=True)
     @command(name="createembed", aliases=['ce'], description="create embed", usage="[code]", brief="manage messages")
-    async def createembed(self, ctx: Context,  *, code: EmbedScript):
+    async def createembed(self, ctx: Context,  *, code: EmbedConverter):
      await ctx.send(**code)
 
     @group(invoke_without_command=True)

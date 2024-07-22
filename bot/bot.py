@@ -18,10 +18,10 @@ from cogs.giveaway import GiveawayView
 
 from rivalapi.rivalapi import RivalAPI
 
-class Evict(commands.Bot):
+class Evict(commands.AutoShardedBot):
   def __init__(self, db: asyncpg.Pool=None):
         super().__init__(command_prefix=EvictContext.getprefix, allowed_mentions=discord.AllowedMentions(roles=False, everyone=False, users=True, replied_user=False), intents=discord.Intents.all(), 
-                         owner_ids=[214753146512080907, 598125772754124823],
+                         owner_ids=[214753146512080907, 598125772754124823], shard_count=1,
                          help_command=HelpCommand(), strip_after_prefix=True, activity=discord.CustomActivity(name="🔗 evict.cc"))
         
         self.db = db
