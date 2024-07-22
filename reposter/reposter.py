@@ -1,9 +1,12 @@
 import io, aiohttp, yt_dlp, asyncio
-from bs4 import BeautifulSoup
 import discord, re
 from discord.ext import commands
+<<<<<<< HEAD
 from discord.ui import View, Button
 from discord import Embed, File, Message
+=======
+from discord import Embed, File
+>>>>>>> 0f50cfc2b9c5fcb39d5da0c0b913bd1cd9fc5b6c
 from collections import defaultdict
 from bot.headers import Session
 
