@@ -124,6 +124,7 @@ class emoji(commands.Cog):
    async def sticker_enlarge(self, ctx: commands.Context): 
     
     if ctx.message.stickers: stick = ctx.message.stickers[0]
+    
     else: 
      
      messages = [m async for m in ctx.channel.history(limit=20) if m.stickers]  
@@ -138,6 +139,9 @@ class emoji(commands.Cog):
        
     if ctx.guild.vanity_url_code == None: return await ctx.warning("You **must** have a vanity set to run this command.")
     
+    if len(ctx.guild.stickers) == 0:
+            return await ctx.warning("There are **no** stickers in this server.")
+    
     embed = discord.Embed(color=self.bot.color, description=f"{ctx.author.mention}: I have started **tagging** all the servers stickers.")
     message = await ctx.reply(embed=embed)
         
@@ -149,6 +153,9 @@ class emoji(commands.Cog):
     
    @sticker.command(name='list', description="returns a list of server's stickers", aliases=["l"])
    async def sticker_list(self, ctx: commands.Context):
+       
+        if len(ctx.guild.stickers) == 0:
+            return await ctx.warning("There are **no** stickers in this server.")
             
         sticker_list = [f"[**{sticker.name}**]({sticker.url}) (``{sticker.id}``)"
                      for sticker in ctx.guild.stickers]
@@ -275,6 +282,9 @@ class emoji(commands.Cog):
             
    @commands.command(name='emojilist', description="returns a list of server's emojis", aliases=["emojis"])
    async def emojilist(self, ctx: commands.Context):
+       
+        if len(ctx.guild.emojis) == 0:
+            return await ctx.warning("There are **no** emojis in this server.")
             
         emoji_list = [f"{emoji} - [**{emoji.name}**]({emoji.url}) (``{emoji.id}``)"
                      for emoji in ctx.guild.emojis]

@@ -4,7 +4,6 @@ from discord.ext.commands import Cog, Context, group, command, Bot as AB
 from discord.ui import Select, View, Button 
 from typing import Union
 from utils.utils import InvokeClass, EmbedScript
-from utils.embed import Embed, EmbedConverter
 from discord.ext import commands
 from patches.permissions import Permissions
 
@@ -17,7 +16,7 @@ class config(Cog):
     
     @Permissions.has_permission(manage_messages=True)
     @command(name="createembed", aliases=['ce'], description="create embed", usage="[code]", brief="manage messages")
-    async def createembed(self, ctx: Context,  *, code: EmbedConverter):
+    async def createembed(self, ctx: Context,  *, code: EmbedScript):
      await ctx.send(**code)
 
     @group(invoke_without_command=True)
@@ -30,8 +29,9 @@ class config(Cog):
      embed = Embed(color=self.bot.color, description="to view variables visit https://evict.cc/variables")
      await ctx.reply(embed=embed)
 
+    @Permissions.has_permission(manage_messages=True)
     @embed.command(description="create an embed", usage="[code]")
-    async def create(self, ctx: Context, *, name: EmbedConverter): 
+    async def create(self, ctx: Context, *, name: EmbedScript): 
      return await ctx.send(**name)
 
     @group(invoke_without_command=True)
@@ -43,27 +43,27 @@ class config(Cog):
     async def mediaonly_add(self, ctx: Context, *, channel: TextChannel):
         
         check = await self.bot.db.fetchrow("SELECT * FROM mediaonly WHERE guild_id = $1 AND channel_id = $2", ctx.guild.id, channel.id)
-        if check is not None: return await ctx.warning(f"{channel.mention} is already added")
+        if check is not None: return await ctx.warning(f"The channel {channel.mention} is **already** added as a mediaonly channel.")
         
         elif check is None: 
           await self.bot.db.execute("INSERT INTO mediaonly VALUES ($1,$2)", ctx.guild.id, channel.id)
-          return await ctx.success(f"added {channel.mention} as a mediaonly channel")
+          return await ctx.success(f"I have **added** {channel.mention} as a **mediaonly** channel.")
 
     @mediaonly.command(name="remove", description="unset media only", usage="[channel]", brief="manage_guild") 
     @commands.has_permissions(manage_guild=True)
     async def mediaonly_remove(self, ctx: Context, *, channel: TextChannel=None):
      if channel is not None: 
       check = await self.bot.db.fetchrow("SELECT * FROM mediaonly WHERE guild_id = $1 AND channel_id = $2", ctx.guild.id, channel.id)
-      if check is None: return await ctx.warning(f"{channel.mention} is not added") 
+      if check is None: return await ctx.warning(f"The channel {channel.mention} is not added as a **mediaonly** channel.") 
       
       await self.bot.db.execute("DELETE FROM mediaonly WHERE guild_id = $1 AND channel_id = $2", ctx.guild.id, channel.id)
-      return await ctx.success(f"{channel.mention} isn't a **mediaonly** channel anymore")
+      return await ctx.success(f"The channel {channel.mention} isn't a **mediaonly** channel anymore.")
 
      res = await self.bot.db.fetch("SELECT * FROM mediaonly WHERE guild_id = $1", ctx.guild.id) 
      
-     if res is None: return await ctx.warning("There is no **mediaonly** channel in this server")
+     if res is None: return await ctx.warning("There is no **mediaonly** channel in this server.")
      await self.bot.db.execute("DELETE FROM mediaonly WHERE guild_id = $1", ctx.guild.id)
-     return await ctx.success("Removed all channels") 
+     return await ctx.success("I have removed **all** channels from mediaonly.") 
 
     @mediaonly.command(name="list", description="return a list of mediaonly channels", help="config")
     async def mediaonly_list(self, ctx: Context): 
@@ -76,7 +76,7 @@ class config(Cog):
           messages = []
           results = await self.bot.db.fetch("SELECT * FROM mediaonly WHERE guild_id = {}".format(ctx.guild.id))
           
-          if len(results) == 0: return await ctx.reply("there are no mediaonly channels")
+          if len(results) == 0: return await ctx.reply("There are **no** mediaonly channels set.")
           for result in results:
               
               mes = f"{mes}`{k}` <#{result['channel_id']}> ({result['channel_id']})\n"
@@ -108,10 +108,10 @@ class config(Cog):
     async def poj_add(self, ctx: Context, *, channel: TextChannel): 
         
         check = await self.bot.db.fetchrow("SELECT * FROM pingonjoin WHERE guild_id = $1 AND channel_id = $2", ctx.guild.id, channel.id)
-        if check is not None: return await ctx.warning(f"{channel.mention} is already added")
+        if check is not None: return await ctx.warning(f"The channel {channel.mention} is **already** added as a ping on join channel.")
         
         elif check is None: await self.bot.db.execute("INSERT INTO pingonjoin VALUES ($1,$2)", channel.id, ctx.guild.id)
-        return await ctx.success(f"I will ping new members in {channel.mention}")  
+        return await ctx.success(f"I will now ping new members in {channel.mention}.")  
     
     @pingonjoin.command(name="remove", description="remove a pingonjoin channel", usage="<channel>", brief="manage_guild")
     @commands.has_permissions(manage_guild=True)
@@ -120,17 +120,17 @@ class config(Cog):
       if channel is not None: 
         
         check = await self.bot.db.fetchrow("SELECT * FROM pingonjoin WHERE guild_id = $1 AND channel_id = $2", ctx.guild.id, channel.id)
-        if check is None: return await ctx.error(f"{channel.mention} is not added")
+        if check is None: return await ctx.error(f"The channel {channel.mention} is **not** added as an pingonjoin channel.")
         
         elif check is not None: await self.bot.db.execute("DELETE FROM pingonjoin WHERE guild_id = $1 AND channel_id = $2", ctx.guild.id, channel.id)
-        return await ctx.success(f"I will not ping new members in {channel.mention}")
+        return await ctx.success(f"I will not ping new members in {channel.mention}.")
 
       check = await self.bot.db.fetch("SELECT * FROM pingonjoin WHERE guild_id = {}".format(ctx.guild.id))
-      if check is None: return await ctx.error("there is no channel added")
+      if check is None: return await ctx.error("There is no channel added.")
       
       elif check is not None:  await self.bot.db.execute("DELETE FROM pingonjoin WHERE guild_id = {}".format(ctx.guild.id))
       
-      return await ctx.success("I will not ping new members in any channel") 
+      return await ctx.success("I will **not** ping new members in any channel.") 
     
     @pingonjoin.command(name="list", description="get a list of pingonjoin channels", help="config")
     async def poj_list(self, ctx: Context): 
@@ -145,7 +145,7 @@ class config(Cog):
           
           results = await self.bot.db.fetch("SELECT * FROM pingonjoin WHERE guild_id = {}".format(ctx.guild.id))
           
-          if results is None: return await ctx.error("there are no pingonjoin channels")
+          if results is None: return await ctx.error("There are **no** pingonjoin channels.")
           
           for result in results:
               mes = f"{mes}`{k}` {ctx.guild.get_channel(int(result['channel_id'])).mention if ctx.guild.get_channel(result['channel_id']) else result['channel_id']}\n"
@@ -173,13 +173,13 @@ class config(Cog):
     @commands.has_permissions(manage_guild=True)
     async def count(self, ctx: Context, count: int): 
       
-      if count < 1: return await ctx.warning("Count can't be **less** than 1")
+      if count < 1: return await ctx.warning("The count can't be **less** than 1.")
       check = await self.bot.db.fetchrow("SELECT * FROM starboard WHERE guild_id = $1", ctx.guild.id)
       
       if check is None: await self.bot.db.execute("INSERT INTO starboard (guild_id, count) VALUES ($1, $2)", ctx.guild.id, count)
       
       else: await self.bot.db.execute("UPDATE starboard SET count = $1 WHERE guild_id = $2", count, ctx.guild.id)
-      await ctx.success(f"Starboard **count** set to **{count}**")  
+      await ctx.success(f"I have set the starboard **count** set to **{count}**.")  
     
     @starboard.command(name="channel", description="configure the starboard channel", brief="manage guild", usage="[channel]")
     @commands.has_permissions(manage_guild=True)
@@ -189,25 +189,25 @@ class config(Cog):
       if check is None: await self.bot.db.execute("INSERT INTO starboard (guild_id, channel_id) VALUES ($1, $2)", ctx.guild.id, channel.id)
       
       else: await self.bot.db.execute("UPDATE starboard SET channel_id = $1 WHERE guild_id = $2", channel.id, ctx.guild.id)
-      await ctx.success(f"Starboard **channel** set to {channel.mention}")
+      await ctx.success(f"I have set the starboard **channel** set to {channel.mention}.")
 
     @starboard.command(name="remove", description="remove starboard", brief="manage guild", aliases=["disable"])
     @commands.has_permissions(manage_guild=True)
     async def starboard_remove(self, ctx: Context): 
      
      check = await self.bot.db.fetchrow("SELECT * FROM starboard WHERE guild_id = $1", ctx.guild.id)
-     if check is None: return await ctx.warning("Starboard is not **enabled**") 
+     if check is None: return await ctx.warning("This server does not have starboard **enabled**.") 
      
      await self.bot.db.execute("DELETE FROM starboard WHERE guild_id = $1", ctx.guild.id)
      await self.bot.db.execute("DELETE FROM starboardmes WHERE guild_id = $1", ctx.guild.id)
      
-     await ctx.success("disabled starboard **succesfully**")
+     await ctx.success("I have disabled starboard **succesfully**.")
 
     @starboard.command(description="check starboard stats", aliases=["settings", "status"])
     async def stats(self, ctx: Context): 
      
      check = await self.bot.db.fetchrow("SELECT * FROM starboard WHERE guild_id = $1", ctx.guild.id)
-     if check is None: return await ctx.warning("Starboard is not **enabled**") 
+     if check is None: return await ctx.warning("This server does not have starboard **enabled**.") 
      
      embed = Embed(color=self.bot.color, title="starboard settings")
      
@@ -226,10 +226,11 @@ class config(Cog):
      if check is None: await self.bot.db.execute("INSERT INTO starboard (guild_id, emoji_id, emoji_text) VALUES ($1,$2,$3)", ctx.guild.id, emoji_id, str(emoji)) 
      
      else: 
+      
       await self.bot.db.execute("UPDATE starboard SET emoji_id = $1 WHERE guild_id = $2", emoji_id, ctx.guild.id)
       await self.bot.db.execute("UPDATE starboard SET emoji_text = $1 WHERE guild_id = $2", str(emoji), ctx.guild.id) 
      
-     await ctx.success(f"Starboard **emoji** set to {emoji}") 
+     await ctx.success(f"I have set the starboard **emoji** set to {emoji}.") 
 
     @commands.group(invoke_without_command=True)
     async def autorole(self, ctx): 
@@ -241,22 +242,25 @@ class config(Cog):
       
       if isinstance(role, str): 
         role = ctx.find_role( role)
-        if role is None: return await ctx.error(f"Couldn't find a role named **{ctx.message.clean_content[-len(ctx.clean_prefix)+11:]}**")         
+        
+        if role is None: 
+          return await ctx.error(f"I couldn't find a role named **{ctx.message.clean_content[-len(ctx.clean_prefix)+11:]}**.")         
       
-      if self.bot.ext.is_dangerous(role): return await ctx.warning("I cannot assign roles with dangerous permissions as autorole.")
+      if self.bot.ext.is_dangerous(role): 
+        return await ctx.warning("I **cannot** assign roles with dangerous permissions as autorole.")
       
       check = await self.bot.db.fetchrow("SELECT * FROM autorole WHERE guild_id = {} AND role_id = {}".format(ctx.guild.id, role.id))
-      if check is not None: return await ctx.error(f"{role.mention} is already added")
+      if check is not None: return await ctx.error(f"{role.mention} is already added as an autorole.")
       
       await self.bot.db.execute("INSERT INTO autorole VALUES ($1,$2)", role.id, ctx.guild.id)      
-      return await ctx.success(f"added {role.mention} as autorole")
+      return await ctx.success(f"I have **added** {role.mention} as an autorole.")
     
     @autorole.command(name="remove", description="remove a role from autoroles", usage="<role>", brief="manage_guild")
     @commands.has_permissions(manage_guild=True)
     async def autorole_remove(self, ctx: Context, *, role: Union[Role, str]=None): 
       if isinstance(role, str): 
         role = ctx.find_role( role)
-        if role is None: return await ctx.error(f"Couldn't find a role named **{ctx.message.clean_content[-len(ctx.clean_prefix)+14:]}**")         
+        if role is None: return await ctx.error(f"I couldn't find a role named **{ctx.message.clean_content[-len(ctx.clean_prefix)+14:]}**.")         
       
       if role is not None:
         
@@ -264,13 +268,13 @@ class config(Cog):
         if check is None: return await ctx.error(f"{role.mention} is not added")
         
         await self.bot.db.execute("DELETE FROM autorole WHERE guild_id = {} AND role_id = {}".format(ctx.guild.id, role.id))
-        return await ctx.success(f"Removed {role.mention} from autorole")
+        return await ctx.success(f"I have **removed** {role.mention} from autorole.")
 
       check = await self.bot.db.fetch("SELECT * FROM autorole WHERE guild_id = {}".format(ctx.guild.id))
-      if check is None: return await ctx.error("there is no role added".capitalize())    
+      if check is None: return await ctx.error("There are no autoroles set.")    
       
       await self.bot.db.execute("DELETE FROM autorole WHERE guild_id = {}".format(ctx.guild.id))
-      return await ctx.success("Removed all roles from autorole")
+      return await ctx.success("I have **removed** all roles from autorole.")
     
     @autorole.command(name="list", description="list of autoroles", help="config")
     async def autorole_list(self, ctx: Context): 
@@ -284,7 +288,7 @@ class config(Cog):
           messages = []
           results = await self.bot.db.fetch("SELECT * FROM autorole WHERE guild_id = {}".format(ctx.guild.id))
           
-          if not results: return await ctx.warning("There are no autoroles")
+          if not results: return await ctx.warning("There are **no** autoroles set in this server.")
           
           for result in results:
               
@@ -363,20 +367,20 @@ class config(Cog):
     async def bumpreminder_add(self, ctx: Context):
        
        check = await self.bot.db.fetchrow("SELECT * FROM bumps WHERE guild_id = {}".format(ctx.guild.id)) 
-       if check is not None: return await ctx.warning("bump reminder is already enabled".capitalize())
+       if check is not None: return await ctx.warning("I **already** have bump reminder setup.")
        
        await self.bot.db.execute("INSERT INTO bumps VALUES ($1, $2)", ctx.guild.id, "true")
-       return await ctx.success("bump reminder is now enabled".capitalize())
+       return await ctx.success("I have **enabled** the bump reminder.")
     
     @bumpreminder.command(name="remove", description="remove bump reminder", brief="manage guild")
     @commands.has_permissions(manage_guild=True)
     async def bumpreminder_remove(self, ctx: Context):  
        
        check = await self.bot.db.fetchrow("SELECT * FROM bumps WHERE guild_id = {}".format(ctx.guild.id)) 
-       if check is None: return await ctx.warning("bump reminder isn't enabled".capitalize())
+       if check is None: return await ctx.warning("There is **no** bump reminder set.")
        
        await self.bot.db.execute("DELETE FROM bumps WHERE guild_id = {}".format(ctx.guild.id))
-       return await ctx.success("bump reminder is now disabled".capitalize())  
+       return await ctx.success("I have **disabled** the bump reminder.")  
     
     @command(aliases=["disablecmd"], description="disable a command", brief='administrator', usage="[command name]")  
     @commands.has_permissions(administrator=True)       
@@ -387,23 +391,23 @@ class config(Cog):
      if found_command.name in ["ping", "help", "uptime", "disablecommand", "disablecmd", "enablecommand", "enablecmd"]: return await ctx.warning("This command can't be disabled")
      
      check = await self.bot.db.fetchrow("SELECT * FROM disablecommand WHERE command = $1 AND guild_id = $2", found_command.name, ctx.guild.id)
-     if check: return await ctx.error("this command is **already** disabled")
+     if check: return await ctx.error("This command is **already** disabled.")
      
      await self.bot.db.execute("INSERT INTO disablecommand VALUES ($1,$2)", ctx.guild.id, found_command.name)     
-     await ctx.success(f"disabled command **{found_command.name}**")
+     await ctx.success(f"I have disabled the command **{found_command.name}**.")
 
     @commands.command(aliases=["enablecmd"], help="enable a command that was previously disabled in this server", brief='administrator', description="config", usage="[command name]")
     @commands.has_permissions(administrator=True)   
     async def enablecommand(self, ctx: Context, *, cmd: str): 
      
      found_command = self.bot.get_command(cmd)
-     if found_command is None: return await ctx.warning(f"Command **{cmd}** not found")
+     if found_command is None: return await ctx.warning(f"The command **{cmd}** was not found.")
      
      check = await self.bot.db.fetchrow("SELECT * FROM disablecommand WHERE command = $1 AND guild_id = $2", found_command.name, ctx.guild.id)
-     if not check: return await ctx.error("this command is **not** disabled")
+     if not check: return await ctx.error("This command is **not** disabled.")
      
      await self.bot.db.execute("DELETE FROM disablecommand WHERE guild_id = $1 AND command = $2", ctx.guild.id, found_command.name)     
-     await ctx.success(f"enabled command **{found_command.name}**")
+     await ctx.success(f"I have **enabled** the command **{found_command.name}**.")
 
     @commands.group(invoke_without_command=True)
     async def confessions(self, ctx): 
@@ -414,10 +418,10 @@ class config(Cog):
     async def confessions_mute(self, ctx: Context, *, number: int): 
      
      check = await self.bot.db.fetchrow("SELECT channel_id FROM confess WHERE guild_id = {}".format(ctx.guild.id)) 
-     if check is None: return await ctx.warning("Confessions aren't **enabled** in this server") 
+     if check is None: return await ctx.warning("Confessions aren't **enabled** in this server.") 
      
      re = await self.bot.db.fetchrow("SELECT * FROM confess_members WHERE guild_id = $1 AND confession = $2", ctx.guild.id, number)
-     if re is None: return await ctx.warning("Couldn't find that confession")
+     if re is None: return await ctx.warning("I **couldn't** find that confession.")
      
      member_id = re['user_id']
      
@@ -425,7 +429,7 @@ class config(Cog):
      if r: return await ctx.warning("This **member** is **already** confession muted")
      
      await self.bot.db.execute("INSERT INTO confess_mute VALUES ($1,$2)", ctx.guild.id, member_id)
-     return await ctx.success(f"The author of confession #{number} is muted") 
+     return await ctx.success(f"I have **muted** the author of confession #{number}.") 
     
     @confessions.command(name="unmute", description="unmute a member that send a specific confession", usage="[confession count | all (unmutes all members)]", brief="manage messages")
     @commands.has_permissions(manage_messages=True) 
@@ -436,19 +440,19 @@ class config(Cog):
       
       if number == "all": 
        await self.bot.db.execute("DELETE FROM confess_mute WHERE guild_id = $1", ctx.guild.id)
-       return await ctx.success("Unmuted **all** confession muted authors") 
+       return await ctx.success("I have unmuted **everyone** in confession mute.") 
       
       num = int(number)
       re = await self.bot.db.fetchrow("SELECT * FROM confess_members WHERE guild_id = $1 AND confession = $2", ctx.guild.id, num)
       
-      if re is None: return await ctx.warning("Couldn't find that confession")
+      if re is None: return await ctx.warning("I **couldn't** find that confession.")
       member_id = re['user_id']
       
       r = await self.bot.db.fetchrow("SELECT * FROM confess_mute WHERE guild_id = $1 AND user_id = $2", ctx.guild.id, member_id)
-      if not r: return await ctx.warning("This **member** is **not** confession muted")
+      if not r: return await ctx.warning("This **member** is **not** confession muted.")
       
       await self.bot.db.execute("DELETE FROM confess_mute WHERE guild_id = $1 AND user_id = $2", ctx.guild.id, member_id)
-      return await ctx.success(f"Unmuted the author of confession #{number}") 
+      return await ctx.success(f"I have **unmuted** the author of confession #{number}.") 
     
     @confessions.command(name="add", description="set confession channel", usage="[channel]", brief="manage_guild")
     @commands.has_permissions(manage_guild=True)
@@ -458,20 +462,20 @@ class config(Cog):
        if check is not None: await self.bot.db.execute("UPDATE confess SET channel_id = $1 WHERE guild_id = $2", channel.id, ctx.guild.id)
        
        elif check is None: await self.bot.db.execute("INSERT INTO confess VALUES ($1,$2,$3)", ctx.guild.id, channel.id, 0)
-       return await ctx.success(f"confession channel set to {channel.mention}".capitalize())
+       return await ctx.success(f"I have set the confessions channel to {channel.mention}.")
     
     @confessions.command(name="remove", description="remove confession channel", brief="manage_guild")
     @commands.has_permissions(manage_guild=True)
     async def confessions_remove(self, ctx: Context): 
        
        check = await self.bot.db.fetchrow("SELECT channel_id FROM confess WHERE guild_id = {}".format(ctx.guild.id)) 
-       if check is None: return await ctx.warning("Confessions aren't **enabled** in this server")
+       if check is None: return await ctx.warning("Confessions aren't **enabled** in this server.")
        
        await self.bot.db.execute("DELETE FROM confess WHERE guild_id = {}".format(ctx.guild.id))
        await self.bot.db.execute("DELETE FROM confess_members WHERE guild_id = {}".format(ctx.guild.id))
        await self.bot.db.execute("DELETE FROM confess_mute WHERE guild_id = {}".format(ctx.guild.id))
        
-       return await ctx.success("Confessions disabled")
+       return await ctx.success("I have **disabled** confessions for this server.")
     
     @confessions.command(name="channel", description="get the confessions channel", help="config")
     async def confessions_channel(self, ctx: Context): 
@@ -483,7 +487,7 @@ class config(Cog):
         embed = Embed(color=self.bot.color, description=f"confession channel: {channel.mention}\nconfessions sent: **{check['confession']}**")
         
         return await ctx.reply(embed=embed)
-       return await ctx.warning("Confessions aren't **enabled** in this server")
+       return await ctx.warning("Confessions aren't **enabled** in this server.")
     
     @commands.command(description="changes the guild prefix", usage="[prefix]", brief="manage guild")
     @commands.has_permissions(manage_guild=True)
@@ -495,7 +499,7 @@ class config(Cog):
        if check is not None: await self.bot.db.execute("UPDATE prefixes SET prefix = $1 WHERE guild_id = $2", prefix, ctx.guild.id)
        else: await self.bot.db.execute("INSERT INTO prefixes VALUES ($1, $2)", ctx.guild.id, prefix)
        
-       return await ctx.success(f"guild prefix changed to `{prefix}`".capitalize())
+       return await ctx.success(f"I have **changed** your guild prefix changed to `{prefix}`.")
 
     @commands.command(description="set your own prefix", usage="[prefix]", help="config")
     async def selfprefix(self, ctx: Context, prefix: str):      
@@ -507,16 +511,16 @@ class config(Cog):
         if check is not None:
           
           await self.bot.db.execute("DELETE FROM selfprefix WHERE user_id = {}".format(ctx.author.id))
-          return await ctx.success("Removed your self prefix")
+          return await ctx.success("I have **removed** your self prefix.")
         
-        elif check is None: return await ctx.error("you don't have a self prefix.")   
+        elif check is None: return await ctx.error("You **don't** have a self prefix.")   
       else:    
         
         result = await self.bot.db.fetchrow("SELECT * FROM selfprefix WHERE user_id = {}".format(ctx.author.id)) 
         if result is not None: await self.bot.db.execute("UPDATE selfprefix SET prefix = $1 WHERE user_id = $2", prefix, ctx.author.id)
         
         elif result is None: await self.bot.db.execute('INSERT INTO selfprefix VALUES ($1, $2)', ctx.author.id, prefix)
-        return await ctx.success(f"self prefix changed to `{prefix}`")
+        return await ctx.success(f"I have **set** your self prefix to `{prefix}`.")
   
     @commands.group(invoke_without_command=True, aliases=["fakeperms"])
     async def fakepermissions(self, ctx):
@@ -608,14 +612,14 @@ class config(Cog):
        view.add_item(Button(label="jump to message", url=mes.jump_url))
        
        return await ctx.reply(view=view)
-      except: return await ctx.warning("Unable to add the reaction to that message") 
+      except: return await ctx.warning("I am unable to add the reaction to that message.") 
      
      message = await self.bot.ext.link_to_message(link)
      
      if not message: return await ctx.warning("No **message** found")
-     if message.guild != ctx.guild: return await ctx.warning("This **message** is not from this server")
+     if message.guild != ctx.guild: return await ctx.warning("This **message** is not from this server.")
      
-     elif message.channel.type != ChannelType.text: return await ctx.error("I can only react in text channels")
+     elif message.channel.type != ChannelType.text: return await ctx.error("I can only react in text channels.")
      
      try: 
       
@@ -626,7 +630,7 @@ class config(Cog):
       
       return await ctx.reply(view=v)  
      
-     except: return await ctx.warning("Unable to add the reaction to that message") 
+     except: return await ctx.warning("I am unable to add the reaction to that message.") 
     
     @commands.group(invoke_without_command=True, name="counter", description="create stats counters for your server")
     async def counter(self, ctx): 
@@ -648,7 +652,7 @@ class config(Cog):
           messages = []
           
           results = await self.bot.db.fetch("SELECT * FROM counters WHERE guild_id = {}".format(ctx.guild.id))
-          if not results: return await ctx.warning("There are no counters")
+          if not results: return await ctx.warning("There are **no** counters in this server.")
           
           for result in results:
               mes = f"{mes}`{k}` {result['module']} -> {ctx.guild.get_channel(int(result['channel_id'])).mention if ctx.guild.get_channel(int(result['channel_id'])) else result['channel_id']}\n"
@@ -673,16 +677,16 @@ class config(Cog):
     @commands.has_permissions(manage_guild=True)
     async def counter_remove(self, ctx: Context, countertype: str): 
      
-     if not countertype in ["members", "voice", "boosters", "humans", "bots"]: return await ctx.warning(f"**{countertype}** is not an **available** counter") 
+     if not countertype in ["members", "voice", "boosters", "humans", "bots"]: return await ctx.warning(f"**{countertype}** is not an **available** counter.") 
      check = await self.bot.db.fetchrow("SELECT * FROM counters WHERE guild_id = $1 AND module = $2", ctx.guild.id, countertype)
      
-     if not check: return await ctx.warning(f"There is no **{countertype}** counter in this server")
+     if not check: return await ctx.warning(f"There is no **{countertype}** counter in this server.")
      channel = ctx.guild.get_channel(int(check["channel_id"]))
      
      if channel: await channel.delete()
      
      await self.bot.db.execute("DELETE FROM counters WHERE guild_id = $1 AND module = $2", ctx.guild.id, countertype)
-     return await ctx.success(f"Removed **{countertype}** counter")
+     return await ctx.success(f"I have removed the **{countertype}** counter.")
     
     @counter.group(invoke_without_command=True, name="add", description="add a counter to the server", brief="manage guild")
     async def counter_add(self, ctx): 
@@ -693,10 +697,10 @@ class config(Cog):
     async def counter_add_members(self, ctx: Context, channeltype: str, *, message: str="{target}"): 
      
      if not channeltype in ["voice", "text", "stage"]: return await ctx.warning(f"**{channeltype}** is not a **valid** channel type")     
-     if not "{target}" in message: return await ctx.warning("{target} variable is **missing** from the channel name")
+     if not "{target}" in message: return await ctx.warning("{target} variable is **missing** from the channel name.")
      
      check = await self.bot.db.fetchrow("SELECT * FROM counters WHERE guild_id = $1 AND module = $2", ctx.guild.id, ctx.command.name)
-     if check: return await ctx.warning(f"<#{check['channel_id']}> is already a **member** counter")
+     if check: return await ctx.warning(f"The channel <#{check['channel_id']}> is already a **member** counter.")
      
      overwrites={ctx.guild.default_role: PermissionOverwrite(connect=False)}
      
@@ -709,17 +713,17 @@ class config(Cog):
      else: channel = await ctx.guild.create_text_channel(name=name, reason=reason, overwrites={ctx.guild.default_role: PermissionOverwrite(send_messages=False)})
      
      await self.bot.db.execute("INSERT INTO counters VALUES ($1,$2,$3,$4,$5)", ctx.guild.id, channeltype, channel.id, message, ctx.command.name)
-     await ctx.success(f"Created **member** counter -> {channel.mention}")  
+     await ctx.success(f"I created the **member** counter -> {channel.mention}.")  
 
     @counter_add.command(name="humans", description="add a counter for humans", brief="manage guild", usage="[channel type] <channel name>\nexample: ;counter add humans voice {target} humans")
     @commands.has_permissions(manage_guild=True)
     async def counter_add_humans(self, ctx: Context, channeltype: str, *, message: str="{target}"): 
      
      if not channeltype in ["voice", "text", "stage"]: return await ctx.warning(f"**{channeltype}** is not a **valid** channel type")     
-     if not "{target}" in message: return await ctx.warning("{target} variable is **missing** from the channel name")
+     if not "{target}" in message: return await ctx.warning("The {target} variable is **missing** from the channel name.")
      
      check = await self.bot.db.fetchrow("SELECT * FROM counters WHERE guild_id = $1 AND module = $2", ctx.guild.id, ctx.command.name)
-     if check: return await ctx.warning(f"<#{check['channel_id']}> is already a **humans** counter")
+     if check: return await ctx.warning(f"The channel <#{check['channel_id']}> is already a **humans** counter.")
      
      overwrites={ctx.guild.default_role: PermissionOverwrite(connect=False)}
      
@@ -732,17 +736,17 @@ class config(Cog):
      else: channel = await ctx.guild.create_text_channel(name=name, reason=reason, overwrites={ctx.guild.default_role: PermissionOverwrite(send_messages=False)})
      
      await self.bot.db.execute("INSERT INTO counters VALUES ($1,$2,$3,$4,$5)", ctx.guild.id, channeltype, channel.id, message, ctx.command.name)
-     await ctx.success(f"Created **humans** counter -> {channel.mention}")  
+     await ctx.success(f"I created the **humans** counter -> {channel.mention}.")  
 
     @counter_add.command(name="bots", description="add a counter for bots", brief="manage guild", usage="[channel type] <channel name>\nexample: ;counter add bots voice {target} bots")
     @commands.has_permissions(manage_guild=True)
     async def counter_add_bots(self, ctx: Context, channeltype: str, *, message: str="{target}"): 
      
-     if not channeltype in ["voice", "text", "stage"]: return await ctx.warning(f"**{channeltype}** is not a **valid** channel type")     
-     if not "{target}" in message: return await ctx.warning("{target} variable is **missing** from the channel name")
+     if not channeltype in ["voice", "text", "stage"]: return await ctx.warning(f"**{channeltype}** is not a **valid** channel type.")     
+     if not "{target}" in message: return await ctx.warning("The {target} variable is **missing** from the channel name.")
      
      check = await self.bot.db.fetchrow("SELECT * FROM counters WHERE guild_id = $1 AND module = $2", ctx.guild.id, ctx.command.name)
-     if check: return await ctx.warning(f"<#{check['channel_id']}> is already a **bots** counter")
+     if check: return await ctx.warning(f"The channel <#{check['channel_id']}> is already a **bots** counter.")
      
      overwrites={ctx.guild.default_role: PermissionOverwrite(connect=False)}
      
@@ -755,17 +759,17 @@ class config(Cog):
      else: channel = await ctx.guild.create_text_channel(name=name, reason=reason, overwrites={ctx.guild.default_role: PermissionOverwrite(send_messages=False)})
      
      await self.bot.db.execute("INSERT INTO counters VALUES ($1,$2,$3,$4,$5)", ctx.guild.id, channeltype, channel.id, message, ctx.command.name)
-     await ctx.success(f"Created **bots** counter -> {channel.mention}")  
+     await ctx.success(f"I created the **bots** counter -> {channel.mention}.")  
 
     @counter_add.command(name="voice", description="add a counter for voice members", brief="manage guild", usage="[channel type] <channel name>\nexample: ;counter add voice stage {target} in vc")         
     @commands.has_permissions(manage_guild=True)
     async def counter_add_voice(self, ctx: Context, channeltype: str, *, message: str="{target}"): 
      
-     if not channeltype in ["voice", "text", "stage"]: return await ctx.warning(f"**{channeltype}** is not a **valid** channel type")     
-     if not "{target}" in message: return await ctx.warning("{target} variable is **missing** from the channel name")
+     if not channeltype in ["voice", "text", "stage"]: return await ctx.warning(f"**{channeltype}** is not a **valid** channel type.")     
+     if not "{target}" in message: return await ctx.warning("The {target} variable is **missing** from the channel name.")
      
      check = await self.bot.db.fetchrow("SELECT * FROM counters WHERE guild_id = $1 AND module = $2", ctx.guild.id, ctx.command.name)
-     if check: return await ctx.warning(f"<#{check['channel_id']}> is already a **voice** counter")
+     if check: return await ctx.warning(f"The channel <#{check['channel_id']}> is already a **voice** counter.")
      
      overwrites={ctx.guild.default_role: PermissionOverwrite(connect=False)}
      
@@ -778,17 +782,17 @@ class config(Cog):
      else: channel = await ctx.guild.create_text_channel(name=name, reason=reason, overwrites={ctx.guild.default_role: PermissionOverwrite(send_messages=False)})
      
      await self.bot.db.execute("INSERT INTO counters VALUES ($1,$2,$3,$4,$5)", ctx.guild.id, channeltype, channel.id, message, ctx.command.name)
-     await ctx.success(f"Created **voice** counter -> {channel.mention}")  
+     await ctx.success(f"I created the **voice** counter -> {channel.mention}.")  
 
     @counter_add.command(name="boosters", description="add a counter for boosters", brief="manage guild", usage="[channel type] <channel name>\nexample: ;counter add boosters voice {target} boosters") 
     @commands.has_permissions(manage_guild=True)
     async def counter_add_boosters(self, ctx: Context, channeltype: str, *, message: str="{target}"): 
      
-     if not channeltype in ["voice", "text", "stage"]: return await ctx.warning(f"**{channeltype}** is not a **valid** channel type")     
-     if not "{target}" in message: return await ctx.warning("{target} variable is **missing** from the channel name")
+     if not channeltype in ["voice", "text", "stage"]: return await ctx.warning(f"**{channeltype}** is not a **valid** channel type.")     
+     if not "{target}" in message: return await ctx.warning("{target} variable is **missing** from the channel name.")
      
      check = await self.bot.db.fetchrow("SELECT * FROM counters WHERE guild_id = $1 AND module = $2", ctx.guild.id, ctx.command.name)
-     if check: return await ctx.warning(f"<#{check['channel_id']}> is already a **booster** counter")
+     if check: return await ctx.warning(f"The channel <#{check['channel_id']}> is already a **booster** counter.")
      
      overwrites={ctx.guild.default_role: PermissionOverwrite(connect=False)}
      
@@ -801,7 +805,7 @@ class config(Cog):
      else: channel = await ctx.guild.create_text_channel(name=name, reason=reason, overwrites={ctx.guild.default_role: PermissionOverwrite(send_messages=False)})
      
      await self.bot.db.execute("INSERT INTO counters VALUES ($1,$2,$3,$4,$5)", ctx.guild.id, channeltype, channel.id, message, ctx.command.name)
-     await ctx.success(f"Created **boosters** counter -> {channel.mention}") 
+     await ctx.success(f"I created the **boosters** counter -> {channel.mention}.") 
     
     @commands.group(name="stickymessage", aliases=["stickymsg", "sticky"], invoke_without_command=True)
     async def stickymessage(self, ctx: commands.Context):
@@ -814,10 +818,10 @@ class config(Cog):
         if channel is None:
           channel = ctx.channel
         
-        if await ctx.bot.db.fetch("SELECT * FROM stickym WHERE guild_id = $1 AND channel_id = $2", ctx.guild.id, channel.id): return await ctx.warning(f"You already have a sticky message for {channel.mention}")
+        if await ctx.bot.db.fetch("SELECT * FROM stickym WHERE guild_id = $1 AND channel_id = $2", ctx.guild.id, channel.id): return await ctx.warning(f"You already have a sticky message for {channel.mention}.")
         
         await ctx.bot.db.execute("INSERT INTO stickym VALUES ($1, $2, $3)", ctx.guild.id, channel.id, key)
-        return await ctx.success(f'Successfully **added** the sticky message.')
+        return await ctx.success(f'I have successfully **added** the sticky message.')
 
     @stickymessage.command(name="remove", brief="manage guild")
     @Permissions.has_permission(manage_guild=True)
@@ -828,10 +832,10 @@ class config(Cog):
         
         check = await self.bot.db.fetchrow("SELECT * FROM stickym WHERE channel_id = $1", channel.id)
         if not check:
-            return await ctx.warning("There is no sticky message configured in this channel")
+            return await ctx.warning("There is no sticky message configured in this channel.")
         
         await self.bot.db.execute("DELETE FROM stickym WHERE channel_id = $1", channel.id)
-        return await ctx.success(f"Deleted the sticky message from {channel.mention}")
+        return await ctx.success(f"I **deleted** the sticky message from {channel.mention}.")
 
     @stickymessage.command(name="config", brief="manage guild", aliases=["list", "l"])
     @Permissions.has_permission(manage_guild=True)
@@ -839,7 +843,7 @@ class config(Cog):
         
         results = await self.bot.db.fetch("SELECT * FROM stickym WHERE guild_id = $1", ctx.guild.id)
         if not results:
-            return await ctx.warning("There is no sticky message configured in this server")
+            return await ctx.warning("There is no sticky message configured in this server.")
         
         embeds = [
             Embed(color=self.bot.color, title=f"sticky messages", description=f"{ctx.guild.get_channel(result['channel_id'])} ```{result['key']}```",).set_footer(text=f"{results.index(result)+1}/{len(results)}")
@@ -859,18 +863,18 @@ class config(Cog):
       _command = self.bot.get_command(command)
       
       if not _command: 
-        return await ctx.warning(f"Command `{command}` does not exist.")
+        return await ctx.warning(f"The command `{command}` does not exist.")
       
       if _command.name in ("help", "restrictcommand", "disablecmd", "enablecmd"):
-        return await ctx.warning("you **cannot** restrict these commands.")
+        return await ctx.warning("I **cannot allow** you to restrict these commands.")
       
       if not await self.bot.db.fetchrow("SELECT * FROM restrictcommand WHERE guild_id = $1 AND command = $2 AND role_id = $3", ctx.guild.id, _command.qualified_name, role.id):
         await ctx.bot.db.execute("INSERT INTO restrictcommand VALUES ($1, $2, $3)", ctx.guild.id, command, role.id)
       
       else:
-        return await ctx.warning(f"`{_command.qualified_name}` is **already** restricted to {role.mention}")
+        return await ctx.warning(f"The command `{_command.qualified_name}` is **already** restricted to {role.mention}.")
       
-      await ctx.success(f"Allowing members with {role.mention} to use `{_command.qualified_name}`")
+      await ctx.success(f"I am now **allowing** members with {role.mention} to use `{_command.qualified_name}`.")
       
     @restrictcommand.command(name="delete", description="remove a command from being restricted.", brief="server owner")
     @Permissions.server_owner()
@@ -880,13 +884,13 @@ class config(Cog):
       _command = self.bot.get_command(command)
       
       if not _command: 
-        return await ctx.warning(f"Command `{command}` does not exist.")
+        return await ctx.warning(f"The command `{command}` does not exist.")
       
       if await self.bot.db.fetchrow("SELECT * FROM restrictcommand WHERE guild_id = $1 AND command = $2 AND role_id = $3", ctx.guild.id, _command.qualified_name, role.id):
         await self.bot.db.execute("""DELETE FROM restrictcommand WHERE guild_id = $1 AND command = $2 AND role_id = $3""", ctx.guild.id, _command.qualified_name, role.id)
       else: return await ctx.warning(f"`{_command.qualified_name}` is **not** restricted to {role.mention}")
     
-      await ctx.success(f"No longer allowing members with {role.mention} to use `{_command.qualified_name}`")
+      await ctx.success(f"I am **no longer** allowing members with {role.mention} to use `{_command.qualified_name}`.")
      
 async def setup(bot): 
     await bot.add_cog(config(bot))

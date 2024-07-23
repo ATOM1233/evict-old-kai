@@ -1,4 +1,4 @@
-import discord, Paginator, os
+import discord, os
 from discord.ext.commands import Context 
 from discord import Embed, utils, ButtonStyle, Message
 from typing import Any, Union, Dict, Optional, List, Sequence
@@ -68,14 +68,18 @@ class EvictContext(Context):
     
   async def paginator(self, embeds: List[Union[Embed, str]]) -> Message:
         """Sends some paginated embeds to the channel"""
+        
         if len(embeds) == 1:
+            
             if isinstance(embeds[0], Embed):
                 return await self.reply(embed=embeds[0])
+            
             elif isinstance(embeds[0], str):
                 return await self.reply(embeds[0])
 
         paginator = Paginator(self, embeds)
         style = ButtonStyle.gray
+        
         paginator.add_button("prev", emoji="<:left:1263727060078035066>", style=style)
         paginator.add_button("next", emoji="<:right:1263727130370637995>", style=style)
         paginator.add_button("delete", emoji="<:deny:1263727013433184347>", style=style)
@@ -92,6 +96,7 @@ class EvictContext(Context):
         title: str = None,
         author: dict = {"name": "", "icon_url": None},
     ):
+    
         """Paginate a list of contents in multiple embeds"""
         iterator = [m for m in utils.as_chunks(contents, 10)]
         embeds = [
@@ -99,12 +104,23 @@ class EvictContext(Context):
                 color=self.bot.color,
                 title=title,
                 description="\n".join(
-                    [f"`{(m.index(f)+1)+(iterator.index(m)*10)}.` {f}" for f in m]
+                    [f"{f}" for f in m]
                 ),
             ).set_author(**author)
             for m in iterator
         ]
         return await self.paginator(embeds)
+      
+  async def on_timeout(self) -> None:
+      
+      await self.disable_buttons()
+    
+  async def disable_buttons(self): 
+        
+        for item in self.children: 
+            item.disabled = True 
+        
+        await self.message.edit(view=self)   
 
   async def reply(self, content: Optional[str] = None, *, embed: Optional[discord.Embed] = None, view: Optional[View] = None, mention_author: Optional[bool] = False, file: Optional[discord.File] = discord.utils.MISSING,
         files: Optional[Sequence[discord.File]] = discord.utils.MISSING) -> discord.Message:
@@ -183,7 +199,13 @@ class HelpCommand(commands.HelpCommand):
    for command in group.commands: 
     commandname = f"{str(command.parent)} {command.name}" if str(command.parent) != "None" else command.name
     i+=1 
-    embeds.append(discord.Embed(color=self.ec_color, title=f"{commandname}", description=command.description).set_author(name=ctx.author.name, icon_url=ctx.author.display_avatar.url if not None else '').add_field(name="usage", value=f"```{commandname} {command.usage if command.usage else ''}```", inline=False).set_footer(text=f"module: {command.cog_name} • aliases: {', '.join(a for a in command.aliases) if len(command.aliases) > 0 else 'none'} ・ {i}/{len(group.commands)}"))
+    
+    embeds.append(discord.Embed(color=self.ec_color, title=f"{commandname}", description=command.description)
+                  .set_author(name=ctx.author.name, icon_url=ctx.author.display_avatar.url if not None else '')
+                  .add_field(name="aliases", value=', '.join(map(str, command.aliases)) or "none")
+                  .add_field(name="permissions", value=command.brief or "any")
+                  .add_field(name="usage", value=f"```{commandname} {command.usage if command.usage else ''}```", inline=False)
+                  .set_footer(text=f"module: {command.cog_name} ・ page {i}/{len(group.commands)}", icon_url=ctx.author.display_avatar.url if not None else ''))
      
    return await self.context.paginator(embeds)
  

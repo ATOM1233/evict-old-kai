@@ -2,9 +2,10 @@ import discord, random, string, asyncio, aiohttp
 from discord.ext import commands 
 from patches.permissions import Permissions
 from patches.classes import Mod
-from utils.embed import EmbedConverter
+from utils.utils import EmbedScript
 from bot.helpers import EvictContext
 from patches.classes import ValidWebhookCode
+from bot.headers import Session
 
 def is_detention(): 
  async def predicate(ctx: commands.Context): 
@@ -134,7 +135,7 @@ class misc(commands.Cog):
   async def webhook_avatar(self, ctx: commands.Context, code: str, link: str=None): 
    
    check = await self.bot.db.fetchrow("SELECT * FROM webhook WHERE code = $1 AND guild_id = $2", code, ctx.guild.id)
-   if not check: return ctx.error("No **webhook** associated with this code")
+   if not check: return ctx.error("There is no **webhook** associated with this code.")
    
    webhook = discord.Webhook.from_url(check['url'], session=self.bot.session)
    
@@ -145,7 +146,7 @@ class misc(commands.Cog):
     
     elif not link and ctx.message.attachments: link = ctx.message.attachments[0].url
     
-    avatar = await self.bot.session.getbyte(link).getvalue()
+    avatar = await Session.get_bytes(self, url=link)
     await webhook.edit(avatar=avatar, reason=f"webhook avatar changed by {ctx.author}")
     
     return await ctx.success(f"webhook avatar changed")
@@ -180,7 +181,7 @@ class misc(commands.Cog):
   
   @webhook.command(name="send", aliases=["post"], description="send a message via a webhook using a code", brief="manage server")
   @Permissions.has_permission(manage_guild=True)
-  async def webhook_send(self, ctx: EvictContext, code: ValidWebhookCode, *, script: EmbedConverter=None):
+  async def webhook_send(self, ctx: EvictContext, code: ValidWebhookCode, *, script: EmbedScript=None):
    check = await self.bot.db.fetchrow("SELECT * FROM webhook WHERE guild_id = $1 AND code = $2", ctx.guild.id, code)
    if script is None: 
       if ctx.message.attachments: 
