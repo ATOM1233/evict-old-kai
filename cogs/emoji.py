@@ -133,8 +133,10 @@ class emoji(commands.Cog):
     return await ctx.reply(file=await stick.to_file(filename=f"{stick.name}.png"))
 
    @Permissions.has_permission(manage_expressions=True) 
-   @sticker.command(name="tag", aliases=['t'], description="puts your vanity code in the stickers")
+   @sticker.command(name="tag", aliases=['t'], brief="manage expressions", description="puts your vanity code in the stickers")
    async def sticker_tag(self, ctx: commands.Context): 
+       
+    if ctx.guild.vanity_url_code == None: return await ctx.warning("You **must** have a vanity set to run this command.")
     
     embed = discord.Embed(color=self.bot.color, description=f"{ctx.author.mention}: I have started **tagging** all the servers stickers.")
     message = await ctx.reply(embed=embed)
@@ -144,6 +146,14 @@ class emoji(commands.Cog):
             await s.edit(name=f"/{v}")
             
     await message.edit(embed=discord.Embed(color=self.bot.color, description=f"{self.bot.yes} {ctx.author.mention}: I have **tagged** all the guilds stickers."))
+    
+   @sticker.command(name='list', description="returns a list of server's stickers", aliases=["l"])
+   async def sticker_list(self, ctx: commands.Context):
+            
+        sticker_list = [f"[**{sticker.name}**]({sticker.url}) (``{sticker.id}``)"
+                     for sticker in ctx.guild.stickers]
+
+        await ctx.paginate(sticker_list, f"server stickers [{len(ctx.guild.stickers)}]") 
 
    @sticker.command(name="delete", description="delete a sticker", usage="[attach sticker]", brief="manage emojis")
    @Permissions.has_permission(manage_expressions=True) 
@@ -187,7 +197,7 @@ class emoji(commands.Cog):
          
          return await ctx.reply(embed=embed, view=view)
          
-   @commands.command(description="add a sticker", usage="[attach sticker]", brief="manage emojis", aliases=["stickersteal", "addsticker", "stickeradd"])
+   @commands.command(description="add a sticker", usage="[attach sticker]", brief="manage expressions", aliases=["stickersteal", "addsticker", "stickeradd"])
    @Permissions.has_permission(manage_expressions=True) 
    async def stealsticker(self, ctx: commands.Context):
      
@@ -270,14 +280,6 @@ class emoji(commands.Cog):
                      for emoji in ctx.guild.emojis]
 
         await ctx.paginate(emoji_list, f"server emojis [{len(ctx.guild.emojis)}]")  
-
-   @commands.command(name='stickerlist', description="returns a list of server's stickers", aliases=["stickers"])
-   async def stickerlist(self, ctx: commands.Context):
-            
-        sticker_list = [f"[**{sticker.name}**]({sticker.url}) (``{sticker.id}``)"
-                     for sticker in ctx.guild.stickers]
-
-        await ctx.paginate(sticker_list, f"server stickers [{len(ctx.guild.stickers)}]") 
 
    @commands.command(aliases=["downloademoji", "e", 'jumbo'], description="gets an image version of your emoji", usage="[emoji]")
    async def enlarge(self, ctx: commands.Context, emoj: Union[discord.PartialEmoji, str]): 
