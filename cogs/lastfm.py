@@ -14,13 +14,12 @@ def sort_key(lis):
 async def lf_add_reactions(ctx: commands.Context, message: typing.Union[discord.Message, None]): 
  if message is None: return 
  check = await ctx.bot.db.fetchrow("SELECT * FROM lfreactions WHERE user_id = $1", ctx.author.id) 
- if not check: 
-  for i in ["🔥", "🗑️"]: await message.add_reaction(i)
-  return 
+ if not check: return 
  reactions = json.loads(check["reactions"])
  if reactions[0] == "none": return
- for r in reactions: await message.add_reaction(r)
- return   
+ for r in reactions: 
+   try: await message.add_reaction(r)
+   except: return 
 
 @tasks.loop(hours=1)
 async def clear_caches(bot: commands.Bot):
@@ -466,11 +465,10 @@ class lastfm(commands.Cog):
         
         if member is None: member = ctx.author
         
-        try:
-            await ctx.typing()             
-            check = await self.bot.db.fetchrow("SELECT * FROM lastfm WHERE user_id = {}".format(member.id))            
+        await ctx.typing()             
+        check = await self.bot.db.fetchrow("SELECT * FROM lastfm WHERE user_id = {}".format(member.id))            
             
-            if check:   
+        if check:   
                starData = await self.bot.db.fetchrow("SELECT mode FROM lfmode WHERE user_id = $1", member.id)
                
                if starData is None:  
@@ -502,11 +500,7 @@ class lastfm(commands.Cog):
                 except: message = await ctx.send(await self.lastfm_replacement(user, starData[0]))
                 return await lf_add_reactions(ctx, message)
             
-            elif check is None: return await ctx.lastfm_message(ctx, f"**{member}** doesn't have a **Last.fm account** linked. Use `{ctx.clean_prefix}lf set <username>` to link your **account**.")                      
-        
-        except Exception: 
-           print(traceback.format_exc())
-           return await ctx.lastfm_message(ctx, f"I am **unable** to get **{member.name}'s** recent track.")                      
+        elif check is None: return await ctx.lastfm_message(f"**{member}** doesn't have a **Last.fm account** linked. Use `{ctx.clean_prefix}lf set <username>` to link your **account**.")                                       
     
 async def setup(bot):
     await bot.add_cog(lastfm(bot))
