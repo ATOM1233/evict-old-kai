@@ -75,29 +75,36 @@ class emoji(commands.Cog):
    @commands.command(description="delete an emoji", usage="[emoji]", brief="manage emojis", aliases=["delemoji"])
    @Permissions.has_permission(manage_expressions=True) 
    async def deleteemoji(self, ctx: commands.Context, emoji: discord.Emoji): 
+    
     await emoji.delete()
     await ctx.success(f"deleted the emoji {emoji.name}.")  
 
    @commands.command(description="add an emoji", usage="[emoji] <name>", brief="manage emojis")
    @Permissions.has_permission(manage_expressions=True) 
    async def addemoji(self, ctx: commands.Context, emoji: Union[discord.Emoji, discord.PartialEmoji], *, name: str=None):
+    
     if not name: name = emoji.name 
     try:
+     
      emoji = await ctx.guild.create_custom_emoji(image=await emoji.read(), name=name)
      await ctx.success(f"added emoji `{name}` | {emoji}".capitalize())
+    
     except discord.HTTPException as e: return await ctx.error(ctx, f"Unable to add the emoji | {e}")
 
    @commands.command(description="add multiple emojis", usage="[emojis]", aliases=["am"], brief="manage emojis")
    @Permissions.has_permission(manage_expressions=True) 
    async def addmultiple(self, ctx: commands.Context, *emoji: Union[discord.Emoji, discord.PartialEmoji]): 
+    
     if len(emoji) == 0: return await ctx.warning("Please provide some emojis to add")       
     emojis = []
     await ctx.channel.typing()
+    
     for emo in emoji:
        try:
          emoj = await ctx.guild.create_custom_emoji(image=await emo.read(), name=emo.name)
          emojis.append(f"{emoj}")
          await asyncio.sleep(.5)
+       
        except discord.HTTPException as e: return await ctx.error(ctx, f"Unable to add the emoji | {e}")
 
     embed = discord.Embed(color=self.bot.color, title=f"added {len(emoji)} emojis") 
@@ -115,30 +122,53 @@ class emoji(commands.Cog):
    
    @sticker.command(name="enlarge", aliases=['e', 'jumbo'], description="returns a sticker as a file", usage="[attach sticker]")
    async def sticker_enlarge(self, ctx: commands.Context): 
+    
     if ctx.message.stickers: stick = ctx.message.stickers[0]
     else: 
+     
      messages = [m async for m in ctx.channel.history(limit=20) if m.stickers]  
      if len(messages) == 0: return await ctx.warning("No sticker found")
      stick = messages[0].stickers[0]
+    
     return await ctx.reply(file=await stick.to_file(filename=f"{stick.name}.png"))
+
+   @Permissions.has_permission(manage_expressions=True) 
+   @sticker.command(name="tag", aliases=['t'], description="puts your vanity code in the stickers")
+   async def sticker_tag(self, ctx: commands.Context): 
+    
+    embed = discord.Embed(color=self.bot.color, description=f"{ctx.author.mention}: I have started **tagging** all the servers stickers.")
+    message = await ctx.reply(embed=embed)
+        
+    for s in ctx.guild.stickers:
+            v = ctx.guild.vanity_url_code
+            await s.edit(name=f"/{v}")
+            
+    await message.edit(embed=discord.Embed(color=self.bot.color, description=f"{self.bot.yes} {ctx.author.mention}: I have **tagged** all the guilds stickers."))
 
    @sticker.command(name="delete", description="delete a sticker", usage="[attach sticker]", brief="manage emojis")
    @Permissions.has_permission(manage_expressions=True) 
    async def sticker_delete(self, ctx: commands.Context): 
+    
     if ctx.message.stickers: 
      sticker = ctx.message.stickers[0]
      sticker = await sticker.fetch() 
+     
      if sticker.guild.id != ctx.guild.id: return await ctx.warning("This sticker is not from this server")
      await sticker.delete(reason=f"sticker deleted by {ctx.author}") 
      return await ctx.success("Deleted the sticker")
+    
     async for message in ctx.channel.history(limit=10): 
+      
       if message.stickers: 
         sticker = message.stickers[0]
         s = await sticker.fetch()
+        
         if s.guild_id == ctx.guild.id: 
+         
          embed = discord.Embed(color=self.bot.color, description=f"Are you sure you want to delete `{s.name}`?").set_image(url=s.url)
          button1 = discord.ui.Button(emoji="<:check:1208233844751474708>")
          button2 = discord.ui.Button(emoji="<:stop:1208240063691886642>")
+         
          async def button1_callback(interaction: discord.Interaction): 
           if ctx.author.id != interaction.user.id: return await self.bot.ext.warning(interaction, "You are not the author of this embed")
           await s.delete()
@@ -150,16 +180,20 @@ class emoji(commands.Cog):
          
          button1.callback = button1_callback
          button2.callback = button2_callback 
+         
          view = discord.ui.View()
          view.add_item(button1)
          view.add_item(button2)
+         
          return await ctx.reply(embed=embed, view=view)
          
    @commands.command(description="add a sticker", usage="[attach sticker]", brief="manage emojis", aliases=["stickersteal", "addsticker", "stickeradd"])
    @Permissions.has_permission(manage_expressions=True) 
    async def stealsticker(self, ctx: commands.Context):
+     
      if ctx.message.stickers:
       try:
+       
        url = ctx.message.stickers[0].url
        name = ctx.message.stickers[0].name
        img_data = await self.bot.session.read(url)
@@ -171,20 +205,29 @@ class emoji(commands.Cog):
        embed = discord.Embed(color=self.bot.color, title="sticker added")
        embed.set_thumbnail(url=url)
        embed.add_field(name="values", value=f"name: `{name}`\nid: `{sticker.id}`\nformat: `{form}`\nlink: [url]({url})")
+       
        return await ctx.reply(embed=embed)
+      
       except Exception as error: return await ctx.error(ctx, f"Unable to add this sticker - {error}")
+     
      elif not ctx.message.stickers:
       async for message in ctx.channel.history(limit=10):
+       
        if message.stickers:
+        
         e = discord.Embed(color=self.bot.color, title=message.stickers[0].name).set_author(name=message.author.name, icon_url=message.author.display_avatar.url)
         e.set_image(url=message.stickers[0].url)
         e.set_footer(text="react below to steal")
+        
         button1 = discord.ui.Button(label="", style=discord.ButtonStyle.gray, emoji="<:check:1208233844751474708>")
         button2 = discord.ui.Button(label="", style=discord.ButtonStyle.gray, emoji="<:stop:1208240063691886642>")
         
         async def button1_callback(interaction: discord.Interaction): 
+          
           if interaction.user != ctx.author: return await self.bot.ext.warning(interaction, "you cant use this button", ephemeral=True)
+          
           try:
+           
            url = message.stickers[0].url
            name = message.stickers[0].name
            img_data = await self.bot.session.read(url)
@@ -193,10 +236,13 @@ class emoji(commands.Cog):
            sticker = await ctx.guild.create_sticker(name=name, description=name, emoji="skull", file=file, reason=f"sticker created by {ctx.author}")
            format = str(sticker.format) 
            form = format.replace("StickerFormatType.", "")
+           
            embed = discord.Embed(color=self.bot.color, title="sticker added")
            embed.set_thumbnail(url=url)
            embed.add_field(name="values", value=f"name: `{name}`\nid: `{sticker.id}`\nformat: `{form}`\nlink: [url]({url})")
+           
            return await interaction.response.edit_message(embed=embed, view=None)
+          
           except:
            embed = discord.Embed(color=self.bot.color, description=f"{self.bot.no} {ctx.author.mention}: unable to add this sticker")
            return await interaction.response.edit_message(embed=embed, view=None)
@@ -212,55 +258,26 @@ class emoji(commands.Cog):
         view = discord.ui.View()
         view.add_item(button1)
         view.add_item(button2)
+        
         return await ctx.reply(embed=e, view=view)      
        
      return await ctx.error("No sticker found")
-
-   @commands.command(description="returns a list of server's emojis", aliases=["emojis"])
+            
+   @commands.command(name='emojilist', description="returns a list of server's emojis", aliases=["emojis"])
    async def emojilist(self, ctx: commands.Context):
-            i=0
-            k=1
-            l=0
-            mes = ""
-            number = []
-            messages = []
-            for emoji in ctx.guild.emojis:
-              mes = f"{mes}`{k}` {emoji} - [**{emoji.name}**]({emoji.url}) (``{emoji.id}``)\n"
-              k+=1
-              l+=1
-              if l == 10:
-               messages.append(mes)
-               number.append(discord.Embed(color=self.bot.color, title=f"emojis in {ctx.guild.name} [{len(ctx.guild.emojis)}]", description=messages[i]))
-               i+=1
-               mes = ""
-               l=0
-    
-            messages.append(mes)
-            number.append(discord.Embed(color=self.bot.color, title=f"emojis in {ctx.guild.name} [{len(ctx.guild.emojis)}]", description=messages[i]))
-            await ctx.paginate(number)
+            
+        emoji_list = [f"{emoji} - [**{emoji.name}**]({emoji.url}) (``{emoji.id}``)"
+                     for emoji in ctx.guild.emojis]
 
-   @commands.command(description="returns a list of server's stickers", aliases=["stickers"])
+        await ctx.paginate(emoji_list, f"server emojis [{len(ctx.guild.emojis)}]")  
+
+   @commands.command(name='stickerlist', description="returns a list of server's stickers", aliases=["stickers"])
    async def stickerlist(self, ctx: commands.Context):
-            i=0
-            k=1
-            l=0
-            mes = ""
-            number = []
-            messages = []
-            for sticker in ctx.guild.stickers:
-              mes = f"{mes}`{k}` [**{sticker.name}**]({sticker.url}) (``{sticker.id}``)\n"
-              k+=1
-              l+=1
-              if l == 10:
-               messages.append(mes)
-               number.append(discord.Embed(color=self.bot.color, title=f"stickers in {ctx.guild.name} [{len(ctx.guild.stickers)}]", description=messages[i]))
-               i+=1
-               mes = ""
-               l=0
-    
-            messages.append(mes)
-            number.append(discord.Embed(color=self.bot.color, title=f"stickers in {ctx.guild.name} [{len(ctx.guild.stickers)}]", description=messages[i]))
-            await ctx.paginate(number)    
+            
+        sticker_list = [f"[**{sticker.name}**]({sticker.url}) (``{sticker.id}``)"
+                     for sticker in ctx.guild.stickers]
+
+        await ctx.paginate(sticker_list, f"server stickers [{len(ctx.guild.stickers)}]") 
 
    @commands.command(aliases=["downloademoji", "e", 'jumbo'], description="gets an image version of your emoji", usage="[emoji]")
    async def enlarge(self, ctx: commands.Context, emoj: Union[discord.PartialEmoji, str]): 
@@ -269,32 +286,41 @@ class emoji(commands.Cog):
    
    @commands.command(aliases=['ei'], description="show emoji info", usage="[emoji]")
    async def emojiinfo(self, ctx: commands.Context, *, emoji: Union[discord.Emoji, discord.PartialEmoji]): 
+    
     embed = discord.Embed(color=self.bot.color, title=emoji.name, timestamp=emoji.created_at).set_footer(text=f"id: {emoji.id}")
     embed.set_thumbnail(url=emoji.url)
     embed.add_field(name="animated", value=emoji.animated)
     embed.add_field(name="link", value=f"[emoji]({emoji.url})")
+    
     if isinstance(emoji, discord.Emoji): 
      embed.add_field(name="guild", value=emoji.guild.name) 
      embed.add_field(name="usable", value=emoji.is_usable())
      embed.add_field(name="available", value=emoji.available) 
+     
      emo = await emoji.guild.fetch_emoji(emoji.id)
+     
      embed.add_field(name="created by", value=str(emo.user))
+    
     return await ctx.reply(embed=embed) 
    
    @commands.command(name='steal', description="reply to a message to steal an emoji or sticker", usage="[emojis]", brief="manage expressions")
    @commands.has_permissions(manage_expressions=True)
    async def steal(self, ctx: commands.Context, *names: str):
+        
         if not (emojis := await self.steal_ctx(ctx)):
             return
         
         if isinstance(emojis[0], discord.StickerItem):
             if len(ctx.guild.stickers) >= ctx.guild.sticker_limit:
                 return await ctx.warning('there are no more sticker slots.')
+            
             sticker = emojis[0]
             fp = io.BytesIO()
+            
             try:
                 await sticker.save(fp)
                 await ctx.guild.create_sticker(name=sticker.name, description=STICKER_DESC, emoji=STICKER_EMOJI, file=discord.File(fp), reason=f'uploaded by {ctx.author}')
+            
             except Exception as error:
                 return await ctx.warning(f"{STICKER_FAIL}, {type(error).__name__}: {error}")
             return await ctx.success(f"{STICKER_SUCCESS}: {sticker.name}")
