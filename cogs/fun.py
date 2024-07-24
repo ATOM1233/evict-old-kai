@@ -53,8 +53,8 @@ class fun(commands.Cog):
     
     @commands.command(description="retard rate an user", help="fun", usage="<member>")
     async def howretarded(self, ctx, member: discord.Member=commands.Author):
-     if member.id in self.bot.owner_ids: await ctx.reply(embed=discord.Embed(color=self.bot.color, title="how retarded", description=f"{member.mention} is `0%` retarded <a:retard:1216970788259893381>"))
-     else: await ctx.reply(embed=discord.Embed(color=self.bot.color, title="how retarded", description=f"{member.mention} is `{randrange(100)}%` retarded <a:retard:1216970788259893381>"))
+     if member.id in self.bot.owner_ids: await ctx.reply(embed=discord.Embed(color=self.bot.color, title="how retarded", description=f"{member.mention} is `0%` retarded <a:dumbass:1265487107196190802>"))
+     else: await ctx.reply(embed=discord.Embed(color=self.bot.color, title="how retarded", description=f"{member.mention} is `{randrange(100)}%` retarded <a:dumbass:1265487107196190802>"))
 
     @commands.command(description="gay rate an user", help="fun", usage="<member>")
     async def howgay(self, ctx, member: discord.Member=commands.Author):
