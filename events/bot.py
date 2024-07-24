@@ -198,22 +198,6 @@ class Bot(commands.Cog):
         
             await channel.send(embed=embed)
             await guild.leave()
-            
-    @commands.Cog.listener()
-    async def on_command_completion(self, ctx):
-        channel_id = 1262304000041025609
-        channel = self.bot.get_channel(channel_id)
-        embed = discord.Embed(description=f"Text command ``{ctx.command.qualified_name}`` has been ran in ``{ctx.guild} ({ctx.guild.id})`` by ``{ctx.author} ({ctx.author.id})`` with message id: ``{ctx.message.id}``.", color=self.bot.color)
-        try: await channel.send(embed=embed)
-        except: return
-
-    @commands.Cog.listener()
-    async def on_command_error(self, ctx, error: commands.CommandError):
-        channel_id = 1262303993439326208
-        channel = self.bot.get_channel(channel_id)
-        embed = discord.Embed(description=f"Text command ``{ctx.command.qualified_name}`` has ran into an error in ``{ctx.guild} ({ctx.guild.id})`` by ``{ctx.author} ({ctx.author.id})`` with message id: ``{ctx.message.id}``. \n\n **Error: {error}**", color=self.bot.color)
-        try: await channel.send(embed=embed)
-        except: return
 
 async def setup(bot: commands.Bot) -> None: 
   await bot.add_cog(Bot(bot)) 
