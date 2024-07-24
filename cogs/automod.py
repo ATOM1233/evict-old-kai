@@ -42,9 +42,8 @@ class automod(commands.Cog):
       if len(results) == 0: return await ctx.warning("no **blacklisted** words found")
         
       cf_list = [
-        f"{result['word']}" 
-        for result in results
-      ]
+        f"``{index + 1}.`` {result['word']}" 
+        for index, result in enumerate(results)]
             
       await ctx.paginate(cf_list, f"blacklisted words [{len(results)}]")  
     

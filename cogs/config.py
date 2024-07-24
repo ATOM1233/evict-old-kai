@@ -135,35 +135,14 @@ class config(Cog):
     @pingonjoin.command(name="list", description="get a list of pingonjoin channels", help="config")
     async def poj_list(self, ctx: Context): 
           
-          i=0
-          k=1
-          l=0
-          
-          mes = ""
-          number = []
-          messages = []
-          
           results = await self.bot.db.fetch("SELECT * FROM pingonjoin WHERE guild_id = {}".format(ctx.guild.id))
           
           if results is None: return await ctx.error("There are **no** pingonjoin channels.")
           
-          for result in results:
-              mes = f"{mes}`{k}` {ctx.guild.get_channel(int(result['channel_id'])).mention if ctx.guild.get_channel(result['channel_id']) else result['channel_id']}\n"
-              k+=1
-              l+=1
-              if l == 10:
-               
-               messages.append(mes)
-               number.append(Embed(color=self.bot.color, title=f"pingonjoin channels ({len(results)})", description=messages[i]))
-               
-               i+=1
-               mes = ""
-               l=0
-    
-          messages.append(mes)
-          number.append(Embed(color=self.bot.color, title=f"pingonjoin channels ({len(results)})", description=messages[i]))
+          poj_list = [{ctx.guild.get_channel(int(result['channel_id'])).mention if ctx.guild.get_channel(result['channel_id']) else result['channel_id']}
+          for result in results]
           
-          await ctx.paginate(number)
+          await ctx.paginate(poj_list)
     
     @commands.group(invoke_without_command=True)
     async def starboard(self, ctx): 

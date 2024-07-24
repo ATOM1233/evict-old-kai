@@ -370,7 +370,7 @@ class utility(commands.Cog):
       inrole_list = [f"**{member}** - (``{member.id}``)"
                            for member in role.members] 
           
-      await ctx.paginate(inrole_list, f"members in {role.name} [{len({b})}]") 
+      await ctx.index(inrole_list, f"members in {role.name} [{len({b})}]") 
     
     @commands.command(description="see all members joined within 24 hours")
     async def joins(self, ctx: Context): 
@@ -383,7 +383,7 @@ class utility(commands.Cog):
       for member in members: 
         join_list = [f"{member} - {discord.utils.format_dt(member.joined_at, style='R')}"]
     
-      await ctx.paginate(join_list, f"new members") 
+      await ctx.index(join_list, f"new members") 
             
     @commands.command(description="see all the muted members in the server")
     async def muted(self, ctx: Context):
@@ -396,7 +396,7 @@ class utility(commands.Cog):
       for member in members:
           muted_list = [f"{member} - <t:{int(member.timed_out_until.timestamp())}:R>"]
             
-      await ctx.paginate(muted_list, f"muted members [{m}]")     
+      await ctx.index(muted_list, f"muted members [{m}]")     
     
     @Permissions.has_permission(ban_members=True)
     @commands.command(description="see all server bans")
@@ -409,7 +409,7 @@ class utility(commands.Cog):
 
           ban_list = [f"**{m.user}** - {m.reason or 'No reason provided'}" for m in banned]
           
-          await ctx.paginate(ban_list, f"bans [{len(banned)}]")
+          await ctx.index(ban_list, f"bans [{len(banned)}]")
 
     @commands.command(description="see all server boosters")
     async def boosters(self, ctx: commands.Context):
@@ -419,7 +419,7 @@ class utility(commands.Cog):
       booster_list = [f"**{member}** ({member.id}) - <t:{int(member.premium_since.timestamp())}:R>"
                            for member in ctx.guild.premium_subscriber_role.members] 
             
-      await ctx.paginate(booster_list, f"server boosters [{len(ctx.guild.premium_subscriber_role.members)}]") 
+      await ctx.index(booster_list, f"server boosters [{len(ctx.guild.premium_subscriber_role.members)}]") 
 
     @Permissions.has_permission(manage_roles=True)
     @commands.command(description="see all server roles")
@@ -429,7 +429,7 @@ class utility(commands.Cog):
       
       for role in ctx.guild.roles[1:][::-1]] 
       
-      await ctx.paginate(role_list, f"roles [{len(ctx.guild.roles[1:])}]")   
+      await ctx.index(role_list, f"roles [{len(ctx.guild.roles[1:])}]")   
   
     @commands.command(description="see all the bots in the server")
     async def bots(self, ctx: Context):
@@ -443,7 +443,7 @@ class utility(commands.Cog):
           bot_list = [f"{member.mention} (``{member.id}``)"
                            for member in ctx.guild.members if member.bot] 
             
-      await ctx.paginate(bot_list, f"bots [{b}]")  
+      await ctx.index(bot_list, f"bots [{b}]")  
     
     @commands.command(description="check the weather from a location", usage="[country]")
     async def weather(self, ctx: Context, *, location: str): 
@@ -484,31 +484,6 @@ class utility(commands.Cog):
         member = ctx.author 
       invites = await ctx.guild.invites()
       await ctx.reply(f"{member} has **{sum(invite.uses for invite in invites if invite.inviter.id == member.id)}** invites")
-    
-    @commands.command(description="see the list of donators", aliases=["donors"])
-    async def donators(self, ctx):
-          i=0
-          k=1
-          l=0
-          mes = ""
-          number = []
-          messages = []
-          results = await self.bot.db.fetch("SELECT * FROM donor")
-          if len(results) == 0: return await ctx.error("There are no donators")
-          for result in results:
-            mes = f"{mes}`{k}` <@!{result['user_id']}> ({result['user_id']}) - (<t:{int(result['time'])}:R>)\n"
-            k+=1
-            l+=1
-            if l == 10:
-              messages.append(mes)
-              number.append(Embed(color=self.bot.color, title=f"donators ({len(results)})", description=messages[i]))
-              i+=1
-              mes = ""
-              l=0
-    
-          messages.append(mes)
-          number.append(Embed(color=self.bot.color, title=f"donators ({len(results)})", description=messages[i]))
-          await ctx.paginate( number)
     
     @commands.command(aliases=["tts", "speech"], description="convert your message to mp3", usage="[message]")     
     async def texttospeech(self, ctx: Context, *, txt: str): 
@@ -650,7 +625,7 @@ class utility(commands.Cog):
       member_list = [f"**{member}** joined <t:{int(member.joined_at.timestamp())}:f> (<t:{int(member.joined_at.timestamp())}:R>)"
                            for member in ctx.guild.members if not member.bot] 
           
-      await ctx.paginate(member_list, f"members [{len(ctx.guild.members[1:])}]") 
+      await ctx.index(member_list, f"members [{len(ctx.guild.members[1:])}]") 
 
 async def setup(bot):
     await bot.add_cog(utility(bot))
