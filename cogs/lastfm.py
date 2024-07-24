@@ -14,12 +14,13 @@ def sort_key(lis):
 async def lf_add_reactions(ctx: commands.Context, message: typing.Union[discord.Message, None]): 
  if message is None: return 
  check = await ctx.bot.db.fetchrow("SELECT * FROM lfreactions WHERE user_id = $1", ctx.author.id) 
- if not check: return 
+ if not check: 
+  for i in ["🔥", "🗑️"]: await message.add_reaction(i)
+  return 
  reactions = json.loads(check["reactions"])
  if reactions[0] == "none": return
- for r in reactions: 
-   try: await message.add_reaction(r)
-   except: return 
+ for r in reactions: await message.add_reaction(r)
+ return  
 
 @tasks.loop(hours=1)
 async def clear_caches(bot: commands.Bot):
