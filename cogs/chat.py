@@ -135,21 +135,25 @@ class chat(commands.Cog):
                 
   @commands.Cog.listener('on_message')
   async def on_autoreact(self, message: discord.Message): 
-    
+
           if message.author.bot: return
           if message.guild is None: return
-    
+
           retry_after = self.get_ratelimit(message)
           if retry_after: return
-    
+
           check = await self.bot.db.fetchrow("SELECT emojis FROM autoreact WHERE guild_id = $1 AND trigger = $2", message.guild.id, message.content)
+          if check is None:
+              return
+
           check1 = json.loads(check["emojis"])
-    
-          if check: 
+
+          if check1: 
             for emoji in check1: 
-              
-              try: await message.add_reaction(emoji)
-              except: continue
+              try: 
+                  await message.add_reaction(emoji)
+              except: 
+                  continue
 
 async def setup(bot: commands.Bot) -> None: 
     await bot.add_cog(chat(bot))
