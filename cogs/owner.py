@@ -349,67 +349,41 @@ class owner(commands.Cog):
    @commands.is_owner()
    @commands.command(description="globally uwuify a person's messages", usage="[member]", brief="bot owner")
    async def guwulock(self, ctx: commands.Context, *, member: discord.User, reason: str="No reason provided."): 
-    if member.id in self.bot.owner_ids: return await ctx.warning("do not global uwulock a bot owner, retard.")
-    if member.id == ctx.bot.user.id: return await ctx.warning("do not global uwulock me retard.")
+    if member.id in self.bot.owner_ids: return await ctx.warning("I **cannot** global uwulock a bot owner.")
+    if member.id == ctx.bot.user.id: return await ctx.warning("I **cannot** global uwulock myself.")
     check = await self.bot.db.fetchrow("SELECT user_id FROM guwulock WHERE user_id = {}".format(member.id))
     if check is None: await self.bot.db.execute("INSERT INTO guwulock VALUES ($1)", member.id)
     else: await self.bot.db.execute("DELETE FROM guwulock WHERE user_id = {}".format(member.id))
     if check is None: await OwnerConfig.send_dm(ctx, member, "globaluwulocked", reason) 
     else: await OwnerConfig.send_dm(ctx, member, "globalunlocked", reason) 
-    if check is None: await ctx.warning(f"**{member}** has been globaluwulocked | {reason}")
-    else: await ctx.warning(f"**{member}** has been globalunlocked | {reason}")
+    if check is None: await ctx.success(f"**{member}** has been globaluwulocked | {reason}")
+    else: await ctx.success(f"**{member}** has been globalunlocked | {reason}")
     
    @commands.is_owner()
    @commands.command(description='globaluwulocked members', brief='bot owner')
    async def guwulocked(self, ctx: commands.Context): 
-          i=0
-          k=1
-          l=0
-          mes = ""
-          number = []
-          messages = []
+          
           results = await self.bot.db.fetch("SELECT * FROM guwulock")
-          if len(results) == 0: return await ctx.warning("no *globaluwulocked** members found")
-          for result in results:
-              mes = f"{mes}`{k}` {await self.bot.fetch_user(result['user_id'])}\n"
-              k+=1
-              l+=1
-              if l == 10:
-               messages.append(mes)
-               number.append(discord.Embed(color=self.bot.color, title=f"globaluwulocked list [{len(results)}]", description=messages[i]))
-               i+=1
-               mes = ""
-               l=0
-    
-          messages.append(mes)          
-          number.append(discord.Embed(color=self.bot.color, title=f"globaluwulocked list [{len(results)}]", description=messages[i]))
-          await ctx.paginate(number)
+          
+          if len(results) == 0: return await ctx.warning("There are **no** globaluwulocked users.")
+
+          guwulock_list = [f"``{index + 1}.`` {await self.bot.fetch_user(result['user_id'])} (``{result['user_id']}``)" 
+                          for index, result in enumerate(results)]
+          
+          await ctx.paginate(guwulock_list, f"globaluwulock list [{len(results)}]")
             
    @commands.is_owner()
    @commands.command(aliases=["globalbanned"], description='globalbanned members', brief='bot owner')
    async def gbanned(self, ctx: commands.Context): 
-          i=0
-          k=1
-          l=0
-          mes = ""
-          number = []
-          messages = []
+          
           results = await self.bot.db.fetch("SELECT * FROM globalban")
-          if len(results) == 0: return await ctx.warning("no *globalbanned** members found")
-          for result in results:
-              mes = f"{mes}`{k}` {await self.bot.fetch_user(result['banned'])}\n"
-              k+=1
-              l+=1
-              if l == 10:
-               messages.append(mes)
-               number.append(discord.Embed(color=self.bot.color, title=f"globalban list [{len(results)}]", description=messages[i]))
-               i+=1
-               mes = ""
-               l=0
-    
-          messages.append(mes)          
-          number.append(discord.Embed(color=self.bot.color, title=f"globalban list [{len(results)}]", description=messages[i]))
-          await ctx.paginate(number)
+          
+          if len(results) == 0: return await ctx.warning("There are **no** globalbanned users.")
+
+          gbanned_list = [f"``{index + 1}.`` {await self.bot.fetch_user(result['banned'])} (``{result['banned']}``)" 
+                          for index, result in enumerate(results)]
+          
+          await ctx.paginate(gbanned_list, f"globalban list [{len(results)}]")
    
 async def setup(bot) -> None:
     await bot.add_cog(owner(bot))

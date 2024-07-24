@@ -89,6 +89,26 @@ class EvictContext(Context):
   async def create_pages(self):
         """Create pages for group commands"""
         return await self.send_help(self.command)
+      
+  async def index(
+        self,
+        contents: List[str],
+        title: str = None,
+        author: dict = {"name": "", "icon_url": None},
+    ):
+        """Paginate a list of contents in multiple embeds"""
+        iterator = [m for m in utils.as_chunks(contents, 10)]
+        embeds = [
+            Embed(
+                color=self.bot.color,
+                title=title,
+                description="\n".join(
+                    [f"`{(m.index(f)+1)+(iterator.index(m)*10)}.` {f}" for f in m]
+                ),
+            ).set_author(**author)
+            for m in iterator
+        ]
+        return await self.paginator(embeds)
 
   async def paginate(
         self,
