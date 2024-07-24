@@ -481,12 +481,17 @@ class lastfm(commands.Cog):
                     album = a['recenttracks']['track'][0]['album']['#text'] or "N/A"
                     
                     embed = discord.Embed(colour=self.bot.color)
-                    embed.add_field(name="**Track:**", value = f"""[{"" + a['recenttracks']['track'][0]['name']}]({"" + a['recenttracks']['track'][0]['url']})""", inline = False)
-                    embed.add_field(name="**Artist:**", value = f"""[{a['recenttracks']['track'][0]['artist']['#text']}](https://last.fm/music/{artist})""", inline = False)
+                    embed.add_field(name="**Track:**", value = f"```Ruby\n{a['recenttracks']['track'][0]['name']}```", inline = True)
+                    embed.add_field(name="**Artist:**", value = f"```Ruby\n{a['recenttracks']['track'][0]['artist']['#text']}```", inline = True)
                     embed.set_author(name = user, icon_url = member.display_avatar, url = f"https://last.fm/user/{user}")                               
                     embed.set_thumbnail(url=(a['recenttracks']['track'][0])['image'][3]['#text'])
                     embed.set_footer(text = f"Track Playcount: {await self.lastfmhandler.get_track_playcount(user, a['recenttracks']['track'][0])} ・Album: {album}", icon_url = (a['recenttracks']['track'][0])['image'][3]['#text'])
-                    message = await ctx.reply(embed=embed)
+                    
+                    view = discord.ui.View()
+                    view.add_item(discord.ui.Button(label="Track Link", url=a['recenttracks']['track'][0]['url']))
+                    view.add_item(discord.ui.Button(label="Artist Link", url=f"https://last.fm/music/{artist}"))
+                    
+                    message = await ctx.reply(embed=embed, view=view)
                     return await lf_add_reactions(ctx, message)
                
                else:
@@ -500,7 +505,8 @@ class lastfm(commands.Cog):
                 except: message = await ctx.send(await self.lastfm_replacement(user, starData[0]))
                 return await lf_add_reactions(ctx, message)
             
-        elif check is None: return await ctx.lastfm_message(f"**{member}** doesn't have a **Last.fm account** linked. Use `{ctx.clean_prefix}lf set <username>` to link your **account**.")                                       
+        elif check is None: return await ctx.lastfm_message(f"**{member}** doesn't have a **Last.fm account** linked. Use `{ctx.clean_prefix}lf set <username>` to link your **account**.")  
+                             
     
 async def setup(bot):
     await bot.add_cog(lastfm(bot))
