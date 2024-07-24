@@ -131,7 +131,7 @@ class config(Cog):
       elif check is not None:  await self.bot.db.execute("DELETE FROM pingonjoin WHERE guild_id = {}".format(ctx.guild.id))
       
       return await ctx.success("I will **not** ping new members in any channel.") 
-    
+          
     @pingonjoin.command(name="list", description="get a list of pingonjoin channels", help="config")
     async def poj_list(self, ctx: Context): 
           
