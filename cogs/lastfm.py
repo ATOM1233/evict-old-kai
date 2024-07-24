@@ -1,4 +1,5 @@
-import discord, json, typing, traceback
+import discord, json, typing, traceback, asyncio, os
+from discord import Embed
 from discord.ext import commands, tasks  
 from utils.utils import EmbedBuilder
 from patches.lastfm import LastFMHandler as Handler
@@ -55,17 +56,6 @@ class lastfm(commands.Cog):
     @commands.group(invoke_without_command=True, aliases = ['lf'])
     async def lastfm(self, ctx: commands.Context):
         await ctx.create_pages()
-
-    @lastfm.command(name="set", description="register your lastfm account", usage="[name]")
-    async def lf_set(self, ctx: commands.Context, *, ref: str):
-      
-      if not await lastfm_user_exists(ref): return await ctx.lastfm_message("That is **not** a valid **last.fm** username.")                        
-      
-      check = await self.bot.db.fetchrow("SELECT * FROM lastfm WHERE user_id = {}".format(ctx.author.id))
-      if not check: await self.bot.db.execute("INSERT INTO lastfm VALUES ($1,$2)", ctx.author.id, ref)
-      
-      else: await self.bot.db.execute("UPDATE lastfm SET username = $1 WHERE user_id = $2", ref, ctx.author.id)
-      return await ctx.lastfm_message(f"I have set your **Last.fm** username as **{ref}**.")
 
     @lastfm.command(name="remove", description="unset your lastfm account")
     async def lf_remove(self, ctx: commands.Context):      
@@ -145,7 +135,7 @@ class lastfm(commands.Cog):
         if member is None: member = ctx.author
         try:
            
-           check = await self.bot.db.fetchrow("SELECT * FROM lastfm WHERE user_id = {}".format(member.id))           
+           check = await self.bot.db.fetchrow("SELECT * FROM lastfm_users WHERE discord_user_id = {}".format(member.id))           
            if check:   
                 
                 user = check["username"]
@@ -169,7 +159,7 @@ class lastfm(commands.Cog):
         if member == None: member = ctx.author
         try:
             
-            check = await self.bot.db.fetchrow("SELECT * FROM lastfm WHERE user_id = {}".format(member.id))
+            check = await self.bot.db.fetchrow("SELECT * FROM lastfm_users WHERE discord_user_id = {}".format(member.id)) 
             
             if check:  
                 
@@ -186,14 +176,49 @@ class lastfm(commands.Cog):
         
         except Exception as e:
             print(e)
-
+            
+    @lastfm.command(name="login", aliases=["register"])
+    async def lf_login(self, ctx: commands.Context):
+        """
+        Log in with your lastfm account to the bot
+        """
+        
+        check = await self.bot.db.fetchrow("SELECT * FROM lastfm_users WHERE discord_user_id = {}".format(ctx.author.id))
+        if check is not None: return await ctx.warning("You **already** have a **Last.fm** account linked.")
+        
+        CALLBACK_URL = f"https://kure.pl/lastfm/callback?discord_user_id={ctx.author.id}"
+        auth_url = f"http://www.last.fm/api/auth/?api_key=166f77a5ce11d4860de9acf5d384e426&cb={CALLBACK_URL}"
+    
+        await asyncio.sleep(1)
+        
+        embed = Embed(
+            color=0xFF0000,  # Replace with Colors.lastfm if you have a Colors class
+            title="Connect your Last.fm account",
+            description=(
+                f"Authorize **Evict** to use your Last.fm account [here]({auth_url}). "
+                "Your library's data will be indexed to power the whoknows commands and other commands.\n\n"
+                "If you want to remove your account with **Evict**, run `lastfm logout` and visit your settings on "
+                "[Last.fm](https://www.last.fm/settings/applications) to unauthorize our application.\n"
+            ),
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.display_avatar.url).set_footer(
+            text="Reconnecting your account will not fix sync issues.",
+            icon_url="https://cdn.discordapp.com/emojis/1225172194628468921.png"
+        )
+        
+        # Send the embed to the user via DM
+        try:
+            await ctx.author.send(embed=embed)
+            await ctx.message.add_reaction("📩")  # Add reaction to the original message
+        except discord.Forbidden:
+            await ctx.send("I couldn't send you a DM. Please check your privacy settings.")
+    
     @lastfm.command(name="topalbums", aliases = ['tal'], description="check a member's top 10 albums", usage="<member>")
     async def lf_topalbums(self,ctx: commands.Context, *, member: discord.Member=None):
         
         if member == None: member=ctx.author
         
         try:
-           check = await self.bot.db.fetchrow("SELECT * FROM lastfm WHERE user_id = {}".format(member.id))
+           check = await self.bot.db.fetchrow("SELECT * FROM lastfm_users WHERE discord_user_id = {}".format(member.id)) 
            
            if check:  
              user = check["username"]
@@ -248,7 +273,7 @@ class lastfm(commands.Cog):
      
      await ctx.typing()
      
-     check = await self.bot.db.fetchrow("SELECT username FROM lastfm WHERE user_id = {}".format(ctx.author.id))
+     check = await self.bot.db.fetchrow("SELECT * FROM lastfm_users WHERE discord_user_id = {}".format(ctx.author.id)) 
      if check is None: return await ctx.lastfm_message("You don't have a **Last.fm** account connected.")
      
      fmuser = check['username']
@@ -290,7 +315,7 @@ class lastfm(commands.Cog):
       
       await ctx.typing()
       
-      check = await self.bot.db.fetchrow("SELECT username FROM lastfm WHERE user_id = {}".format(ctx.author.id))
+      check = await self.bot.db.fetchrow("SELECT * FROM lastfm_users WHERE discord_user_id = {}".format(ctx.author.id)) 
       if check is None: return await ctx.lastfm_message("You don't have a **Last.fm** account connected.")
       
       fmuser = check['username']
@@ -350,7 +375,7 @@ class lastfm(commands.Cog):
     @lastfm.command(name="cover", description="get the cover image of your lastfm song", usage="<member>")
     async def lf_cover(self, ctx: commands.Context, *, member: discord.Member=commands.Author): 
      
-     check = await self.bot.db.fetchrow("SELECT username FROM lastfm WHERE user_id = $1", member.id)
+     check = await self.bot.db.fetchrow("SELECT * FROM lastfm_users WHERE discord_user_id = {}".format(member.id)) 
      if check is None: return await ctx.lastfm_message("You don't have a **last.fm** account connected.")  
      
      user = check[0]
@@ -385,7 +410,8 @@ class lastfm(commands.Cog):
     async def lf_crowns(self, ctx: commands.Context, *, member: discord.User=None): 
       
       if member is None: member = ctx.author 
-      check = await self.bot.db.fetch("SELECT * FROM lfcrowns WHERE user_id = $1", member.id)
+      check = await self.bot.db.fetchrow("SELECT * FROM lastfm_users WHERE discord_user_id = {}".format(member.id)) 
+
       
       if len(check) == 0: return await ctx.lastfm_message("I **couldn't** find any crown for **{}**".format(member))
       await ctx.typing()
@@ -425,8 +451,8 @@ class lastfm(commands.Cog):
     async def lf_chart(self, ctx: commands.Context, user: discord.User=None, size: str = "3x3", period: Literal['overall', '7day', '1month', '3month', '6month', '12month'] = 'overall'):
       
       if user is None: user = ctx.author   
-      username = await self.bot.db.fetchval("SELECT username FROM lastfm WHERE user_id = $1", user.id)
-      
+      username = await self.bot.db.fetchrow("SELECT * FROM lastfm_users WHERE discord_user_id = {}".format(user.id)) 
+
       if not username: 
         return await ctx.lastfm_send(f"{user.mention} does not have a lastfm account linked.")
       
@@ -467,7 +493,7 @@ class lastfm(commands.Cog):
         if member is None: member = ctx.author
         
         await ctx.typing()             
-        check = await self.bot.db.fetchrow("SELECT * FROM lastfm WHERE user_id = {}".format(member.id))            
+        check = await self.bot.db.fetchrow("SELECT * FROM lastfm_users WHERE discord_user_id = {}".format(member.id))            
             
         if check:   
                starData = await self.bot.db.fetchrow("SELECT mode FROM lfmode WHERE user_id = $1", member.id)
@@ -506,7 +532,7 @@ class lastfm(commands.Cog):
                 except: message = await ctx.send(await self.lastfm_replacement(user, starData[0]))
                 return await lf_add_reactions(ctx, message)
             
-        elif check is None: return await ctx.lastfm_message(f"**{member}** doesn't have a **Last.fm account** linked. Use `{ctx.clean_prefix}lf set <username>` to link your **account**.")  
+        elif check is None: return await ctx.lastfm_message(f"**{member}** doesn't have a **Last.fm account** linked. Use `{ctx.clean_prefix}lf login` to link your **account**.")  
                              
     
 async def setup(bot):
