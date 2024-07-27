@@ -1,6 +1,6 @@
 from discord.ext import commands
 from typing import Union 
-import discord
+import discord, json
 
 OWNERS = [214753146512080907, 598125772754124823]
   
@@ -147,3 +147,50 @@ class Whitelist:
    messages.append(mes)  
    number.append(discord.Embed(color=ctx.bot.color, title=f"whitelisted {target}s ({len(results)})", description=messages[i]))
    await ctx.paginate(number)
+   
+class Perms: 
+
+  def server_owner(): 
+   async def predicate(ctx: commands.Context): 
+    if ctx.author.id != ctx.guild.owner_id: 
+      await ctx.send_warning( f"This command can be used only by **{ctx.guild.owner}**") 
+      return False 
+    return True   
+   return commands.check(predicate)   
+  
+  def check_whitelist(module: str):
+   async def predicate(ctx: commands.Context):
+    if ctx.guild is None: return False 
+    if ctx.author.id == ctx.guild.owner.id: return True
+    check = await ctx.bot.db.fetchrow("SELECT * FROM whitelist WHERE guild_id = $1 AND object_id = $2 AND mode = $3 AND module = $4", ctx.guild.id, ctx.author.id, "user", module)   
+    if check is None: 
+     await ctx.send_warning( f"You are not **whitelisted** for **{module}**") 
+     return False      
+    return True
+   return commands.check(predicate) 
+
+  def get_perms(perm: str=None):
+   async def predicate(ctx: commands.Context):  
+    if perm is None: return True 
+    if ctx.guild.owner == ctx.author: return True
+    if ctx.author.guild_permissions.administrator: return True
+    for r in ctx.author.roles:
+     if perm in [str(p[0]) for p in r.permissions if p[1] is True]: return True 
+     check = await ctx.bot.db.fetchrow("SELECT permissions FROM fake_permissions WHERE role_id = $1 and guild_id = $2", r.id, r.guild.id)
+     if check is None: continue 
+     permissions = json.loads(check[0])
+     if perm in permissions or "administrator" in permissions: return True
+    raise commands.MissingPermissions([perm])
+   return commands.check(predicate)  
+
+  async def has_perms(ctx: commands.Context, perm: str=None): 
+    if perm is None: return True 
+    if ctx.guild.owner == ctx.author: return True
+    if ctx.author.guild_permissions.administrator: return True
+    for r in ctx.author.roles:
+     if perm in [str(p[0]) for p in r.permissions if p[1] is True]: return True 
+     check = await ctx.bot.db.fetchrow("SELECT permissions FROM fake_permissions WHERE role_id = $1 and guild_id = $2", r.id, r.guild.id)
+     if check is None: continue 
+     permissions = json.loads(check[0])
+     if perm in permissions or "administrator" in permissions: return True
+    return False  
