@@ -55,7 +55,7 @@ class CreateTicket(discord.ui.View):
            text = await interaction.guild.create_text_channel(name="ticket-{}".format(interaction.user.name), reason="opened ticket", category=interaction.client.get_channel(check['category']) or None)
            overwrites = discord.PermissionOverwrite()
            overwrites.send_messages = True
-           overwrites.view_channel = True 
+           overwrites.view_channel = False 
            overwrites.attach_files = True 
            overwrites.embed_links = True
            await text.set_permissions(interaction.user, overwrite=overwrites)
