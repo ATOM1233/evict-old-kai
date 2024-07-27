@@ -4,7 +4,7 @@ from discord import Embed, utils, ButtonStyle, Message
 from typing import Any, Union, Dict, Optional, List, Sequence
 from discord.ui import View
 from discord.ext import commands
-from discord_paginator import Paginator
+from bot.ext import PaginatorView
 
 class EvictContext(Context): 
   flags: Dict[str, Any] = {}
@@ -47,6 +47,34 @@ class EvictContext(Context):
   async def lastfm_message(self, message: str) -> discord.Message: 
     return await self.reply(embed=discord.Embed(color=0xff0000, description=f"> <:lastfm:1263727050309632031> {self.author.mention}: {message}"))  
   
+  async def paginate(self, contents: List[str], title:str=None, author: dict={'name': '', 'icon_url': None}):
+   iterator = [m for m in utils.as_chunks(contents, 10)]
+   embeds = [
+            Embed(
+                color=self.bot.color,
+                title=title,
+                description="\n".join(
+                    [f"{f}" for f in m]
+                ),
+            ).set_author(**author)
+            for m in iterator
+        ]
+   return await self.paginator(embeds)
+  
+  async def index(self, contents: List[str], title:str=None, author: dict={'name': '', 'icon_url': None}):
+   iterator = [m for m in utils.as_chunks(contents, 10)]
+   embeds = [
+            Embed(
+                color=self.bot.color,
+                title=title,
+                description="\n".join(
+                    [f"`{(m.index(f)+1)+(iterator.index(m)*10)}.` {f}" for f in m]
+                ),
+            ).set_author(**author)
+            for m in iterator
+        ]
+   return await self.paginator(embeds)
+  
   async def create_pages(self): 
    embeds = []
    
@@ -67,80 +95,14 @@ class EvictContext(Context):
    return await self.paginator(embeds)
     
   async def paginator(self, embeds: List[Union[Embed, str]]) -> Message:
-        """Sends some paginated embeds to the channel"""
         
-        if len(embeds) == 1:
-            
-            if isinstance(embeds[0], Embed):
-                return await self.reply(embed=embeds[0])
-            
-            elif isinstance(embeds[0], str):
-                return await self.reply(embeds[0])
-
-        paginator = Paginator(self, embeds)
-        style = ButtonStyle.gray
-        
-        paginator.add_button("prev", emoji="<:left:1263727060078035066>", style=style)
-        paginator.add_button("next", emoji="<:right:1263727130370637995>", style=style)
-        paginator.add_button("delete", emoji="<:deny:1263727013433184347>", style=style)
-        
-        return await paginator.start()
+        if len(embeds) == 1: return await self.reply(embed=embeds[0]) 
+        view = PaginatorView(self, embeds)
+        view.message = await self.reply(embed=embeds[0], view=view) 
 
   async def create_pages(self):
         """Create pages for group commands"""
         return await self.send_help(self.command)
-      
-  async def index(
-        self,
-        contents: List[str],
-        title: str = None,
-        author: dict = {"name": "", "icon_url": None},
-    ):
-        """Paginate a list of contents in multiple embeds"""
-        iterator = [m for m in utils.as_chunks(contents, 10)]
-        embeds = [
-            Embed(
-                color=self.bot.color,
-                title=title,
-                description="\n".join(
-                    [f"`{(m.index(f)+1)+(iterator.index(m)*10)}.` {f}" for f in m]
-                ),
-            ).set_author(**author)
-            for m in iterator
-        ]
-        return await self.paginator(embeds)
-
-  async def paginate(
-        self,
-        contents: List[str],
-        title: str = None,
-        author: dict = {"name": "", "icon_url": None},
-    ):
-    
-        """Paginate a list of contents in multiple embeds"""
-        iterator = [m for m in utils.as_chunks(contents, 10)]
-        embeds = [
-            Embed(
-                color=self.bot.color,
-                title=title,
-                description="\n".join(
-                    [f"{f}" for f in m]
-                ),
-            ).set_author(**author)
-            for m in iterator
-        ]
-        return await self.paginator(embeds)
-      
-  async def on_timeout(self) -> None:
-      
-      await self.disable_buttons()
-    
-  async def disable_buttons(self): 
-        
-        for item in self.children: 
-            item.disabled = True 
-        
-        await self.message.edit(view=self)   
 
   async def reply(self, content: Optional[str] = None, *, embed: Optional[discord.Embed] = None, view: Optional[View] = None, mention_author: Optional[bool] = False, file: Optional[discord.File] = discord.utils.MISSING,
         files: Optional[Sequence[discord.File]] = discord.utils.MISSING) -> discord.Message:
