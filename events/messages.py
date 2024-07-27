@@ -3,12 +3,40 @@ import discord, json, asyncio, datetime, re
 from uwuipy import uwuipy
 from discord import Embed, Message, User
 from reposter.reposter import Reposter
+from patches.permissions import Perms
+from collections import defaultdict
 
 DISCORD_API_LINK = "https://discord.com/api/invite/"
+
+async def decrypt_message(content: str) -> str: 
+    return content.lower().replace("1", "i").replace("4", "a").replace("3", "e").replace("0", "o").replace("@", "a") 
+
+def duration(n: int) -> str: 
+    uptime = int(n/1000)
+    seconds_to_minute   = 60
+    seconds_to_hour     = 60 * seconds_to_minute
+    seconds_to_day      = 24 * seconds_to_hour
+
+    days    =   uptime // seconds_to_day
+    uptime    %=  seconds_to_day
+
+    hours   =   uptime // seconds_to_hour
+    uptime    %=  seconds_to_hour
+
+    minutes =   uptime // seconds_to_minute
+    uptime    %=  seconds_to_minute
+
+    seconds = uptime
+    if days > 0: return ("{} days, {} hours, {} minutes, {} seconds".format(days, hours, minutes, seconds))
+    if hours > 0 and days == 0: return ("{} hours, {} minutes, {} seconds".format(hours, minutes, seconds))
+    if minutes > 0 and hours == 0 and days == 0: return ("{} minutes, {} seconds".format(minutes, seconds))
+    if minutes < 0 and hours == 0 and days == 0: return ("{} seconds".format(seconds))
 
 class Messages(commands.Cog): 
   def __init__(self, bot: commands.Bot): 
     self.bot = bot 
+    self.locks = defaultdict(asyncio.Lock)
+    self.antispam_cache = {}
     
   async def webhook(self, channel) -> discord.Webhook:
       for webhook in await channel.webhooks():
@@ -208,6 +236,193 @@ class Messages(commands.Cog):
        if check:
           context = await self.bot.get_context(message)
           await context.invoke(self.bot.get_command("nowplaying"))   
+          
+          
+  @commands.Cog.listener("on_message")
+  async def antispam_send(self, message: discord.Message):
+        if not message.guild:
+            return
+        if isinstance(message.author, discord.User):
+            return
+        if await Perms.has_perms(await self.bot.get_context(message), "manage_guild"):
+            return
+        check = await self.bot.db.fetchrow(
+            "SELECT * FROM antispam WHERE guild_id = $1", message.guild.id
+        )
+        if check:
+            res1 = await self.bot.db.fetchrow(
+                "SELECT * FROM whitelist WHERE guild_id = $1 AND module = $2 AND object_id = $3 AND mode = $4",
+                message.guild.id,
+                "antispam",
+                message.channel.id,
+                "channel",
+            )
+            if not res1:
+                res2 = await self.bot.db.fetchrow(
+                    "SELECT * FROM whitelist WHERE guild_id = $1 AND module = $2 AND object_id = $3 AND mode = $4",
+                    message.guild.id,
+                    "antispam",
+                    message.author.id,
+                    "user",
+                )
+                if not res2:
+                    if not self.antispam_cache.get(str(message.channel.id)):
+                        self.antispam_cache[str(message.channel.id)] = {}
+                    if not self.antispam_cache[str(message.channel.id)].get(
+                        str(message.author.id)
+                    ):
+                        self.antispam_cache[str(message.channel.id)][
+                            str(message.author.id)
+                        ] = []
+                    self.antispam_cache[str(message.channel.id)][
+                        str(message.author.id)
+                    ].append(tuple([datetime.datetime.now(), message]))
+                    expired_time = check["seconds"]
+                    expired_msgs = [
+                        msg
+                        for msg in self.antispam_cache[str(message.channel.id)][
+                            str(message.author.id)
+                        ]
+                        if (datetime.datetime.now() - msg[0]).total_seconds()
+                        > expired_time
+                    ]
+                    for ex in expired_msgs:
+                        self.antispam_cache[str(message.channel.id)][
+                            str(message.author.id)
+                        ].remove(ex)
+                    if (
+                        len(
+                            self.antispam_cache[str(message.channel.id)][
+                                str(message.author.id)
+                            ]
+                        )
+                        > check["count"]
+                    ):
+                        messages = [
+                            msg[1]
+                            for msg in self.antispam_cache[str(message.channel.id)][
+                                str(message.author.id)
+                            ]
+                        ]
+                        self.antispam_cache[str(message.channel.id)][
+                            str(message.author.id)
+                        ] = []
+                        punishment = check["punishment"]
+                        if punishment == "delete":
+                            return await message.channel.delete_messages(
+                                messages, reason="AutoMod: spamming messages"
+                            )
+                        await message.channel.delete_messages(
+                            messages, reason="AutoMod: spamming messages"
+                        )
+                        if not message.author.is_timed_out():
+                            await message.channel.send(
+                                embed=discord.Embed(
+                                    color=self.bot.color,
+                                    title="AutoMod",
+                                    description=f"{self.bot.warning} {message.author.mention}: You have been muted for **1 minute** for spamming messages in this channel",
+                                )
+                            )
+                            await message.author.timeout(
+                                discord.utils.utcnow() + datetime.timedelta(minutes=1),
+                                reason="AutoMod: spamming messages",
+                            )
+
+  @commands.Cog.listener('on_message')
+  async def chatfilter_send(self, message: discord.Message): 
+      if not message.guild: return 
+      if isinstance(message.author, discord.User): return 
+      if await Perms.has_perms(await self.bot.get_context(message), "manage_guild"): return 
+      check = await self.bot.db.fetch("SELECT * FROM chatfilter WHERE guild_id = $1", message.guild.id) 
+      if len(check) > 0: 
+       res1 = await self.bot.db.fetchrow("SELECT * FROM whitelist WHERE guild_id = $1 AND module = $2 AND object_id = $3 AND mode = $4", message.guild.id, "chatfilter", message.channel.id, "channel")
+       if not res1:  
+          res2 = await self.bot.db.fetchrow("SELECT * FROM whitelist WHERE guild_id = $1 AND module = $2 AND object_id = $3 AND mode = $4", message.guild.id, "chatfilter", message.author.id, "user")             
+          if not res2:
+           for result in check: 
+            if result["word"] in await decrypt_message(message.content): 
+              return await message.delete()                          
+    
+  @commands.Cog.listener('on_message_edit')
+  async def chatfilter_edit(self, before: discord.Message, after: discord.Message): 
+      if before.content == after.content: return 
+      message = after 
+      if not message.guild: return 
+      if isinstance(message.author, discord.User): return 
+      if await Perms.has_perms(await self.bot.get_context(message), "manage_guild"): return 
+      check = await self.bot.db.fetch("SELECT * FROM chatfilter WHERE guild_id = $1", message.guild.id) 
+      if len(check) > 0: 
+       res1 = await self.bot.db.fetchrow("SELECT * FROM whitelist WHERE guild_id = $1 AND module = $2 AND object_id = $3 AND mode = $4", message.guild.id, "chatfilter", message.channel.id, "channel")
+       if not res1:  
+          res2 = await self.bot.db.fetchrow("SELECT * FROM whitelist WHERE guild_id = $1 AND module = $2 AND object_id = $3 AND mode = $4", message.guild.id, "chatfilter", message.author.id, "user")             
+          if not res2:
+            for result in check: 
+             if result["word"] in await decrypt_message(message.content): 
+               return await message.delete() 
+             
+  @commands.Cog.listener('on_message_edit')
+  async def invite_edit(self, before: discord.Message, after: discord.Message): 
+     if after.content == before.content: return   
+     message = after   
+     if not message.guild: return 
+     if isinstance(message.author, discord.User): return 
+     if message.author.bot: return 
+     if await Perms.has_perms(await self.bot.get_context(message), "manage_guild"): return 
+     invites = ["discord.gg/", ".gg/", "discord.com/invite/"]
+     if any(invite in message.content for invite in invites):
+        check = await self.bot.db.fetchrow("SELECT * FROM antiinvite WHERE guild_id = $1", message.guild.id)        
+        if check is not None: 
+          res1 = await self.bot.db.fetchrow("SELECT * FROM whitelist WHERE guild_id = $1 AND module = $2 AND object_id = $3 AND mode = $4", message.guild.id, "antiinvite", message.channel.id, "channel")
+          if res1: return 
+          res2 = await self.bot.db.fetchrow("SELECT * FROM whitelist WHERE guild_id = $1 AND module = $2 AND object_id = $3 AND mode = $4", message.guild.id, "antiinvite", message.author.id, "user")             
+          if res2: return
+          if "discord.gg/" in message.content:
+            spl_word = "discord.gg/"
+          elif ".gg/" in message.content:  
+            spl_word = ".gg/"
+          elif "discord.com/invite/" in message.content:
+            spl_word = "discord.com/invite/"
+
+          linko = message.content.partition(spl_word)[2]  
+          link = linko.split()[0] 
+          data = await self.bot.session.json(DISCORD_API_LINK + link)
+          try:
+           if int(data["guild"]["id"]) == message.guild.id: return
+           await message.delete()
+           await message.author.timeout(discord.utils.utcnow() + datetime.timedelta(minutes=1), reason="AutoMod: Sending invites")
+           await message.channel.send(embed=discord.Embed(color=self.bot.color, title="AutoMod", description=f"{self.bot.warning} {message.author.mention}: You have been muted for **1 minute** for sending discord invites in this channel"))
+          except KeyError: pass  
+
+  @commands.Cog.listener('on_message')
+  async def invite_send(self, message: discord.Message):   
+     if not message.guild: return 
+     if isinstance(message.author, discord.User): return 
+     if message.author.bot: return 
+     if await Perms.has_perms(await self.bot.get_context(message), "manage_guild"): return 
+     invites = ["discord.gg/", ".gg/", "discord.com/invite/"]
+     if any(invite in message.content for invite in invites):
+        check = await self.bot.db.fetchrow("SELECT * FROM antiinvite WHERE guild_id = $1", message.guild.id)        
+        if check is not None: 
+          res1 = await self.bot.db.fetchrow("SELECT * FROM whitelist WHERE guild_id = $1 AND module = $2 AND object_id = $3 AND mode = $4", message.guild.id, "antiinvite", message.channel.id, "channel")
+          if res1: return 
+          res2 = await self.bot.db.fetchrow("SELECT * FROM whitelist WHERE guild_id = $1 AND module = $2 AND object_id = $3 AND mode = $4", message.guild.id, "antiinvite", message.author.id, "user")             
+          if res2: return
+          if "discord.gg/" in message.content:
+            spl_word = "discord.gg/"
+          elif ".gg/" in message.content:  
+            spl_word = ".gg/"
+          elif "discord.com/invite/" in message.content:
+            spl_word = "discord.com/invite/"
+
+          linko = message.content.partition(spl_word)[2]  
+          link = linko.split()[0] 
+          data = await self.bot.session.json(DISCORD_API_LINK + link)
+          try:
+           if int(data["guild"]["id"]) == message.guild.id: return
+           await message.delete()
+           await message.author.timeout(discord.utils.utcnow() + datetime.timedelta(minutes=5), reason="AudoMod: Sending invites")
+           await message.channel.send(embed=discord.Embed(color=self.bot.color, title="AutoMod", description=f"{self.bot.warning} {message.author.mention}: You have been muted for **5 minutes** for sending discord invites in this channel"))
+          except KeyError: pass      
         
 async def setup(bot: commands.Bot):
   await bot.add_cog(Messages(bot))
