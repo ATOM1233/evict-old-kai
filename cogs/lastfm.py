@@ -60,10 +60,10 @@ class lastfm(commands.Cog):
     @lastfm.command(name="remove", description="unset your lastfm account")
     async def lf_remove(self, ctx: commands.Context):      
         
-        check = await self.bot.db.fetchrow("SELECT * FROM lastfm WHERE user_id = {}".format(ctx.author.id))        
+        check = await self.bot.db.fetchrow("SELECT * FROM lastfm_users WHERE discord_user_id = {}".format(ctx.author.id))        
         if not check: return await ctx.lastfm_message("You don't have a **last.fm** account connected.")
         
-        await self.bot.db.execute("DELETE FROM lastfm WHERE user_id = {}".format(ctx.author.id))
+        await self.bot.db.execute("DELETE FROM lastfm_users WHERE discord_user_id = {}".format(ctx.author.id))
         await ctx.lastfm_message("I have removed your **last.fm** account from the bot.")
          
     @lastfm.command(name="variables", description="view lastfm custom embed variables")
@@ -239,7 +239,7 @@ class lastfm(commands.Cog):
             
             await ctx.channel.typing()                    
             
-            check = await self.bot.db.fetchrow('SELECT username FROM lastfm WHERE user_id = $1', user.id)
+            check = await self.bot.db.fetchrow('SELECT username FROM lastfm_users WHERE discord_user_id = $1', user.id)
             username = check["username"]
             
             if not check: return await ctx.warning(f"{'You don' if user == ctx.author else f'**{user}** doesn'}'t have a **last.fm** account linked.")
@@ -249,7 +249,6 @@ class lastfm(commands.Cog):
             try:
              i = info["user"]
              name = i["name"]
-             age = int(i["age"])
              subscriber = f"{'false' if i['subscriber'] == '0' else 'true'}"
              realname = i["realname"]
              playcount = int(i["playcount"])
@@ -263,7 +262,7 @@ class lastfm(commands.Cog):
              embed.set_thumbnail(url=image)
              embed.set_author(name=f"{name}", icon_url=image)
              embed.add_field(name=f"Plays", value=f"**artists:** {artistcount:,}\n**plays:** {playcount:,}\n**tracks:** {trackcount:,}\n**albums:** {albumcount:,}", inline=False)
-             embed.add_field(name=f"Info", value=f"**name:** {realname}\n**registered:** <t:{int(i['registered']['#text'])}:R>\n**subscriber:** {subscriber}\n**age:** {age:,}", inline=False)
+             embed.add_field(name=f"Info", value=f"**name:** {realname}\n**registered:** <t:{int(i['registered']['#text'])}:R>\n**subscriber:** {subscriber}", inline=False)
              
              await ctx.reply(embed=embed)
             except TypeError: return await ctx.lastfm_message("This user doesn't have a **Last.fm** account connected.")
