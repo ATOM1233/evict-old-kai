@@ -114,10 +114,10 @@ class donor(commands.Cog):
   @commands.command(aliases=["stfureset"], description="remove everyone from uwulock", brief="donor & server owner")
   async def shutupreset(self, ctx:commands.Context):
     
-    check = await self.bot.db.fetchrow("SELECT guild_id FROM uwulock WHERE guild_id = {}".format(ctx.guild.id))
+    check = await self.bot.db.fetchrow("SELECT guild_id FROM shutup WHERE guild_id = {}".format(ctx.guild.id))
     if check is None: return await ctx.warning("There is **no one** in uwulock.")
     
-    else: await self.bot.db.execute("DELETE FROM uwulock WHERE guild_id = {}".format(ctx.guild.id))
+    else: await self.bot.db.execute("DELETE FROM shutup WHERE guild_id = {}".format(ctx.guild.id))
     await ctx.success("I have **successfully** removed everyone from uwulock.")
     
   @Permissions.has_permission(manage_messages=True)
