@@ -1,4 +1,4 @@
-import discord, datetime, asyncio, random, aiohttp
+import discord, datetime, asyncio, random
 from discord.ext import commands 
 from discord.ui import Button, View
 from patches.permissions import Permissions

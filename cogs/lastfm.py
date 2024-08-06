@@ -7,7 +7,6 @@ from typing import Literal
 from io import BytesIO
 from discord import File
 from bot.headers import Session
-from handlers.lastfm import lastfm_user_exists
 
 def sort_key(lis): 
    return lis[1]

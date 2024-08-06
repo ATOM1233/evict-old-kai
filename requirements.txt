@@ -9,7 +9,7 @@ git+https://github.com/resentbot/resent.api.git
 git+https://github.com/resentbot/discord.py.git
 git+https://github.com/resentbot/twscrape.git
 git+https://github.com/sheslitforme/Discord-iOS
-git+https://github.com/1xa5/Pagination
+git+https://github.com/prettylittlelies/discord_paginator@227fd915dd19d09422d80bd3aba601ea486d89f5
 python-dateutil
 requests
 aiogtts
