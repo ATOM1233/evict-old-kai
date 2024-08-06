@@ -1,9 +1,10 @@
 from discord.ext.commands import Context, Bot as Bot
 from discord.ext import commands
-import discord, datetime, dateutil.parser
+import discord, datetime, dateutil.parser, sys
 from discord import Embed, TextChannel 
 from discord.ui import Button, View
 from patches.classes import Time, TimeConverter
+from patches import functions
 
 DISCORD_API_LINK = "https://discord.com/api/invite/"
 
@@ -293,6 +294,58 @@ class information(commands.Cog):
         embed.set_author(name=f"{ctx.author.display_name}", icon_url=ctx.author.display_avatar)
         embed.set_thumbnail(url=self.bot.user.avatar.url)
         return await ctx.reply(embed=embed)
+    
+    @commands.command(description='shows avatar history', aliases=['avh'])
+    async def avatarhistory(self, ctx: commands.Context, *, user: discord.Member | discord.User = None):
+        """View a user's avatar history"""
+
+        user = user or ctx.author
+
+        avatars = await self.bot.db.fetch(
+            "SELECT avatar, timestamp FROM avatars WHERE user_id = $1 ORDER BY timestamp DESC",
+            user.id,
+        )
+        if not avatars:
+            return await ctx.warning(
+                "You don't have any **avatars** in the database" if user == ctx.author else f"**{user}** doesn't have any **avatars** in the database"
+            )
+
+        async with ctx.typing():
+            image = await functions.collage([row.get("avatar") for row in avatars[:35]])
+            if not image or sys.getsizeof(image.fp) > ctx.guild.filesize_limit:
+                await ctx.neutral(
+                    (
+                        f"Click [**here**](https://evict.cc/avatars/{user.id}) to view"
+                        f" {functions.plural(avatars, bold=True):of your avatar}"
+                        if user == ctx.author
+                        else (
+                            f"Click [**here**](https://evict.cc/avatars/{user.id}) to view"
+                            f" {functions.plural(avatars, bold=True):avatar} of **{user}**"
+                        )
+                    ),
+                    emoji="🖼️",
+                )
+            else:
+                embed = discord.Embed(
+                    title="Avatar History",
+                    color=self.bot.color,
+                    description=(
+                        f"Showing `{len(avatars[:35])}` of up to `{len(avatars)}` {'changes' if len(avatars) != 1 else 'change'}\n> For the full list"
+                        f" including GIFs click [**HERE**](https://evict.cc/avatars/{user.id})"
+                    ),
+                )
+                embed.set_author(
+                    name=f"{user} ({user.id})",
+                    icon_url=user.display_avatar.url,
+                )
+
+                embed.set_image(
+                    url="attachment://collage.png",
+                )
+                await ctx.reply(
+                    embed=embed,
+                    file=image,
+                )
 
 async def setup(bot):
     await bot.add_cog(information(bot))

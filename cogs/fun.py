@@ -122,12 +122,15 @@ class fun(commands.Cog):
 
     @commands.command(description='screenshot a website', usage='[url]', help='fun', aliases=['ss', 'screen'])
     async def screenshot(self, ctx: commands.Context, url: str):
-      try:
-        data = await api.screenshot(f"{url}")
-        embed = discord.Embed(color=self.bot.color)
-        embed.set_image(url=data.image_url)
-        await ctx.reply(embed=embed)
-      except Exception: return await ctx.warning(f"This site **does not** appear to be valid.")
+        async with ctx.typing():
+          if not url.startswith(("https://", "http://")):
+            url = f"https://{url}"
+        try:      
+          data = await api.screenshot(f"{url}")
+          embed = discord.Embed(color=self.bot.color)
+          embed.set_image(url=data.image_url)
+          await ctx.reply(embed=embed)
+        except Exception: return await ctx.warning(f"This site **does not** appear to be valid.")
 
     @commands.command(description='grab info on a snapchat profile', usage='[username]', help='fun')
     async def snapchat(self, ctx: commands.Context, *, username: str):
@@ -137,11 +140,6 @@ class fun(commands.Cog):
           return await ctx.error(results['detail'])
         await ctx.paginate(list(map(lambda s: s['url'], results['stories'])))
       except Exception: return await ctx.warning(f"{username} **does not** appear to be valid.")
-      
-    @commands.command(description='make an image transparent', usage='[image url]', help='fun')
-    async def transparent(self, ctx: commands.Context, *, image: str):
-      results = await self.bot.session.json("https://api.resent.dev/transparent", headers=self.bot.resent_api, params={"url": image})
-      return await ctx.send(f"``{results}``")
 
     @commands.command(description='get a random TikTok video', aliases=["foryou", "foryoupage"])
     async def fyp(self, ctx: commands.Context):

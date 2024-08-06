@@ -5,6 +5,7 @@ from discord import Embed, Message, User
 from reposter.reposter import Reposter
 from patches.permissions import Perms
 from collections import defaultdict
+from patches import functions
 
 DISCORD_API_LINK = "https://discord.com/api/invite/"
 
@@ -127,26 +128,48 @@ class Messages(commands.Cog):
       except: pass
       await self.bot.db.execute("DELETE FROM afk WHERE guild_id = $1 AND user_id = $2", message.guild.id, message.author.id)    
     
-  @commands.Cog.listener('on_message_edit')
-  async def edit_snipe(self, before: discord.Message, after: discord.Message): 
-     if not before.guild: return 
-     if before.author.bot: return 
-     await self.bot.db.execute("INSERT INTO editsnipe VALUES ($1,$2,$3,$4,$5,$6)", before.guild.id, before.channel.id, before.author.name, before.author.display_avatar.url, before.content, after.content)
+  @commands.Cog.listener("on_message_edit")
+  async def on_message_edit(self, before: discord.Message, after: discord.Message):
+        """Save edited messages to redis"""
 
-  @commands.Cog.listener('on_message_delete')
-  async def snipe(self, message: discord.Message):
-     if not message.guild: return 
-     if message.author.bot: return
-     invites = ["discord.gg/", ".gg/", "discord.com/invite/"]
-     if any(invite in message.content for invite in invites):
-       check = await self.bot.db.fetchrow("SELECT * FROM antiinvite WHERE guild_id = $1", message.guild.id)
-       if check: return
+        data = {
+            "timestamp": before.created_at.timestamp(),
+            "content": before.content,
+            "embeds": [embed.to_dict() for embed in before.embeds[:8] if not embed.type == "image" and not embed.type == "video"],
+            "attachments": [
+                attachment.proxy_url
+                for attachment in (before.attachments + list((embed.thumbnail or embed.image) for embed in before.embeds if embed.type == "image"))
+            ],
+            "stickers": [sticker.url for sticker in before.stickers],
+            "author": {
+                "id": before.author.id,
+                "name": before.author.name,
+                "discriminator": before.author.discriminator,
+                "avatar": before.author.avatar.url if before.author.avatar else None,
+            },
+        }
+        await self.bot.redis.ladd(
+            f"edited_messages:{functions.hash(before.channel.id)}",
+            data,
+            ex=60,
+        )
 
-     attachment = message.attachments[0].url if message.attachments else "none"
-     author = str(message.author)
-     content = message.content
-     avatar = message.author.display_avatar.url 
-     await self.bot.db.execute("INSERT INTO snipe VALUES ($1,$2,$3,$4,$5,$6,$7)", message.guild.id, message.channel.id, author, content, attachment, avatar, datetime.datetime.now())
+  @commands.Cog.listener("on_raw_reaction_remove")
+  async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
+        """Save removed reactions to redis"""
+
+        data = {
+            "timestamp": discord.utils.utcnow().timestamp(),
+            "message": payload.message_id,
+            "user": payload.user_id,
+            "emoji": str(payload.emoji),
+        }
+
+        await self.bot.redis.ladd(
+            f"removed_reactions:{functions.hash(payload.channel_id)}",
+            data,
+            ex=60,
+        )
 
   @commands.Cog.listener('on_message')
   async def uwulock(self, message: discord.Message):
@@ -423,6 +446,33 @@ class Messages(commands.Cog):
            await message.author.timeout(discord.utils.utcnow() + datetime.timedelta(minutes=5), reason="AudoMod: Sending invites")
            await message.channel.send(embed=discord.Embed(color=self.bot.color, title="AutoMod", description=f"{self.bot.warning} {message.author.mention}: You have been muted for **5 minutes** for sending discord invites in this channel"))
           except KeyError: pass      
+
+
+  @commands.Cog.listener("on_message_delete")
+  async def on_message_delete(self, message: discord.Message):
+        """Save deleted messages to redis"""
+
+        data = {
+            "timestamp": message.created_at.timestamp(),
+            "content": message.content,
+            "embeds": [embed.to_dict() for embed in message.embeds[:8] if not embed.type == "image" and not embed.type == "video"],
+            "attachments": [
+                attachment.proxy_url
+                for attachment in (message.attachments + list((embed.thumbnail or embed.image) for embed in message.embeds if embed.type == "image"))
+            ],
+            "stickers": [sticker.url for sticker in message.stickers],
+            "author": {
+                "id": message.author.id,
+                "name": message.author.name,
+                "discriminator": message.author.discriminator,
+                "avatar": message.author.avatar.url if message.author.avatar else None,
+            },
+        }
+        await self.bot.redis.ladd(
+            f"deleted_messages:{functions.hash(message.channel.id)}",
+            data,
+            ex=60,
+        )
         
 async def setup(bot: commands.Bot):
   await bot.add_cog(Messages(bot))

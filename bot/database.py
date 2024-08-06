@@ -78,7 +78,7 @@ async def create_db(self: commands.Bot):
   await self.db.execute("CREATE TABLE IF NOT EXISTS giveaway (guild_id BIGINT, channel_id BIGINT, message_id BIGINT, winners INTEGER, members TEXT, finish TIMESTAMPTZ, host BIGINT, title TEXT)")
   await self.db.execute("CREATE TABLE IF NOT EXISTS gw_ended (channel_id BIGINT, message_id BIGINT, members TEXT)")
   await self.db.execute("CREATE TABLE IF NOT EXISTS diary (user_id BIGINT, text TEXT, title TEXT, date TEXT)")
-  """await self.db.execute("CREATE TABLE IF NOT EXISTS reskin (user_id BIGINT, toggled BOOL, name TEXT, avatar TEXT)")"""
+  await self.db.execute("CREATE TABLE IF NOT EXISTS reskin (user_id BIGINT, toggled BOOL, name TEXT, avatar TEXT)")
   await self.db.execute("CREATE TABLE IF NOT EXISTS vanity (guild_id BIGINT, vanity_message TEXT, vanity_string TEXT, role_id BIGINT)")
   await self.db.execute("CREATE TABLE IF NOT EXISTS globalban (banned BIGINT)")
   await self.db.execute("CREATE TABLE IF NOT EXISTS autoresponses (guild_id BIGINT, key TEXT, response TEXT)")

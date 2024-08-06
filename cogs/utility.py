@@ -10,6 +10,7 @@ from typing import Union
 from io import BytesIO
 from patches.classes import Timezone, TimeConverter
 from events.tasks import is_there_a_reminder, bday_task, reminder_task
+from patches import functions
 
 DISCORD_API_LINK = "https://discord.com/api/invite/"
 
@@ -255,73 +256,130 @@ class utility(commands.Cog):
         await self.bot.db.execute("INSERT INTO afk VALUES ($1,$2,$3,$4)", ctx.guild.id, ctx.author.id, reason, ts)
         await ctx.success(f"You're now AFK with the status: **{reason}**")
 
-    @commands.command(aliases=["es"], description="get the most recent edited messages from the channel", usage="<number>")
-    async def editsnipe(self, ctx: Context, number: int=1): 
-     
-     results = await self.bot.db.fetch("SELECT * FROM editsnipe WHERE guild_id = $1 AND channel_id = $2", ctx.guild.id, ctx.channel.id)
-     
-     if len(results) == 0: return await ctx.warning( "There are no edited messages in this channel")
-     if number > len(results): return await ctx.warning( f"The maximum amount of snipes is **{len(results)}**")
-     
-     sniped = results[::-1][number-1]
-     
-     embed = Embed(color=self.bot.color)
-     embed.set_author(name=sniped['author_name'], icon_url=sniped["author_avatar"])
-     embed.add_field(name="before", value=sniped['before_content'])
-     embed.add_field(name="after", value=sniped['after_content'])
-     embed.set_footer(text=f"{number}/{len(results)}")
-     
-     await ctx.reply(embed=embed)
+    @commands.command(name="clearsnipes", aliases=["clearsnipe", "cs"])
+    @commands.has_permissions(manage_messages=True)
+    async def clearsnipes(self, ctx: commands.Context):
+        """Clear deleted messages from the cache"""
 
-    @commands.command(aliases=["rs"], description="get the most recent messages that got one of their reactions removed", usage="number")
-    async def reactionsnipe(self, ctx: Context, number: int=1):
-     
-     results = await self.bot.db.fetch("SELECT * FROM reactionsnipe WHERE guild_id = $1 AND channel_id = $2", ctx.guild.id, ctx.channel.id)
-     
-     if len(results) == 0: return await ctx.warning( "There are no reaction removed in this channel")
-     if number > len(results): return await ctx.warning( f"The maximum amount of snipes is **{len(results)}**") 
-     
-     sniped = results[::-1][number-1]
-     message = await ctx.channel.fetch_message(sniped['message_id'])
-     
-     embed = Embed(color=self.bot.color, description=f"[{sniped['emoji_name']}]({sniped['emoji_url']})\n[message link]({message.jump_url if message else 'https://none.none'})")
-     embed.set_author(name=sniped['author_name'], icon_url=sniped['author_avatar'])
-     embed.set_image(url=sniped['emoji_url'])
-     embed.set_footer(text=f"{number}/{len(results)}")
-     
-     await ctx.reply(embed=embed)
+        await self.bot.redis.delete(
+            f"deleted_messages:{functions.hash(ctx.channel.id)}",
+            f"edited_messages:{functions.hash(ctx.channel.id)}",
+            f"removed_reactions:{functions.hash(ctx.channel.id)}",
+        )
+        await ctx.success("I have deleted all the snipes in this channel.")
 
-    @commands.command(aliases=["s"], description="check the latest deleted message from a channel", usage="<number>")
-    async def snipe(self, ctx: Context, *, number: int=1):
-        
-        check = await self.bot.db.fetch("SELECT * FROM snipe WHERE guild_id = {} AND channel_id = {}".format(ctx.guild.id, ctx.channel.id))
-        
-        if len(check) == 0: return await ctx.warning( "There are no deleted messages in this channel") 
-        if number > len(check): return await ctx.warning( f"current snipe limit is **{len(check)}**".capitalize()) 
-        
-        sniped = check[::-1][number-1]
-        
-        em = Embed(color=self.bot.color, description=sniped['content'], timestamp=sniped['time'])
-        em.set_author(name=sniped['author'], icon_url=sniped['avatar']) 
-        em.set_footer(text="{}/{}".format(number, len(check)))
-        
-        if sniped['attachment'] != "none":
-         
-         if ".mp4" in sniped['attachment'] or ".mov" in sniped['attachment']:
-          
-          url = sniped['attachment']
-          r = await self.bot.session.read(url)
-          bytes_io = BytesIO(r)
-          file = File(fp=bytes_io, filename="video.mp4")
-          
-          return await ctx.reply(embed=em, file=file)
-         
-         else:
-           
-           try: em.set_image(url=sniped['attachment'])
-           except: pass 
-        
-        return await ctx.reply(embed=em)
+    @commands.command(name="editsnipe", usage="<index>", aliases=["esnipe", "es", "eh"])
+    async def editsnipe(self, ctx: commands.Context, index: int = 1):
+        """View edited messages"""
+
+        embed = []
+
+        messages = await self.bot.redis.lget(f"edited_messages:{functions.hash(ctx.channel.id)}")
+        if not messages:
+            return await ctx.warning("No **edited messages** found in this channel")
+
+        if index > len(messages):
+            return await ctx.warning(f"Couldn't find an edited message at index `{index}`")
+        else:
+            message = list(
+                sorted(
+                    messages,
+                    key=lambda m: m.get("timestamp"),
+                    reverse=True,
+                )
+            )[index - 1]
+
+        embed = discord.Embed(
+            color = self.bot.color,
+            description=(message.get("content") or ("__Message contained an embed__" if message.get("embeds") else "")),
+            timestamp=datetime.datetime.fromtimestamp(message.get("timestamp")),
+        )
+        embed.set_author(
+            name=message["author"].get("name"),
+            icon_url=message["author"].get("avatar"),
+        )
+
+        if message.get("attachments"):
+            embed.set_image(url=message["attachments"][0])
+        elif message.get("stickers"):
+            embed.set_image(url=message["stickers"][0])
+        embed.set_footer(
+            text=f"{index:,} of {functions.plural(messages):message}",
+            icon_url=ctx.author.display_avatar,
+        )
+
+        await ctx.reply(embed=embed)
+
+    @commands.command(name="reactionsnipe", usage="<message>", aliases=["rsnipe", "rs", "rh"])
+    async def reactionsnipe(self, ctx: commands.Context, *, message: discord.Message = None):
+        """View removed reactions"""
+
+        reactions = await self.bot.redis.lget(f"removed_reactions:{functions.hash(ctx.channel.id)}")
+
+        if not reactions:
+            return await ctx.warning("No **removed reactions** found in this channel")
+
+        if not message:
+            reaction = reactions[0]
+            message = ctx.channel.get_partial_message(reaction["message"])
+        else:
+            reaction = next(
+                (reaction for reaction in reactions if reaction["message"] == message.id),
+                None,
+            )
+            if not reaction:
+                return await ctx.warning("No **removed reactions** found for that message")
+
+        try:
+            await ctx.neutral(
+                f"**{self.bot.get_user(reaction.get('user')) or reaction.get('user')}** removed **{reaction.get('emoji')}**"
+                f" {discord.utils.format_dt(datetime.datetime.fromtimestamp(reaction.get('timestamp')), style='R')}"
+            )
+        except discord.HTTPException:
+            await ctx.neutral(
+                f"**{self.bot.get_user(reaction.get('user')) or reaction.get('user')}** removed **{reaction.get('emoji')}**"
+                f" {discord.utils.format_dt(datetime.datetime.fromtimestamp(reaction.get('timestamp')), style='R')}"
+            )
+
+    @commands.command(name="snipe", usage="<index>", aliases=["sn", "s"])
+    async def snipe(self, ctx: commands.Context, index: int = 1):
+        """View deleted messages"""
+
+        messages = await self.bot.redis.lget(f"deleted_messages:{functions.hash(ctx.channel.id)}")
+        if not messages:
+            return await ctx.warning("No **deleted messages** found in this channel")
+
+        if index > len(messages):
+            return await ctx.warning(f"Couldn't find a deleted message at index `{index}`")
+        else:
+            message = list(
+                sorted(
+                    messages,
+                    key=lambda m: m.get("timestamp"),
+                    reverse=True,
+                )
+            )[index - 1]
+
+        embed = discord.Embed(
+            color = self.bot.color,
+            description=(message.get("content") or ("__Message contained an embed__" if message.get("embeds") else "")),
+            timestamp=datetime.datetime.fromtimestamp(message.get("timestamp")),
+        )
+        embed.set_author(
+            name=message["author"].get("name"),
+            icon_url=message["author"].get("avatar"),
+        )
+
+        if message.get("attachments"):
+            embed.set_image(url=message["attachments"][0])
+        elif message.get("stickers"):
+            embed.set_image(url=message["stickers"][0])
+        embed.set_footer(
+            text=f"{index:,} of {functions.plural(messages):message}",
+            icon_url=ctx.author.display_avatar,
+        )
+
+        await ctx.reply(embed=embed)
     
     @commands.command(aliases=["mc"], description="check member count")
     async def membercount(self, ctx: Context):
@@ -479,11 +537,11 @@ class utility(commands.Cog):
      return await ctx.reply(embed=embed)
  
     @commands.command(description="shows the number of invites an user has", usage="<user>")
-    async def invites(self, ctx: Context, *, member: Member=None):
+    async def invites(self, ctx: commands.Context, *, member: Member=None):
       if member is None: 
         member = ctx.author 
       invites = await ctx.guild.invites()
-      await ctx.reply(f"{member} has **{sum(invite.uses for invite in invites if invite.inviter.id == member.id)}** invites")
+      await ctx.neutral(f"{member} has **{sum(invite.uses for invite in invites if invite.inviter.id == member.id)}** invites")
     
     @commands.command(aliases=["tts", "speech"], description="convert your message to mp3", usage="[message]")     
     async def texttospeech(self, ctx: Context, *, txt: str): 

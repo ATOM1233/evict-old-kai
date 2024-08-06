@@ -4,3 +4,4 @@
 *.json
 *.jar
 *.gz
+node_modules/

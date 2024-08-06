@@ -37,12 +37,18 @@ class EvictContext(Context):
  
   async def success(self, message: str) -> discord.Message:  
     return await self.reply(embed=discord.Embed(color=self.bot.color, description=f"{self.bot.yes} {self.author.mention}: {message}") )
+  
+  async def neutral(self, message: str) -> discord.Message:  
+    return await self.reply(embed=discord.Embed(color=self.bot.color, description=f"{message}") )
  
   async def error(self, message: str) -> discord.Message: 
     return await self.reply(embed=discord.Embed(color=self.bot.color, description=f"{self.bot.no} {self.author.mention}: {message}") ) 
  
   async def warning(self, message: str) -> discord.Message: 
     return await self.reply(embed=discord.Embed(color=self.bot.color, description=f"{self.bot.warning} {self.author.mention}: {message}") )
+  
+  async def check(self):
+      return await self.message.add_reaction("✅")
   
   async def lastfm_message(self, message: str) -> discord.Message: 
     return await self.reply(embed=discord.Embed(color=0xff0000, description=f"> <:lastfm:1263727050309632031> {self.author.mention}: {message}"))  

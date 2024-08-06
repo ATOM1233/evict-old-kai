@@ -55,10 +55,13 @@ class CreateTicket(discord.ui.View):
            text = await interaction.guild.create_text_channel(name="ticket-{}".format(interaction.user.name), reason="opened ticket", category=interaction.client.get_channel(check['category']) or None)
            overwrites = discord.PermissionOverwrite()
            overwrites.send_messages = True
-           overwrites.view_channel = False 
+           overwrites.view_channel = True 
            overwrites.attach_files = True 
            overwrites.embed_links = True
            await text.set_permissions(interaction.user, overwrite=overwrites)
+           overwrite1 = text.overwrites_for(interaction.guild.default_role)
+           overwrite1.view_channel = False
+           await text.set_permissions(interaction.guild.default_role, overwrite=overwrite1)
            embed = discord.Embed(color=int(check['color']) or interaction.client.color, description="Support will be with you shortly, please be patient.\n\nTo close the ticket press the button down below.")
            embed.set_footer(text="evict.cc", icon_url=interaction.client.user.display_avatar.url)
            await interaction.client.db.execute("INSERT INTO opened_tickets VALUES ($1,$2,$3)", interaction.guild.id, text.id, interaction.user.id)
@@ -67,7 +70,7 @@ class CreateTicket(discord.ui.View):
            
            supportRoles = await interaction.client.db.fetch("SELECT * FROM ticket_support WHERE guild_id = $1", interaction.guild.id)
            for support in supportRoles:
-             await text.send(f'<@&{support["role_id"]}>', allowed_mentions=discord.AllowedMentions(roles=True))
+             await text.send(f'<@&{support["role_id"]}>', allowed_mentions=discord.AllowedMentions(roles=True), delete_after=5)
            return await mes.pin()
         options = []
         for result in results: 
@@ -86,7 +89,10 @@ class CreateTicket(discord.ui.View):
             overwrites.attach_files = True 
             overwrites.embed_links = True
             await text.set_permissions(interaction.user, overwrite=overwrites)
-            e = discord.Embed(color=int(check['color']) if check['color'] is not None else inte.client.color, title=f"<:rename:1209076697324986378> {select.values[0]}", description="Support will be with you shortly, please be patient.\n\nTo close the ticket press the button down below.")
+            overwrite1 = text.overwrites_for(interaction.guild.default_role)
+            overwrite1.view_channel = False
+            await text.set_permissions(interaction.guild.default_role, overwrite=overwrite1)
+            e = discord.Embed(color=int(check['color']) if check['color'] is not None else inte.client.color, title=f"{select.values[0]}", description="Support will be with you shortly, please be patient.\n\nTo close the ticket press the button down below.")
             e.set_footer(text="evict.cc", icon_url=interaction.client.user.display_avatar.url)
             await inte.client.db.execute("INSERT INTO opened_tickets VALUES ($1,$2,$3)", interaction.guild.id, text.id, interaction.user.id)
             await inte.response.edit_message(embed=discord.Embed(color=int(check['color']) if check['color'] is not None else inte.client.color, description=f"{inte.client.yes} {inte.user.mention}: Opened ticket in {text.mention}"), view=None)

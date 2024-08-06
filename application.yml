@@ -4,11 +4,6 @@ server: # REST and WS server
   http2:
     enabled: false # Whether to enable HTTP/2 support
 plugins:
-#  name: # Name of the plugin
-#    some_key: some_value # Some key-value pair for the plugin
-#    another_key: another_value
-lavalink:
-  plugins:
   youtube:
     enabled: true # Whether this source can be used.
     allowSearch: true # Whether "ytsearch:" and "ytmsearch:" can be used.
@@ -18,19 +13,11 @@ lavalink:
     # Clients are queried in the order they are given (so the first client is queried first and so on...)
     clients:
       - MUSIC
-      - ANDROID_TESTSUITE
+      - ANDROID
       - WEB
-
     # You can configure individual clients with the following.
-    # Any options or clients left unspecified will use their default values
-    # for those individual clients.
-    # Client configurations will ONLY take effect if the client is registered above,
-    # otherwise they are ignored.
-    # ---------------- WARNING ----------------
-    # This part of the config is for DEMONSTRATION PURPOSES ONLY!
-    # Do NOT use this config before understanding what the options do.
-    # You do NOT need to copy this config just because it is published here.
-    # ---------------- WARNING ----------------
+    # Any options or clients left unspecified will use their default values,
+    # which enables everything for all clients.
     WEB: # names are specified as they are written below under "Available Clients".
       # This will disable using the WEB client for video playback.
       playback: false
@@ -39,6 +26,12 @@ lavalink:
       playlistLoading: false # Disables loading of playlists and mixes for this client.
       videoLoading: false # Disables loading of videos for this client (playback is still allowed).
       searching: false # Disables the ability to search for videos for this client.
+lavalink:
+  plugins:
+    - dependency: "dev.lavalink.youtube:youtube-plugin:1.5.1" # required, the coordinates of your plugin
+      repository: "https://maven.lavalink.dev/releases" # optional, defaults to the Lavalink releases repository by default
+      snapshot: false # optional, defaults to false, used to tell Lavalink to use the snapshot repository instead of the release repository
+
   server:
     password: "youshallnotpass"
     sources:
@@ -79,9 +72,9 @@ lavalink:
       #strategy: "RotateOnBan" # RotateOnBan | LoadBalance | NanoSwitch | RotatingNanoSwitch
       #searchTriggersFail: true # Whether a search 429 should trigger marking the ip as failing
       #retryLimit: -1 # -1 = use default lavaplayer value | 0 = infinity | >0 = retry will happen this numbers times
-    #youtubeConfig: # Required for avoiding all age restrictions by YouTube, some restricted videos still can be played without.
-      #email: "" # Email of Google account
-      #password: "" # Password of Google account
+    youtubeConfig: # Required for avoiding all age restrictions by YouTube, some restricted videos still can be played without.
+      email: "evictbot@gmail.com" # Email of Google account
+      password: "anthonyrizo44" # Password of Google account
     #httpConfig: # Useful for blocking bad-actors from ip-grabbing your music node and attacking it, this way only the http proxy will be attacked
       #proxyHost: "localhost" # Hostname of the proxy, (ip or domain)
       #proxyPort: 3128 # Proxy port, 3128 is the default for squidProxy

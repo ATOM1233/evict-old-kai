@@ -19,8 +19,9 @@ async def lf_add_reactions(ctx: commands.Context, message: typing.Union[discord.
   return 
  reactions = json.loads(check["reactions"])
  if reactions[0] == "none": return
- for r in reactions: await message.add_reaction(r)
- return  
+ for r in reactions: 
+    try: await message.add_reaction(r)
+    except discord.NotFound: return await ctx.send("I cannot access your custom Last.FM reactions, please run ``;lf reactions`` to delete them.")  
 
 @tasks.loop(hours=1)
 async def clear_caches(bot: commands.Bot):
@@ -191,7 +192,7 @@ class lastfm(commands.Cog):
         await asyncio.sleep(1)
         
         embed = Embed(
-            color=0xFF0000,  # Replace with Colors.lastfm if you have a Colors class
+            color=0xFF0000,
             title="Connect your Last.fm account",
             description=(
                 f"Authorize **Evict** to use your Last.fm account [here]({auth_url}). "

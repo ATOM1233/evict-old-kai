@@ -1,4 +1,4 @@
-import discord, asyncpg, typing, time, os, discord_ios, pomice
+import discord, asyncpg, typing, time, os, discord_ios, pomice, asyncio, json
 
 from typing import List
 from humanfriendly import format_timespan
@@ -17,11 +17,95 @@ from cogs.ticket import CreateTicket, DeleteTicket
 from cogs.giveaway import GiveawayView
 
 from rivalapi.rivalapi import RivalAPI
+from redis.asyncio import StrictRedis as AsyncStrictRedis
+from redis.asyncio.connection import BlockingConnectionPool
+from redis.backoff import EqualJitterBackoff
+from redis.retry import Retry
+
+class Redis(AsyncStrictRedis):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._lock: asyncio.Lock = asyncio.Lock()
+
+    def __repr__(self):
+        return f"<bot.bot.Redis lock={self._lock}>"
+
+    async def keys(self, pattern: str = "*"):
+        async with self._lock:
+            return await super().keys(pattern)
+
+    async def get(self, key: str):
+        async with self._lock:
+            data = await super().get(key)
+
+            if data:
+                try:
+                    data = json.loads(data)
+                except json.JSONDecodeError:
+                    pass
+
+            return data
+
+    async def set(self, key: str, value: any, **kwargs):
+        async with self._lock:
+            if type(value) in (dict, list, tuple):
+                value = json.dumps(value)
+
+            return await super().set(key, value, **kwargs)
+
+    async def delete(self, *keys: str):
+        async with self._lock:
+            return await super().delete(*keys)
+
+    async def ladd(self, key: str, *values: str, **kwargs):
+        values = list(values)
+        for index, value in enumerate(values):
+            if type(value) in (dict, list, tuple):
+                values[index] = json.dumps(value)
+
+        async with self._lock:
+            result = await super().sadd(key, *values)
+            if kwargs.get("ex"):
+                await super().expire(key, kwargs.get("ex"))
+
+            return result
+
+    async def lget(self, key: str):
+        async with self._lock:
+            _values = await super().smembers(key)
+
+        values = list()
+        for value in _values:
+            try:
+                value = json.loads(value)
+            except json.JSONDecodeError:
+                pass
+
+            values.append(value)
+
+        return values
+
+    async def get_lock(self, key: str):
+        return await self._lock()
+
+    @classmethod
+    async def from_url(
+        cls,
+    ):  # URL: redis://default:f6sYIi6qucgqHsHJIKeLOsqRv9Oj9BAG@redis-11641.c282.east-us-mz.azure.redns.redis-cloud.com:11641"
+        return await cls(
+            connection_pool=BlockingConnectionPool.from_url(
+                "redis://default:f6sYIi6qucgqHsHJIKeLOsqRv9Oj9BAG@redis-11641.c282.east-us-mz.azure.redns.redis-cloud.com:11641",
+                decode_responses=True,
+                timeout=1,
+                max_connections=7000,
+                retry=Retry(backoff=EqualJitterBackoff(3, 1), retries=100),
+            )
+        )
 
 class Evict(commands.AutoShardedBot):
   def __init__(self, db: asyncpg.Pool=None):
         super().__init__(command_prefix=EvictContext.getprefix, allowed_mentions=discord.AllowedMentions(roles=False, everyone=False, users=True, replied_user=False), intents=discord.Intents.all(), 
-                         owner_ids=[214753146512080907, 598125772754124823, 971464344749629512], shard_count=1,
+                         owner_ids=[214753146512080907, 598125772754124823], shard_count=1,
                          help_command=HelpCommand(), strip_after_prefix=True, activity=discord.CustomActivity(name="🔗 evict.cc"))
         
         self.db = db
@@ -29,7 +113,7 @@ class Evict(commands.AutoShardedBot):
         self.color = 0xCCCCFF
         self.error_color= 0xFFFFED
         self.yes = "<:approve:1263726951613464627>"
-        self.no = "<:deny:1263727013433184347>"
+        self.no = "<:deny:1269374707484852265>"
         self.warning = "<:warn:1263727178802004021>"
         self.left = "<:left:1263727060078035066>"
         self.right = "<:right:1263727130370637995>"
@@ -130,6 +214,7 @@ class Evict(commands.AutoShardedBot):
         
         await self.load_extension('jishaku')
         await self.create_db_pool()
+        self.redis: Redis = await Redis.from_url()
         
         await StartUp.loadcogs(self)
        

@@ -1,7 +1,9 @@
-import discord, datetime, aiohttp, logging
+import discord, datetime, aiohttp, logging, asyncio, contextlib, io
+from collections import defaultdict
 from discord.ext import commands, tasks
 from discord import Embed
 from asyncio import log
+from patches import functions
 
 log = logging.getLogger(__name__)
 
@@ -59,7 +61,13 @@ async def servers_check(bot: commands.Bot):
 class Bot(commands.Cog): 
     def __init__(self, bot: commands.Bot):
       self.bot = bot
-      
+      self.buckets: dict = dict(
+            avatars=dict(
+                lock=asyncio.Lock(),
+                data=defaultdict(dict),
+            )
+      )
+
     @commands.Cog.listener()
     async def on_ready(self): 
         servers_check.start(self.bot)
@@ -198,6 +206,40 @@ class Bot(commands.Cog):
         
             await channel.send(embed=embed)
             await guild.leave()
+
+    @commands.Cog.listener("on_user_update")
+    async def avatar_update(self, before: discord.User, after: discord.User):
+        """Save past avatars to the upload bucket"""
+
+        if not self.bot.is_ready() or not after.avatar or str(before.display_avatar) == str(after.display_avatar):
+            return
+
+        channel = self.bot.get_channel(1268454162006413385)
+        if not channel:
+            return
+
+        try:
+            image = await after.avatar.read()
+        except:
+            return  # asset too new
+
+        image_hash = await functions.image_hash(image)
+
+        with contextlib.suppress(discord.HTTPException):
+            message = await channel.send(
+                file=discord.File(
+                    io.BytesIO(image),
+                    filename=f"{image_hash}." + ("png" if not before.display_avatar.is_animated() else "gif"),
+                )
+            )
+
+            await self.bot.db.execute(
+                "INSERT INTO avatars (user_id, avatar, hash, timestamp) VALUES ($1, $2, $3, $4) ON CONFLICT (user_id, hash) DO NOTHING",
+                before.id,
+                message.attachments[0].url,
+                image_hash,
+                int(discord.utils.utcnow().timestamp()),
+            )
 
 async def setup(bot: commands.Bot) -> None: 
   await bot.add_cog(Bot(bot)) 

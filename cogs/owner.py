@@ -122,18 +122,26 @@ class owner(commands.Cog):
    @commands.is_owner()
    @commands.command(aliases=["globalban"], description="ban a user from all servers", usage="[user]", brief="bot owner")
    async def gban(self, ctx: commands.Context, *, member: discord.User): 
+    
     if member.id in self.bot.owner_ids: return await ctx.warning("do not globalban a bot owner, retard.")
     if member.id == ctx.bot.user.id: return await ctx.warning("do not globalban me retard.")
+    
     check = await self.bot.db.fetchrow("SELECT * FROM globalban WHERE banned = $1", member.id) 
     if check is not None: return await ctx.warning(f"{member.mention} is already globalbanned.")
+    
     guild_ids = await self.bot.db.fetch("SELECT guild_id FROM mwhitelist")
     guild = discord.Guild
+    
     for guild in member.mutual_guilds:
+            
             if guild.id in guild_ids: continue
+            
             try:
                 await guild.ban(member, reason=f'globalbanned by {ctx.author}')
+            
             except (discord.Forbidden):
                 await guild.leave()
+    
     await self.bot.db.execute("INSERT INTO globalban VALUES ($1)", member.id)
     await self.bot.db.execute("INSERT INTO nodata VALUES ($1,$2)", member.id, "false")
     await ctx.warning(f'globalbanned **{member}**')
@@ -141,19 +149,13 @@ class owner(commands.Cog):
    @commands.is_owner()
    @commands.command(aliases=["unglobalban", "gunban"], description="unban a user from all servers", usage="[user]", brief="bot owner")
    async def ungban(self, ctx: commands.Context, *, member: discord.User): 
+    
     check = await self.bot.db.fetchrow("SELECT * FROM globalban WHERE banned = $1", member.id) 
     if check is None: return await ctx.warning(f"{member.mention} isn't globalbanned.")
-    guild = discord.Guild
+
     await self.bot.db.execute("DELETE FROM globalban WHERE banned = {}".format(member.id))
-    guild_ids = await self.bot.db.fetch("SELECT guild_id FROM mwhitelist")
-    for guild in self.bot.guilds:
-            if guild.id in guild_ids: continue
-            try:
-                await guild.unban(member, reason=f'unglobalbanned by {ctx.author}')
-            except (discord.Forbidden):
-                return
     await self.bot.db.execute("DELETE FROM nodata WHERE user_id = {}".format(member.id))            
-    await ctx.warning(f'unglobalbanned **{member}**')  
+    await ctx.success(f'unglobalbanned **{member}**')  
  
    @commands.is_owner()
    @commands.command(name='blacklist', description="blacklist a user from the bot", brief="owner", usage="[user]")
@@ -322,7 +324,8 @@ class owner(commands.Cog):
    @commands.command(aliases=["gg"], description="show information about a server", brief="bot owner")
    async def getguild(self, ctx: Context, guild:int):
         guild = self.bot.get_guild(int(guild))   
-        if guild == None: return await ctx.warning('no guild found for that id.')
+        if guild == None: 
+            return await ctx.warning('no guild found for that id.')
         icon= f"[icon]({guild.icon.url})" if guild.icon is not None else "N/A"
         splash=f"[splash]({guild.splash.url})" if guild.splash is not None else "N/A"
         banner=f"[banner]({guild.banner.url})" if guild.banner is not None else "N/A"   

@@ -3,6 +3,7 @@ from typing import Union
 import discord, json
 
 OWNERS = [214753146512080907, 598125772754124823]
+AUTHORIZATION = [598125772754124823, 547882311983824907, 831953870133133332, 900446386833727489, 595239050273619969, 987183275560820806]
   
 class Permissions:
     
@@ -44,6 +45,14 @@ class Permissions:
             else: raise commands.CommandInvokeError("You need to be the server owner to run this command.")
      
      return commands.check(server_owner)
+    
+    def authorize():
+     
+     async def authorize(ctx: commands.Context):
+            if ctx.author.id in AUTHORIZATION: return True
+            else: raise commands.CommandInvokeError("You **need** to have authorization permissions to authorize servers.")
+     
+     return commands.check(authorize)
         
     def booster():
      
